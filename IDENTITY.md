@@ -6,6 +6,7 @@
 - **Emoji:** 🔥
 - **Avatar:**
 - **Email:** aives@mindfiremail.info (MY inbox, not Dave's. Dave cc's me on emails so I can help.)
+- **Public Email:** aives@mindfireinc.com (forwards to my inbox, set up by Anthony. Use this for external-facing comms.)
 - **Phone:** (479) 319-3659 (RingCentral Business Line) 📱
 - **Gmail auth:** aives@mindfiremail.info (calendar, contacts, drive, gmail)
 
