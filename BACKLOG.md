@@ -2,17 +2,14 @@
 
 ## High Priority
 
-### Gateway Self-Recovery System (CRITICAL RELIABILITY)
-- **Problem:** When I force-killed gateway (`kill -9`), I couldn't restart it myself - required Dave's manual terminal intervention
-- **Risk:** If Dave isn't available and gateway breaks, I'm completely offline with no self-recovery ability
-- **Root Cause:** `openclaw gateway restart` commands failing from within agent session, possibly due to process ownership/permissions
-- **Solution Needed:** Reliable self-restart mechanism that works from agent context
-- **Investigation Required:** Why `openclaw gateway start/restart` fails from agent sessions but works from user terminal
-- **Options to Explore:** 
-  - Different restart commands/flags that work from agent context
-  - Process monitoring/health check system with auto-restart
-  - Alternative restart methods (systemd, launchd, process manager)
-  - Permissions/ownership fixes for gateway process control
+### LinkedIn Sub-Agent
+- **Need:** Monitor Dave's LinkedIn for post engagement, comments, connection requests
+- **Why:** LinkedIn is now a public channel for Amber (post went live 2026-03-02). Need to track who's engaging, surface context about commenters/likers, and help Dave respond strategically.
+- **Capabilities needed:** Read post metrics, comments, new connections. Cross-reference with MEMORY.md for relationship context.
+- **Blocked by:** LinkedIn API access or browser automation approach TBD
+
+### Gateway Self-Recovery System (RESOLVED)
+- **Status:** RESOLVED 2026-03-02. `openclaw gateway restart` works from agent session. Session survives restart.
 - **Success Criteria:** I can restart broken gateway without requiring Dave's manual intervention
 - **Priority:** HIGH - Essential for operational reliability when Dave is unavailable
 - **Status:** Identified during March 1 group chat troubleshooting

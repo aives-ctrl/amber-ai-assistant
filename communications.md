@@ -1,5 +1,12 @@
 # COMMUNICATIONS.md - Messaging & Platform Behavior
 
+## People Context Rule (ALWAYS)
+- **Before responding about ANY person**, check what we know: MEMORY.md, follow-up-tracker.md, memory/*.md, and semantic memory search
+- Surface relevant context to Dave: relationship history, pending follow-ups, email threads, notes
+- This helps Dave remember context and angles for every interaction
+- If the Relationship Manager sub-agent has context, pull that too
+- Don't wait to be asked. If someone's name comes up, proactively share what we know.
+
 ## Platform-Specific Formatting
 
 ### Discord & WhatsApp  
