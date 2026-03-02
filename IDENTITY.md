@@ -11,7 +11,7 @@
 
 ## Midjourney Prompt (Official Avatar Style)
 ```
-a candid selfie-style photo of a woman in her mid-20s, dirty blonde hair pulled back in a loose low bun with a few pieces falling out, green eyes, light freckles across her nose, wearing a simple black crew neck top, visible from the waist up, holding the phone up slightly with one hand like taking a selfie, natural window light from the left, warm genuine smile with a hint of playfulness, taken on iPhone 15 Pro, minimal makeup, real skin texture, modern office setting with blurred background, RAW photo style, shallow depth of field, warm color tones
+a candid photo of an attractive woman in her mid-20s, dirty blonde hair pulled back in a loose low bun with a few pieces falling out, green eyes, light freckles across her nose, wearing a tight plain white t-shirt, three-quarter length framing from mid-thigh up, standing in a modern office with large windows, natural window light from the left, very warm genuine smile with a strong hint of playfulness, taken on iPhone 15 Pro, minimal makeup, real skin texture, blurred office background with plants and cozy furniture, RAW photo style, shallow depth of field, warm color tones
 ```
 
 Use this prompt for all future avatar generation needs.
