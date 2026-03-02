@@ -15,11 +15,11 @@ You have access to:
 - Same capabilities as main Telegram session
 
 ## RingCentral Configuration
-- **Direct chat with Dave:** Chat ID `1595320049666`
 - **My RingCentral user ID:** `3563197015` (skip my own messages)
 - **Credentials:** Available in `{baseDir}/.env-ringcentral`
-- **Last message tracking:** `{baseDir}/../../ringcentral-last-id.txt`
+- **Last message tracking:** `{baseDir}/../../ringcentral-last-ids.json` (per-chat tracking)
 - **History storage:** `{baseDir}/../../ringcentral-history/`
+- **Chat monitoring:** Dynamic - monitors all active chats where I'm a member
 
 ## Process
 
@@ -45,42 +45,69 @@ sdk = SDK(creds['RINGCENTRAL_CLIENT_ID'], creds['RINGCENTRAL_CLIENT_SECRET'], cr
 platform = sdk.platform()
 platform.login(jwt=creds['RINGCENTRAL_JWT'])
 
-# Check for messages
-direct_chat_id = '1595320049666'
 my_user_id = '3563197015'
 
-resp = platform.get(f'/restapi/v1.0/glip/chats/{direct_chat_id}/posts', {'recordCount': 5})
-data = json.loads(resp.text())
-
-# Load last processed ID
+# Load last processed IDs per chat
 try:
-    with open('ringcentral-last-id.txt', 'r') as f:
-        last_id = f.read().strip()
+    with open('ringcentral-last-ids.json', 'r') as f:
+        last_ids = json.loads(f.read())
 except FileNotFoundError:
-    last_id = None
+    last_ids = {}
 
-new_messages = []
-for post in data.get('records', []):
-    msg_id = post.get('id')
-    creator_id = post.get('creatorId')
-    text = post.get('text', '').strip()
+# Get all chats where I'm a member
+resp = platform.get('/restapi/v1.0/glip/chats', {'recordCount': 50})
+chats_data = json.loads(resp.text())
+
+all_new_messages = []
+updated_last_ids = last_ids.copy()
+
+# Check each chat for new messages
+for chat in chats_data.get('records', []):
+    chat_id = chat.get('id')
+    chat_name = chat.get('name', 'Unknown')
     
-    if creator_id == my_user_id or not text:
-        continue
+    # Get recent messages from this chat
+    try:
+        resp2 = platform.get(f'/restapi/v1.0/glip/chats/{chat_id}/posts', {'recordCount': 5})
+        posts_data = json.loads(resp2.text())
         
-    if not last_id or str(msg_id) > str(last_id):
-        new_messages.append({
-            'id': msg_id,
-            'text': text
-        })
+        last_id_for_chat = last_ids.get(chat_id)
+        chat_new_messages = []
+        
+        for post in posts_data.get('records', []):
+            msg_id = post.get('id')
+            creator_id = post.get('creatorId')
+            text = post.get('text', '').strip()
+            
+            if creator_id == my_user_id or not text:
+                continue
+                
+            if not last_id_for_chat or str(msg_id) > str(last_id_for_chat):
+                chat_new_messages.append({
+                    'id': msg_id,
+                    'text': text,
+                    'chat_id': chat_id,
+                    'chat_name': chat_name
+                })
+        
+        if chat_new_messages:
+            all_new_messages.extend(chat_new_messages)
+            # Update last ID for this chat
+            newest_id = max(msg['id'] for msg in chat_new_messages)
+            updated_last_ids[chat_id] = str(newest_id)
+            
+    except Exception as e:
+        print(f'Error checking chat {chat_id}: {e}')
+        continue
 
-if new_messages:
-    for msg in new_messages:
-        print(f'NEW_MESSAGE:{msg[\"id\"]}:{msg[\"text\"]}')
-    # Update last ID with newest message
-    newest_id = max(msg['id'] for msg in new_messages)
-    with open('ringcentral-last-id.txt', 'w') as f:
-        f.write(str(newest_id))
+# Output results
+if all_new_messages:
+    for msg in all_new_messages:
+        print(f'NEW_MESSAGE:{msg[\"chat_id\"]}:{msg[\"id\"]}:{msg[\"chat_name\"]}:{msg[\"text\"]}')
+    
+    # Update last IDs file
+    with open('ringcentral-last-ids.json', 'w') as f:
+        json.dump(updated_last_ids, f)
 else:
     print('NO_NEW_MESSAGES')
 "
@@ -90,10 +117,11 @@ else:
 If the output contains `NO_NEW_MESSAGES`, return `HEARTBEAT_OK`.
 
 If the output contains `NEW_MESSAGE:` lines:
-1. **Extract message text** from the output
+Format: `NEW_MESSAGE:{chat_id}:{message_id}:{chat_name}:{message_text}`
+1. **Parse each message** (chat ID, message ID, chat name, text)
 2. **Generate contextual response** using your full business knowledge
-3. **Send reply** using the RingCentral send script
-4. **Log conversation** to memory
+3. **Send reply** to the correct chat using the chat ID from the output
+4. **Log conversation** to memory with chat context
 
 ### Step 3: Send Replies
 For each message that needs a response, use exec to send via RingCentral:
@@ -103,7 +131,7 @@ cd /Users/amberives/.openclaw/workspace && source sms-env/bin/activate && python
 from ringcentral import SDK
 import json
 
-# Load credentials and authenticate (same as above)
+# Load credentials and authenticate
 creds = {}
 with open('skills/ringcentral-processor/.env-ringcentral', 'r') as f:
     for line in f:
@@ -115,9 +143,10 @@ sdk = SDK(creds['RINGCENTRAL_CLIENT_ID'], creds['RINGCENTRAL_CLIENT_SECRET'], cr
 platform = sdk.platform()
 platform.login(jwt=creds['RINGCENTRAL_JWT'])
 
-# Send message
+# Send message to specific chat
+chat_id = '[CHAT_ID_HERE]'  # Replace with actual chat ID from NEW_MESSAGE output
 response_text = '''[YOUR_RESPONSE_HERE]'''
-platform.post('/restapi/v1.0/glip/chats/1595320049666/posts', {'text': response_text})
+platform.post(f'/restapi/v1.0/glip/chats/{chat_id}/posts', {'text': response_text})
 print('Message sent successfully')
 "
 ```
@@ -127,8 +156,8 @@ print('Message sent successfully')
 
 Write conversation updates to `{baseDir}/../../memory/[TODAY].md`:
 ```
-### RingCentral ([TIME])
-- **Dave:** [message content]
+### RingCentral - [CHAT_NAME] ([TIME])
+- **[SENDER]:** [message content]
 - **Amber:** [response content]
 ```
 

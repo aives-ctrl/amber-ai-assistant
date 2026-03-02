@@ -25,6 +25,5 @@ Environment-specific config. Skills define how tools work; this is your cheat sh
 - **My Business Line:** (479) 319-3659 📱
 - **Account:** Amber Ives (ext 420) - MindFire, Inc.
 - **SMS Channel Plugin:** ✅ Working (first-class OpenClaw channel)
-- **Team Messaging:** ✅ Working (cron-based, refactor to channel plugin pending)
-- **Direct Chat with Dave:** Chat ID 1595320049666
+- **Team Messaging:** ✅ Working (first-class OpenClaw channel)
 - **Auth:** JWT Bearer token (permanent, `.env-ringcentral`)
