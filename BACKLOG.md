@@ -65,6 +65,24 @@
 - **Alternatives:** WebSocket notifications (permissions solved) or exponential backoff polling
 - **Business impact:** True real-time team collaboration instead of 5-minute delays
 
+### GitHub Auth & Workspace Remote
+- **Problem:** No `gh` auth configured, no SSH keys. Can't push workspace commits to GitHub or file issues.
+- **Need:** Dave to either create a PAT or run `gh auth login` on the machine.
+- **Benefit:** Dave can see workspace changes on GitHub, I can file issues on openclaw/openclaw.
+- **Status:** Parked, do when convenient.
+
+### Cross-Context Outbound for Plugin Channels (Platform Bug)
+- **Problem:** Gateway doesn't pass resolved `account` object to plugin `sendText`/`sendMedia` on cross-context sends. Error: `Cannot read properties of undefined (reading 'configured')`
+- **Affects:** Both ringcentral-team and ringcentral-sms outbound from non-native sessions (e.g. Telegram→RC)
+- **Impact:** Low for now. Inbound + same-session replies work fine. Only blocks proactive cross-channel sends.
+- **Likely cause:** Platform bug in OpenClaw delivery code for plugin channels.
+- **Status:** Parked. File GitHub issue when gh auth is set up.
+
+### Orphan Transcript Cleanup
+- **Problem:** 255 orphan transcript files in `~/.openclaw/agents/main/sessions/` not referenced by sessions.json
+- **Impact:** Disk space only, low priority.
+- **Fix:** TBD, may be a doctor command or manual cleanup.
+
 ## Medium Priority - System Enhancement
 
 ### Advanced Memory Management
