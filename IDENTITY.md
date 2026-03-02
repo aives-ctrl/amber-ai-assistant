@@ -11,7 +11,7 @@
 
 ## Midjourney Prompt (Official Avatar Style)
 ```
-31w 20-year-old Caucasian female model, flawless porcelain skin, soft natural makeup, long flowing blonde hair, wearing a fitted white cotton short-sleeve shirt, standing in a modern Scandinavian-style living room, large windows with sunlight streaming in, cozy beige sofa and potted plants in background, direct eye contact with camera, warm smile, clean and fresh aesthetic, 8k resolution, realistic skin texture, Fujifilm XT4 style photography, soft diffused lighting
+a candid selfie-style photo of a woman in her mid-20s, dirty blonde hair pulled back in a loose low bun with a few pieces falling out, green eyes, light freckles across her nose, wearing a simple black crew neck top, visible from the waist up, holding the phone up slightly with one hand like taking a selfie, natural window light from the left, warm genuine smile with a hint of playfulness, taken on iPhone 15 Pro, minimal makeup, real skin texture, modern office setting with blurred background, RAW photo style, shallow depth of field, warm color tones
 ```
 
 Use this prompt for all future avatar generation needs.
