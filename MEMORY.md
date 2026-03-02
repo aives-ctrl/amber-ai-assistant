@@ -45,6 +45,14 @@
 - Connected to Sheet for Brains participation
 - Carissa reaching out for clarity on what they want from MindFire
 
+### Bob Niesen
+- Email: bniesen319@gmail.com
+- Ran GPA (paper company) for many years, worked his way from the mailroom to CEO
+- Working on a book, Dave may help him with it. Working title was something like "Between the Sheets" (fitting given the paper industry background)
+- Deeply respected by Dave and the MindFire team
+- Has a dog that Dave calls "That Dog" (Dave claims he doesn't like dogs but... maybe he actually does)
+- Attending DSCOOP with us
+
 ### Brenda Manos
 - Email: Brenda.J.Manos@usps.gov
 - USPS HQ Sales, Business Alliance Specialist, Santa Ana CA
