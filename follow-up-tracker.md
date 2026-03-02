@@ -34,6 +34,34 @@
   - **Follow-up due:** 2026-03-05 (3 business days from Sat: Mon=day1, Tue=day2, Wed=day3)
   - **Status:** PENDING
 
+### Warren CAT / Shanna Vollmer (SALES - CLOSE ASAP)
+- **Shanna D Vollmer** - Shanna.Vollmer@warrencat.com
+  - **Sent:** 2026-03-02 06:54 PST (Dave's email)
+  - **Subject:** Fwd: Voided: Complete with Docusign: Warren CAT - Quail Farmer Campaign_V8.pdf
+  - **Thread ID:** 19caf0c0e135211d
+  - **Asking for:** DocuSign resend confirmation + kickoff timing
+  - **Follow-up due:** 2026-03-02 14:00 PST (same-day, sales priority)
+  - **Status:** PENDING - alert Dave if no reply by 2 PM PT
+
+### SEprint / Anneliese Gelber + Jimmy Pino (SALES - CLOSE ASAP)
+- **Anneliese Gelber** - agelber@seprint.com
+- **Jimmy Pino** - jpino@seprint.com
+  - **Sent:** 2026-03-02 06:59 PST (Dave's email)
+  - **Subject:** Ready?
+  - **Thread ID:** 19caf1080340b849
+  - **Asking for:** Process next steps to stay on track with deliverable dates
+  - **Follow-up due:** 2026-03-02 14:00 PST (same-day, sales priority)
+  - **Status:** PENDING - alert Dave if no reply by 2 PM PT
+
+### Advertisers Printing / Alex Fechner (SALES - CLOSE ASAP)
+- **Alex Fechner** - AFechner@advprinting.com
+  - **Sent:** 2026-03-02 06:58 PST (Dave's email)
+  - **Subject:** Ready to rock!!
+  - **Thread ID:** 19caf0f9f69a7311
+  - **Asking for:** Feedback from Jude on timing, financing app, kickoff scheduling
+  - **Follow-up due:** 2026-03-02 14:00 PST (same-day, sales priority)
+  - **Status:** PENDING - alert Dave if no reply by 2 PM PT
+
 ### Brian Badillo - OpenClaw Setup Check
 - **Brian Badillo** - brian.badillo1@gmail.com
   - **Sent:** 2026-02-28 14:45 PST

@@ -8,6 +8,10 @@
 - **Use:** Send when someone asks for information about MindFire's Direct Mail AI solution. Dave emailed this to me on 2026-02-27 with instructions to send it when he asks or someone needs it.
 - **Subject line from Dave's email:** "AI in Print & Direct Mail"
 
+## Shorthand & Terminology
+
+- **BB (Big Brain):** Means use Opus 4.6 for deeper reasoning. When Dave says "ask BB" or "get BB to help," he means switch to or use Opus-level thinking to solve the problem. NOT a person.
+
 ## People
 
 ### Kushal Dutta
@@ -17,6 +21,14 @@
 ### Anthony Baker
 - Email: abaker@mindfiremail.info
 - MindFire colleague. Interested in how agentic AI / OpenClaw works.
+
+### Carissa
+- Marketing and marcom logistics specialist
+- **Personality:** Highly responsible, very responsive, really nice to work with
+- **AI approach:** AI-first, loves Claude, works with AI daily
+- **Current role:** Handling marketing tasks that I'm being trained to take over
+- **Relationship strategy:** Always frame my role as "handling the routine/mechanical work so she can focus on higher-value creative work that lights her up"
+- **Note:** May feel slightly threatened initially - be supportive and show how I'm doing the dumb work to free her up for the fun stuff
 
 ### Brenda Manos
 - Email: Brenda.J.Manos@usps.gov

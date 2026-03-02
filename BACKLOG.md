@@ -41,6 +41,24 @@
 - **Iteration based on usage:** Refine sub-agent interactions based on actual business scenarios
 - **Error handling improvement:** Better sub-agent error recovery and cross-agent communication
 
+### Sales Pipeline Context Import from Claude Projects (CRITICAL)
+- **Problem:** Dave has detailed context on each sales deal in separate Claude projects (Warren CAT, SEprint, Advertisers Printing, others). I can't access these, so I'm flying blind on deal stage, size, history, and contacts.
+- **Goal:** Get pipeline context into my memory so I can properly support sales follow-ups, draft informed emails, and track deals.
+- **Options to explore:**
+  1. Dave exports/copies project context into files I can index (memory/reference/sales/)
+  2. Build a simple intake flow: Dave pastes key deal info, I structure and store it
+  3. API access to Claude projects (if available)
+  4. CRM integration (HubSpot, Salesforce, or simple file-based tracker)
+- **Immediate need:** Warren CAT, SEprint, Advertisers Printing deal details
+- **Success criteria:** I know deal size, stage, key contacts, history, and next steps for each active deal
+- **Priority:** HIGH - directly impacts revenue. Can't close deals I don't understand.
+- **Status:** Identified 2026-03-02
+
+### Model Failover Configuration
+- **Problem:** Anthropic Opus had elevated errors (2026-03-02), subagent hung for 12 min
+- **Goal:** Auto-fallback to GPT-4o or Sonnet when primary model is degraded
+- **Status:** Identified 2026-03-02
+
 ### RingCentral Real-Time Optimization
 - **Dave's request:** "5 minutes too long for real-time team messaging"
 - **Technical challenge:** Solve rate limiting for 30-60 second checking frequency

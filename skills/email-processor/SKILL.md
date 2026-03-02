@@ -107,7 +107,7 @@ End your output with:
 ```
 
 ### Step 6: Log Activity
-Brief summary to `{baseDir}/../../memory/[TODAY].md`
+**IMPORTANT:** First READ `{baseDir}/../../memory/[TODAY].md` to get existing content. Then use the EDIT tool to APPEND your summary at the end. NEVER use the write tool on this file as it will overwrite other agents' notes. If the file doesn't exist yet, only then use write to create it.
 
 ## Known Contacts
 - Glen Adams (HP) - glen.adams@hp.com

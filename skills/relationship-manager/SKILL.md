@@ -120,7 +120,7 @@ Maintain and reference `{baseDir}/relationship-data.md` for:
 - Status changes and milestones
 
 ## Memory Integration
-Log significant developments to `{baseDir}/../../memory/YYYY-MM-DD.md`
+Log significant developments to `{baseDir}/../../memory/YYYY-MM-DD.md` — **IMPORTANT:** First READ the file to get existing content, then use EDIT to APPEND. NEVER use write on this shared file (it overwrites other agents' notes). Only use write if the file doesn't exist yet.
 
 ## Key Rules
 - **DRAFT responses** - never send them

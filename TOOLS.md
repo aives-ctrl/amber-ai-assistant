@@ -12,6 +12,12 @@ Environment-specific config. Skills define how tools work; this is your cheat sh
 - `message` tool → external platform messages (Telegram, Discord, etc.)
 - Session visibility: `tools.sessions.visibility: "all"` enabled
 
+### Calendar Access
+- Dave's calendar ID: `daver@mindfireinc.com` (shared to my account)
+- List events: `gog cal events daver@mindfireinc.com --from X --to Y` (NOT `events ls`)
+- Create events: `gog cal create daver@mindfireinc.com --summary ... --from ... --to ...`
+- My calendar (aives@mindfiremail.info) has no primary events; always use Dave's ID
+
 ### Discipline Files
 - Email → `email.md` | Follow-ups → `follow-up.md` | Calendar → `calendar.md` | Comms → `communications.md`
 

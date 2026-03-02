@@ -123,6 +123,8 @@ print('Message sent successfully')
 ```
 
 ### Step 4: Log Activity
+**IMPORTANT:** First READ `{baseDir}/../../memory/[TODAY].md` to get existing content. Then use the EDIT tool to APPEND your summary at the end. NEVER use the write tool on this file as it will overwrite other agents' notes. If the file doesn't exist yet, only then use write to create it.
+
 Write conversation updates to `{baseDir}/../../memory/[TODAY].md`:
 ```
 ### RingCentral ([TIME])

@@ -34,6 +34,7 @@
 ## Email Processing & Monitoring
 
 ### Inbox Search
+- **This is MY inbox** (aives@mindfiremail.info), not Dave's. Dave cc's me on emails so I can act on them.
 - **For new messages:** `gog gmail messages search 'is:unread -label:Handled -from:daver@mindfireinc.com' --max 20`
 - **Excludes Dave's sent emails** (don't flag his outbound emails as "needing attention")
 - **Missing something?** Check unread first, then search by name/topic if needed

@@ -95,7 +95,7 @@ Store in `{baseDir}/follow-up-data.json` - propose updates, don't write directly
 
 ## Integration
 - Load relationship context from `{baseDir}/../relationship-manager/relationship-data.md`
-- Log to `{baseDir}/../../memory/[DATE].md`
+- Log to `{baseDir}/../../memory/[DATE].md` — **IMPORTANT:** First READ the file to get existing content, then use EDIT to APPEND. NEVER use write on this shared file (it overwrites other agents' notes). Only use write if the file doesn't exist yet.
 
 ## Key Rules
 - **MONITOR and REPORT** - never act

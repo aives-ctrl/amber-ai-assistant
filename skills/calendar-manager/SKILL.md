@@ -137,7 +137,7 @@ When a proposed time conflicts:
 
 ## Integration
 - Load contact context from `{baseDir}/../relationship-manager/relationship-data.md` when relevant
-- Log activities to `{baseDir}/../../memory/[DATE].md`
+- Log activities to `{baseDir}/../../memory/[DATE].md` — **IMPORTANT:** First READ the file to get existing content, then use EDIT to APPEND. NEVER use write on this shared file (it overwrites other agents' notes). Only use write if the file doesn't exist yet.
 
 ## Dave's Daily Schedule Constraints
 **CRITICAL:** Dave gets to office at 6:20 AM - **NEVER schedule work before 6:20 AM** (except extreme situations)
