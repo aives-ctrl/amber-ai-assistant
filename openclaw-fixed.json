@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.26",
+    "lastTouchedAt": "2026-03-01T22:10:00.000Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-03-01T19:28:27.295Z",
+    "lastRunVersion": "2026.2.26",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "api_key"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-20250514",
+        "fallbacks": [
+          "anthropic/claude-opus-4-6"
+        ]
+      },
+      "models": {
+        "anthropic/claude-opus-4-6": {},
+        "anthropic/claude-sonnet-4-20250514": {}
+      },
+      "workspace": "/Users/amberives/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "heartbeat": {
+        "every": "5m",
+        "model": "anthropic/claude-sonnet-4-20250514",
+        "target": "telegram"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    }
+  },
+  "tools": {
+    "loopDetection": {
+      "enabled": true,
+      "historySize": 20,
+      "criticalThreshold": 6,
+      "detectors": {}
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "botToken": "8285559457:AAEbQlSuVvzXfSt9uEuai_GyWSNLWf1eyuM",
+      "groupPolicy": "open",
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "streaming": "off"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "2ec0732b4d11f92c8a08bf65fb9f79ff5e2360ac5822aaea"
+    },
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "calendar.add",
+        "contacts.add",
+        "reminders.add"
+      ]
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "telegram": {
+        "enabled": true
+      }
+    }
+  }
+}

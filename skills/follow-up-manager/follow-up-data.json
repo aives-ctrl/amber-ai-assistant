@@ -1,0 +1,79 @@
+{
+  "pending": [
+    {
+      "contact_name": "Tiffany Todd",
+      "contact_email": "Tiffany.S.Todd@usps.gov",
+      "original_send_date": "2026-02-27",
+      "follow_up_due_date": "2026-03-04",
+      "subject": "USPS Webinar Support Offer",
+      "thread_id": "unknown",
+      "request_type": "webinar_support",
+      "priority": "high",
+      "status": "pending",
+      "follow_up_count": 1,
+      "relationship_context": "USPS partnership, national webinar thought leadership",
+      "note": "MISTAKE: Premature follow-up sent 2026-02-28, should have waited until 2026-03-04"
+    },
+    {
+      "contact_name": "Glen Adams", 
+      "contact_email": "glen.adams@hp.com",
+      "original_send_date": "2026-02-28",
+      "follow_up_due_date": "2026-03-05",
+      "subject": "DSCOOP Meeting Coordination",
+      "thread_id": "19ca58abc12a98d4",
+      "request_type": "meeting_coordination",
+      "priority": "high",
+      "status": "pending",
+      "follow_up_count": 0,
+      "relationship_context": "HP partnership opportunity, DSCOOP collaboration",
+      "note": "Event Manager coordination: Meet AT DSCOOP instead of pre-event"
+    },
+    {
+      "contact_name": "Peter van Teeseling",
+      "contact_email": "pvanteeseling@dscoop.org", 
+      "original_send_date": "2026-02-28",
+      "follow_up_due_date": "2026-03-05",
+      "subject": "DSCOOP Meeting Coordination - Go Impact Tour",
+      "thread_id": "19ca58c6f5be22aa",
+      "request_type": "meeting_coordination",
+      "priority": "high", 
+      "status": "pending",
+      "follow_up_count": 0,
+      "relationship_context": "DSCOOP leadership, member-focused approach",
+      "note": "Event Manager coordination: Meet AT DSCOOP for strategic networking"
+    }
+  ],
+  "completed": [
+    {
+      "contact_name": "Brian Badillo",
+      "contact_email": "brian.badillo1@gmail.com",
+      "original_send_date": "2026-02-28", 
+      "completed_date": "2026-02-28",
+      "subject": "OpenClaw Setup Progress Check",
+      "thread_id": "19ca54da39129745",
+      "request_type": "setup_support",
+      "priority": "medium",
+      "status": "completed",
+      "follow_up_count": 0,
+      "relationship_context": "Technical support recipient, Mac mini setup assistance",
+      "note": "Response received 2026-02-28, no follow-up needed"
+    },
+    {
+      "contact_name": "Chris Lien",
+      "contact_email": "ChrisL@bccsoftware.com",
+      "original_send_date": "2026-02-27",
+      "completed_date": "2026-03-01",
+      "subject": "BCC Partnership Meeting Request",
+      "thread_id": "19caaa7cf815983f",
+      "request_type": "meeting_coordination",
+      "priority": "high",
+      "status": "completed",
+      "follow_up_count": 1,
+      "relationship_context": "BCC Software partnership discussions",
+      "outcome": "Christopher O'Brien added to existing Monday sync: March 2, 2026, 12:00-12:25 PM PST",
+      "confirmation_sent": "2026-03-01",
+      "note": "Response received 2026-03-01, Christopher O'Brien successfully added to regular weekly sync, confirmation email sent"
+    }
+  ],
+  "overdue": []
+}

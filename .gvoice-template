@@ -1,0 +1,4 @@
+[gvoice]
+email = aives@mindfiremail.info
+password = REPLACE_WITH_PASSWORD
+# smsKey = REPLACE_IF_NEEDED_FOR_2FA

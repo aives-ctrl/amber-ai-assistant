@@ -1,0 +1,55 @@
+{
+  "tiers": {
+    "critical": {
+      "description": "Immediate delivery - system errors, interactive prompts, urgent issues",
+      "delivery": "immediate",
+      "examples": [
+        "System errors",
+        "Gateway failures", 
+        "Security alerts",
+        "Interactive prompts requiring user input",
+        "Calendar conflicts for today",
+        "Critical email from key contacts"
+      ]
+    },
+    "high": {
+      "description": "Batched hourly - important updates, job failures, meeting confirmations",
+      "delivery": "hourly",
+      "examples": [
+        "Meeting confirmations",
+        "Important email arrivals",
+        "Job/cron failures", 
+        "Calendar reminders (next 2 hours)",
+        "Cost alerts",
+        "API quota warnings"
+      ]
+    },
+    "medium": {
+      "description": "Batched every 3 hours - routine updates, non-urgent info",
+      "delivery": "every_3_hours", 
+      "examples": [
+        "Routine heartbeat updates",
+        "Daily summaries",
+        "Non-urgent system status",
+        "General information requests",
+        "Background task completions"
+      ]
+    }
+  },
+  "classification_rules": {
+    "keywords": {
+      "critical": ["error", "failed", "urgent", "system security breach", "conflict", "down", "broken"],
+      "high": ["meeting", "calendar", "important", "deadline", "cost", "quota"],
+      "medium": ["update", "summary", "status", "completed", "routine"]
+    },
+    "sources": {
+      "critical": ["system", "security", "gateway"],
+      "high": ["calendar", "email", "cron"],
+      "medium": ["heartbeat", "background", "maintenance"]
+    }
+  },
+  "delivery_schedule": {
+    "high_batch": "0 * * * *",
+    "medium_batch": "0 */3 * * *"
+  }
+}

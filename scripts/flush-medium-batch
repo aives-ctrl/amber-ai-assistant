@@ -1,0 +1,4 @@
+#!/bin/bash
+# Flush medium priority notifications (every 3 hours)
+cd "$(dirname "$0")"
+python3 ./notification-queue.py flush medium

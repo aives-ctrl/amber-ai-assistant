@@ -1,0 +1,6 @@
+# Notification Queue Batch Delivery
+# Flush high priority notifications every hour
+0 * * * * /Users/amberives/.openclaw/workspace/scripts/flush-high-batch
+
+# Flush medium priority notifications every 3 hours  
+0 */3 * * * /Users/amberives/.openclaw/workspace/scripts/flush-medium-batch

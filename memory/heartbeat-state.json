@@ -1,0 +1,15 @@
+{
+  "lastChecks": {
+    "email": "handled by sub-agent",
+    "calendar": null,
+    "weather": null,
+    "costReport": 1772529720,
+    "followUp": 1772529720
+  },
+  "costTracking": {
+    "enabled": true,
+    "lastReport": "2026-03-02",
+    "reportIntervalHours": 4,
+    "contextWarningThreshold": 0.85
+  }
+}

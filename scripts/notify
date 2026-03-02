@@ -1,0 +1,6 @@
+#!/bin/bash
+# Notification Queue Helper Script
+# Usage: notify "message" [--tier critical|high|medium] [--source source] [--bypass]
+
+cd "$(dirname "$0")"
+python3 ./notification-queue.py add "$@"
