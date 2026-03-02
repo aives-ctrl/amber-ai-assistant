@@ -36,12 +36,14 @@
 
 ### Warren CAT / Shanna Vollmer (SALES - CLOSE ASAP)
 - **Shanna D Vollmer** - Shanna.Vollmer@warrencat.com
-  - **Sent:** 2026-03-02 06:54 PST (Dave's email)
+  - **Sent:** 2026-03-02 06:54 PST (Dave's email, cc'd Amber)
   - **Subject:** Fwd: Voided: Complete with Docusign: Warren CAT - Quail Farmer Campaign_V8.pdf
   - **Thread ID:** 19caf0c0e135211d
-  - **Asking for:** DocuSign resend confirmation + kickoff timing
-  - **Follow-up due:** 2026-03-02 14:00 PST (same-day, sales priority)
-  - **Status:** PENDING - alert Dave if no reply by 2 PM PT
+  - **Update 8:09 AM:** Shanna replied, needs PO box removed from DocuSign so she can sign, get invoice, then provide PO# for new invoice
+  - **Update 8:20 AM:** Dave resent DocuSign. Told Shayan to stay tuned for kickoff options.
+  - **Update 8:28 AM:** Dave confirmed it'll be fixed and resent
+  - **Follow-up due:** 2026-03-03 (check if Shanna signed + kickoff scheduled)
+  - **Status:** ACTIVE - DocuSign resent, waiting for Shanna to sign
 
 ### SEprint / Anneliese Gelber + Jimmy Pino (SALES - CLOSE ASAP)
 - **Anneliese Gelber** - agelber@seprint.com
@@ -61,9 +63,9 @@
   - **Sent:** 2026-03-02 06:58 PST (Dave's email)
   - **Subject:** Ready to rock!!
   - **Thread ID:** 19caf0f9f69a7311
-  - **Asking for:** Feedback from Jude on timing, financing app, kickoff scheduling
-  - **Follow-up due:** 2026-03-02 14:00 PST (same-day, sales priority)
-  - **Status:** PENDING - alert Dave if no reply by 2 PM PT
+  - **Update 9:59 AM:** Alex replied, hoping to hear from Jude today. Even after Jude decides, "cohere one" still needs to review pricing. Alex will let Dave know ASAP.
+  - **Follow-up due:** 2026-03-03 (check if Jude responded)
+  - **Status:** ACTIVE - waiting on Jude's decision + pricing review
 
 ### XMPie Coalition - Go Impact Tour 2026
 - **Scott Houck** - Scott.Houck@xmpie.com
@@ -92,6 +94,17 @@
   - **Context:** Sandy BOLT LLM Bot launch blocked on insurance/liability due diligence. Logan needs meetings between legal teams and insurance providers. Dave pinged legal team for response.
   - **Follow-up due:** 2026-03-05 (3 business days: Mon=day1, Tue=day2, Wed=day3)
   - **Status:** PENDING - waiting on Sandy legal team reply
+
+### Region 7 ESC / Summer Burrow & Katie Chenoweth
+- **Summer Burrow** - SBurrow@esc7.net
+- **Katie Chenoweth** - kchenoweth@esc7.net
+  - **Sent:** 2026-03-02 07:12 PST (Dave's follow-up)
+  - **Subject:** Re: Region 7 Time Tracking — notes from today's call
+  - **Thread ID:** 19caf1c75caee640
+  - **Context:** POC discussion, Dave meeting w/ MindFire team internally. Summer said Katie working on punch list, no responses yet.
+  - **Update 7:40 AM:** Summer confirmed Katie is working on it but no answers yet. Dave said no worries, can make progress on their end.
+  - **Follow-up due:** 2026-03-05 (3 business days)
+  - **Status:** PENDING - waiting on Katie's punch list answers
 
 ### Brian Badillo - OpenClaw Setup Check
 - **Brian Badillo** - brian.badillo1@gmail.com
