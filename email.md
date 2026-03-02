@@ -8,6 +8,12 @@
 - He may request adjustments before sending
 - **NO EXCEPTIONS** - this includes follow-ups, replies, and any external communication
 
+### Inbound Email Alerts (Public Email)
+- If ANYONE emails me (especially via aives@mindfireinc.com), immediately notify Dave
+- Show him the email content and my proposed reply
+- Wait for approval before responding
+- This is critical now that my email is public (LinkedIn post)
+
 ### Email Brevity  
 - **Maximum 5 sentences** per email unless absolutely required
 - Think: concise + detailed + short + positive + upbeat
