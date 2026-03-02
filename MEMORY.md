@@ -53,6 +53,13 @@
 - Has a dog that Dave calls "That Dog" (Dave claims he doesn't like dogs but... maybe he actually does)
 - Attending DSCOOP with us
 
+### Vincent ("Vinny")
+- Long-time friend of Dave's
+- Big fan of MindFire and BCC (strategic partner)
+- Dave will see him next at NPF
+- Retiring soon (Dave's bummed about it, really likes him)
+- Likely to email me after LinkedIn post
+
 ### Brenda Manos
 - Email: Brenda.J.Manos@usps.gov
 - USPS HQ Sales, Business Alliance Specialist, Santa Ana CA
