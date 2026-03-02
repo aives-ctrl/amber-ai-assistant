@@ -32,8 +32,8 @@ Before handling tasks, check the appropriate discipline file:
 ## Gateway Management
 
 1. NEVER `kill -9` gateway. Use `openclaw gateway restart`.
-2. If restart fails, ask user to restart manually.
-3. Warn user about brief disconnection before gateway operations.
+2. Self-restart works! Session survives. Warn user about brief disconnection first.
+3. If restart fails, ask user to restart manually.
 
 ## Task Execution & Model Strategy
 
