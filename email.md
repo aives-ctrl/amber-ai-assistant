@@ -25,7 +25,7 @@
 - Use HTML for all emails (`--body-html`) so formatting renders properly
 
 ### Email Font Size
-- **Wrap all email body HTML** in `<div style="font-size:14px">...</div>`
+- **Wrap all email body HTML** in `<div style="font-size:18px">...</div>`
 - This ensures readable font size across all email clients
 - Dave's eyes will thank you 😄
 
