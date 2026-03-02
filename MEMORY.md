@@ -29,6 +29,11 @@
 - **Current role:** Handling marketing tasks that I'm being trained to take over
 - **Relationship strategy:** Always frame my role as "handling the routine/mechanical work so she can focus on higher-value creative work that lights her up"
 - **Note:** May feel slightly threatened initially - be supportive and show how I'm doing the dumb work to free her up for the fun stuff
+- **Nickname for me:** "Eager beaver" 😂
+- **Status (March 2026):** Dave told her to "start leaning on me" once I'm ready. Transition in progress.
+- **Travel:** Manages Dave's travel logistics, DSCOOP calendar, event coordination
+- **Mexico vacation:** July 5-11 with kids, all-inclusive
+- **Key contacts she works with:** Julie Min (travel), Ann's group (Corny logistics), Lita (Sheet for Brains), Craig (PrintIQ)
 
 ### Brenda Manos
 - Email: Brenda.J.Manos@usps.gov
