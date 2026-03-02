@@ -62,6 +62,34 @@
   - **Follow-up due:** 2026-03-02 14:00 PST (same-day, sales priority)
   - **Status:** PENDING - alert Dave if no reply by 2 PM PT
 
+### XMPie Coalition - Go Impact Tour 2026
+- **Scott Houck** - Scott.Houck@xmpie.com
+  - **Sent:** 2026-03-02 (Dave's reply asking for summary of team concerns)
+  - **Subject:** Re: Go Impact Tour 2026 — Coalition Update -- XMPIE
+  - **Thread ID:** 19caf3858f3a1aef
+  - **Context:** XMPie internal team has questions/concerns about coalition. Ayelet confirmed for due diligence. Dave asked Scott to summarize the specific concerns.
+  - **Follow-up due:** 2026-03-05 (3 business days)
+  - **Status:** PENDING - waiting on Scott's summary
+
+### Sam Wheeler - AI Campaign Integration (Patriot Direct)
+- **Sam Wheeler** - sam@patriot-direct.com
+  - **Sent:** 2026-03-02 (Dave's outreach)
+  - **Subject:** DM AI
+  - **Thread ID:** 19caf722b7433d05
+  - **Context:** Dave offering AI campaign services, mentioned ~100 campaigns with great feedback, flexible on costs.
+  - **Follow-up due:** 2026-03-05 (3 business days)
+  - **Status:** PENDING - waiting on Sam's response
+
+### Sandy Alexander - Insurance/Legal Due Diligence
+- **Sandy Alexander Legal Team** - legalreview@sandyalexander.com
+- **Logan Dzingle** - ldzingle@sandyalexander.com
+  - **Sent:** 2026-03-02 07:41 PST (Dave's follow-up to legal team)
+  - **Subject:** Re: DMAI - Needed Insurance
+  - **Thread ID:** 19caf36b1c819100
+  - **Context:** Sandy BOLT LLM Bot launch blocked on insurance/liability due diligence. Logan needs meetings between legal teams and insurance providers. Dave pinged legal team for response.
+  - **Follow-up due:** 2026-03-05 (3 business days: Mon=day1, Tue=day2, Wed=day3)
+  - **Status:** PENDING - waiting on Sandy legal team reply
+
 ### Brian Badillo - OpenClaw Setup Check
 - **Brian Badillo** - brian.badillo1@gmail.com
   - **Sent:** 2026-02-28 14:45 PST
