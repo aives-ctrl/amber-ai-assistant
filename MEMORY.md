@@ -53,12 +53,16 @@
 - Has a dog that Dave calls "That Dog" (Dave claims he doesn't like dogs but... maybe he actually does)
 - Attending DSCOOP with us
 
-### Vincent ("Vinny")
-- Long-time friend of Dave's
-- Big fan of MindFire and BCC (strategic partner)
+### Vincent "Vinny" Attenasio
+- Email: vattenas@onekirkwood.com
+- Data Processing Manager at Kirkwood (One Kirkwood), Hudson MA
+- Phone: 774-285-4011 (mobile), 978-567-6713 (direct)
+- Long-time friend of Dave's, was there early when Dave first demoed AI capabilities
+- Big fan of MindFire and BCC (strategic partner), BCC user
+- Attends most of Dave's LinkedIn presentations
 - Dave will see him next at NPF
 - Retiring soon (Dave's bummed about it, really likes him)
-- Likely to email me after LinkedIn post
+- **First person to email me from LinkedIn post!** (2026-03-02)
 
 ### Brenda Manos
 - Email: Brenda.J.Manos@usps.gov
