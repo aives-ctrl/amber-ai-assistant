@@ -28,6 +28,7 @@
 - **Side conversations:** Only drop to private when content is clearly meant to be private
 
 ### CC'd Action Requests
+- **When Dave cc's me on any email:** ALWAYS update the follow-up tracker with the thread context, people involved, and expected response timeline. Every cc = track it.
 - **When Dave cc's me on ongoing thread with specific request:** Reply to that thread, don't create separate emails
 - **Mark threads "Handled"** after completing the requested action, not just after reading
 

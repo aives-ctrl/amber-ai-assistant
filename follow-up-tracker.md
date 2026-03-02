@@ -46,12 +46,15 @@
 ### SEprint / Anneliese Gelber + Jimmy Pino (SALES - CLOSE ASAP)
 - **Anneliese Gelber** - agelber@seprint.com
 - **Jimmy Pino** - jpino@seprint.com
-  - **Sent:** 2026-03-02 06:59 PST (Dave's email)
+- **Franz Fernandez** - ffernandez@seprint.com (added to thread by Anneliese)
+  - **Sent:** 2026-03-02 06:59 PST (Dave's email, cc'd Carissa + Amber)
   - **Subject:** Ready?
   - **Thread ID:** 19caf1080340b849
   - **Asking for:** Process next steps to stay on track with deliverable dates
-  - **Follow-up due:** 2026-03-02 14:00 PST (same-day, sales priority)
-  - **Status:** PENDING - alert Dave if no reply by 2 PM PT
+  - **Update 10:15 AM:** Anneliese replied, reached out to leadership, hopes to hear back by EOD
+  - **Update 10:23 AM:** Denovo order form not confirmed yet, expected in coming week. Dave said "we'll circle back on that one"
+  - **Follow-up due:** 2026-03-03 (tomorrow, check if leadership responded EOD today)
+  - **Status:** ACTIVE - waiting on SEprint leadership approval + Denovo order form next week
 
 ### Advertisers Printing / Alex Fechner (SALES - CLOSE ASAP)
 - **Alex Fechner** - AFechner@advprinting.com
