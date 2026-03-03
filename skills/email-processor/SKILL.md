@@ -20,9 +20,13 @@ You check YOUR email inbox (aives@mindfiremail.info) for ALL incoming messages f
 ## Process
 
 ### Step 1: Scan Inbox
-Run: `gog gmail search 'is:unread -label:Handled' --max 20`
+Run TWO searches:
+1. New emails: `gog gmail search 'is:unread -label:Handled' --max 20`
+2. New replies in handled threads: `gog gmail search 'is:unread label:Handled' --max 20`
 
-If no results, reply with: `HEARTBEAT_OK`
+Combine results from both searches. For search #2, these are NEW REPLIES to threads you already processed. They still need attention because someone responded.
+
+If no results from either search, reply with: `HEARTBEAT_OK`
 
 ### Step 2: Categorize Each Email
 Read email content: `gog gmail get <messageId>`
