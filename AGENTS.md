@@ -20,6 +20,11 @@ Memory doesn't survive sessions, so files are the only way to persist knowledge.
 - Run `openclaw doctor` to validate config BEFORE restarting
 - If config is invalid, fix it first. Never restart with broken config.
 
+**Before creating calendar events:**
+- Always verify the date matches the expected day of week (count from today if needed)
+- Check `start-day-of-week` in the gog output to confirm it's correct
+- Use `session_status` if unsure of today's date
+
 **After handling an email thread:**
 - Tag it: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
 - Update follow-up tracker if response expected
