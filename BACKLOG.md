@@ -2,6 +2,11 @@
 
 ## High Priority
 
+### SMS MMS/Image Support
+- **Problem:** Images sent via SMS don't come through to the plugin
+- **Need:** Support MMS inbound (image download + display to agent)
+- **Discovered:** 2026-03-02, Dave tried sending an image via SMS
+
 ### LinkedIn Sub-Agent
 - **Need:** Monitor Dave's LinkedIn for post engagement, comments, connection requests
 - **Why:** LinkedIn is now a public channel for Amber (post went live 2026-03-02). Need to track who's engaging, surface context about commenters/likers, and help Dave respond strategically.
