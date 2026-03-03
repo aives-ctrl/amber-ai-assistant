@@ -106,6 +106,24 @@
   - **Follow-up due:** 2026-03-05 (3 business days)
   - **Status:** PENDING - waiting on Katie's punch list answers
 
+### Donna Altott - NPF 2026 Dinner (Supremex)
+- **Donna Altott** - Donna.Altott@supremex.com
+  - **Sent:** 2026-03-02 16:38 PST
+  - **Subject:** Re: NPF 2026
+  - **Thread ID:** 19cb11181608a97f
+  - **Context:** Booth neighbor at NPF (booth 441), wants to grab a bite. Amber replied, asked for date/time.
+  - **Follow-up due:** 2026-03-05 (3 business days)
+  - **Status:** PENDING - waiting for date/time
+
+### Brenda Manos - USPS EBS Write-Up (URGENT)
+- **Brenda Manos** - Brenda.J.Manos@usps.gov
+  - **Sent:** 2026-03-02 16:42 PST
+  - **Subject:** Re: asap-EBS
+  - **Thread ID:** 19cb10f9bd48d8b7
+  - **Context:** USPS doing a write-up on MindFire. Needs MSP count, revenue, HQ contacts, projects, speaking events, mail samples + analytics. Amber replied asking who's attending.
+  - **Follow-up due:** 2026-03-04 (urgent, shorter window)
+  - **Status:** PENDING - waiting for attendee list + deadline
+
 ### Brian Badillo - OpenClaw Setup Check
 - **Brian Badillo** - brian.badillo1@gmail.com
   - **Sent:** 2026-02-28 14:45 PST
