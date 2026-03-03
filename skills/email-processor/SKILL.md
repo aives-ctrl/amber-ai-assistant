@@ -25,7 +25,7 @@ Run THREE searches:
 2. New replies in handled threads: `gog gmail search 'is:unread label:Handled' --max 20`
 3. Replies to our sent emails (Gmail may auto-read these): `gog gmail search 'in:inbox newer_than:4h' --max 20`
    - For any thread showing [2+ msgs], run `gog gmail thread <threadId>` to check for replies from OTHER people (not from aives or daver)
-   - If you find replies you haven't reported before, include them in your output
+   - **IMPORTANT:** If you find ANY new replies from other people, you MUST create a structured plan for them, even if they seem like casual banter, simple confirmations, or jokes. Dave wants to know about ALL inbound replies.
 
 Combine results from all three searches (deduplicate by message ID). For search #3, Gmail may auto-read replies in threads where we sent the last message, so `is:unread` won't catch them. You must check thread contents.
 
@@ -61,6 +61,8 @@ For routine emails:
 
 **ALL OTHER EMAILS require a structured plan in your output.**
 
+**ANY NEW REPLIES from other people (not aives, not daver) MUST be reported, even if they seem like casual banter, confirmations, or "complete" conversations. Dave wants to know about ALL inbound communication.**
+
 ### Step 3: Output Structured Plans
 
 For each non-routine email, output this format:
@@ -69,11 +71,12 @@ For each non-routine email, output this format:
 ## Proposed Action: [short description]
 **Trigger:** Email from [sender] - Subject: [subject]
 **Email Summary:** [2-3 sentence summary of content]
-**Category:** [MEETING_LOGISTICS | CONTACT_STRATEGIC | URGENT_SERVICE | URGENT_BUSINESS | MIXED]
+**Category:** [MEETING_LOGISTICS | CONTACT_STRATEGIC | URGENT_SERVICE | URGENT_BUSINESS | REPLY_CONFIRMATION | REPLY_BANTER | MIXED]
 **Proposed Routing:**
 - [ ] Route to Calendar Manager: [yes/no - if yes, explain what calendar action is needed]
 - [ ] Route to Relationship Manager: [yes/no - if yes, explain what strategic response is needed]
 - [ ] Flag as Urgent: [yes/no - if yes, explain urgency]
+- [ ] Informational Only: [yes/no - if this is just a reply for Dave's awareness with no action needed]
 **Key Details Extracted:**
 - People mentioned: [names and emails]
 - Dates/times mentioned: [any scheduling details]
