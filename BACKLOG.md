@@ -5,6 +5,7 @@
 ### Replace Custom Solutions with OpenClaw Official Tools (IMMEDIATE)
 - **Gmail PubSub Setup:** Replace custom email-processor with `openclaw webhooks gmail setup` for real-time push notifications (vs 5min polling)
 - **Cost Tracking Replacement:** Replace `scripts/daily-cost-tracker.py` with built-in `/usage cost`, `/status`, `openclaw status --usage` commands  
+- **OpenAI Codex Research:** Set up Brave Search API (`openclaw configure --section web`) and research real user experiences on OpenAI Codex subscription vs API pricing on Reddit/Twitter/GitHub
 - **Memory System Exploration:** Investigate `openclaw memory` (semantic search/indexing) to replace manual daily notes system
 - **Hooks System Review:** Check `openclaw hooks` for automation we're doing manually
 - **Session Management:** Explore built-in `openclaw sessions`, `openclaw agents` tools vs manual monitoring
