@@ -6,6 +6,13 @@ Memory doesn't survive sessions, so files are the only way to persist knowledge.
 
 ## Pre-Action Checklists (ALWAYS)
 
+**Before building ANYTHING custom:**
+- Check OpenClaw official docs at `/usr/local/lib/node_modules/openclaw/docs/` FIRST
+- Search for existing OpenClaw integrations, plugins, automation tools
+- Check `openclaw help` and subcommands for built-in solutions
+- Only build custom if no official solution exists
+- **NEVER reinvent the wheel** - use official OpenClaw tooling when available
+
 **Before responding about a person:**
 - Check MEMORY.md, follow-up-tracker.md, memory/*.md, and semantic memory search
 - Surface relevant context to Dave proactively
