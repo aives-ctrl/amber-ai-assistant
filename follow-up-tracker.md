@@ -124,6 +124,15 @@
   - **Follow-up due:** 2026-03-04 (urgent, shorter window)
   - **Status:** PENDING - waiting for attendee list + deadline
 
+### Ruben Gonzalez - NPF Webinar Prep (Dot Fulfillment)
+- **Ruben S. Gonzalez** - ruben@dotprinter.com
+  - **Sent:** 2026-03-02 16:45 PST
+  - **Subject:** Re: It's OK I get if you want to ignore me :)
+  - **Thread ID:** 19cb10ec3d74ec17
+  - **Context:** NPF national webinar March 23rd, ~1000 attendees. Asked for previous webinar example so we can give targeted presentation advice.
+  - **Follow-up due:** 2026-03-05 (3 business days)
+  - **Status:** PENDING - waiting for webinar example
+
 ### Brian Badillo - OpenClaw Setup Check
 - **Brian Badillo** - brian.badillo1@gmail.com
   - **Sent:** 2026-02-28 14:45 PST
