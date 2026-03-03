@@ -2,6 +2,16 @@
 
 ## High Priority
 
+### Replace Custom Solutions with OpenClaw Official Tools (IMMEDIATE)
+- **Gmail PubSub Setup:** Replace custom email-processor with `openclaw webhooks gmail setup` for real-time push notifications (vs 5min polling)
+- **Cost Tracking Replacement:** Replace `scripts/daily-cost-tracker.py` with built-in `/usage cost`, `/status`, `openclaw status --usage` commands  
+- **Memory System Exploration:** Investigate `openclaw memory` (semantic search/indexing) to replace manual daily notes system
+- **Hooks System Review:** Check `openclaw hooks` for automation we're doing manually
+- **Session Management:** Explore built-in `openclaw sessions`, `openclaw agents` tools vs manual monitoring
+- **Impact:** 50-70% time savings by using official tooling instead of reinventing wheels
+- **Priority:** IMMEDIATE - this is pure efficiency gain with zero downside
+- **Status:** Identified 2026-03-02, "Official First" rule added to AGENTS.md
+
 ### SMS MMS/Image Support
 - **Problem:** Images sent via SMS don't come through to the plugin
 - **Need:** Support MMS inbound (image download + display to agent)
