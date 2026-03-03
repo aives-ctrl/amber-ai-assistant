@@ -64,6 +64,30 @@
 - Retiring soon (Dave's bummed about it, really likes him)
 - **First person to email me from LinkedIn post!** (2026-03-02)
 
+### Jessica "Jess" DeCola
+- Email: jdecola@gpa-innovates.com
+- At GPA Innovates
+- Attends SFB Weekly (recurring, Tuesdays 9am PT / 11am CT)
+- Goes by "Jess" not "JDeCola"
+
+### Chris (The Digital Ink)
+- Email: chris@thedigitalink.co
+- Attends SFB Weekly
+
+### Jon Bailey
+- Email: jon.bailey@precisionproco.co.uk
+- Precision Proco (UK)
+- Attends SFB Weekly
+
+### John Migs (Migmar)
+- Email: john@migmar.com, jrmigs@gmail.com
+- Topics: DM vs Digital strategies, USPS promotions, MindFire partnership
+- Met with Ray Van Iterson's team
+
+### Jeff Wiencken
+- Email: jwiencken@mindfireinc.com
+- MindFire, co-runs Account Managers Meeting Review with Jason
+
 ### Brenda Manos
 - Email: Brenda.J.Manos@usps.gov
 - USPS HQ Sales, Business Alliance Specialist, Santa Ana CA
