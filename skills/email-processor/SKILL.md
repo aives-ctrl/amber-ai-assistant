@@ -20,13 +20,14 @@ You check YOUR email inbox (aives@mindfiremail.info) for ALL incoming messages f
 ## Process
 
 ### Step 1: Scan Inbox
-Run TWO searches:
+Run THREE searches:
 1. New emails: `gog gmail search 'is:unread -label:Handled' --max 20`
 2. New replies in handled threads: `gog gmail search 'is:unread label:Handled' --max 20`
+3. Replies to emails we sent (may not be marked unread): `gog gmail search 'to:aives@mindfiremail.info newer_than:1h -from:aives -from:daver' --max 20`
 
-Combine results from both searches. For search #2, these are NEW REPLIES to threads you already processed. They still need attention because someone responded.
+Combine results from all three searches (deduplicate by message ID). For search #3, these are replies that Gmail may have auto-read because we were active in the thread. Use `gog gmail thread <threadId>` to see if there are new messages beyond what we sent.
 
-If no results from either search, reply with: `HEARTBEAT_OK`
+If no results from any search, reply with: `HEARTBEAT_OK`
 
 ### Step 1.5: Check for Prior Replies
 Before flagging any email as needing action, check if we already replied:
