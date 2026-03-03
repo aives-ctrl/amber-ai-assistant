@@ -17,6 +17,8 @@ Memory doesn't survive sessions, so files are the only way to persist knowledge.
 **Before restarting gateway:**
 - ALWAYS warn Dave first and wait for OK
 - Save any pending memory to disk before restart
+- Run `openclaw doctor` to validate config BEFORE restarting
+- If config is invalid, fix it first. Never restart with broken config.
 
 **After handling an email thread:**
 - Tag it: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
