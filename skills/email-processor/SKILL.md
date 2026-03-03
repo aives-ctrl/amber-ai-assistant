@@ -23,9 +23,11 @@ You check YOUR email inbox (aives@mindfiremail.info) for ALL incoming messages f
 Run THREE searches:
 1. New emails: `gog gmail search 'is:unread -label:Handled' --max 20`
 2. New replies in handled threads: `gog gmail search 'is:unread label:Handled' --max 20`
-3. Replies to emails we sent (may not be marked unread): `gog gmail search 'to:aives@mindfiremail.info newer_than:1h -from:aives -from:daver' --max 20`
+3. Replies to our sent emails (Gmail may auto-read these): `gog gmail search 'in:inbox newer_than:4h' --max 20`
+   - For any thread showing [2+ msgs], run `gog gmail thread <threadId>` to check for replies from OTHER people (not from aives or daver)
+   - If you find replies you haven't reported before, include them in your output
 
-Combine results from all three searches (deduplicate by message ID). For search #3, these are replies that Gmail may have auto-read because we were active in the thread. Use `gog gmail thread <threadId>` to see if there are new messages beyond what we sent.
+Combine results from all three searches (deduplicate by message ID). For search #3, Gmail may auto-read replies in threads where we sent the last message, so `is:unread` won't catch them. You must check thread contents.
 
 If no results from any search, reply with: `HEARTBEAT_OK`
 
