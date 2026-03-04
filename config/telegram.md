@@ -32,6 +32,25 @@ reply to Vinny re: meeting coordination
 send it? or changes?
 ```
 
+## Exec-Approval Prompts (iPhone-Friendly)
+
+When the exec-approval system fires (for `gog gmail send`, `gog gmail reply`, etc.), Dave gets a prompt with a UUID. **Always present the approval command as a single copyable line** so Dave can tap-copy-paste on his phone.
+
+Format your Telegram message like:
+```
+sending reply to Vinny re: meeting time
+approval needed -- copy this line:
+
+/approve 6befb701-abc1-2345-def6-789012345678 allow-once
+```
+
+Rules:
+- Put the `/approve` command on its OWN line with nothing else on that line
+- Use the FULL UUID (not truncated)
+- Always use `allow-once` (never `allow-always` for gog commands)
+- Include a brief one-liner above it saying what the command does
+- If the approval times out (60 min), tell Dave and offer to re-run the command
+
 ## Presenting Calendar Proposals
 
 When proposing a calendar event:
