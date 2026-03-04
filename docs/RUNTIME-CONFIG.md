@@ -67,6 +67,26 @@ In `~/.openclaw/openclaw.json` under `tools.exec`:
 - Raw `gog` (`/usr/local/bin/gog`) is NOT on the allowlist -- sends trigger approval via Telegram
 - `on-miss` = "ask" -- any unlisted command prompts Dave for approval rather than being blocked
 
+### Approval Timeout
+
+The default exec-approval timeout is 120s (2 min), which is too short for Dave to notice and respond on his phone. Set it to 3600 (60 min):
+
+```bash
+openclaw config set approvals.exec.timeout 3600
+```
+
+Or in `~/.openclaw/openclaw.json` under `approvals.exec`:
+```json
+{
+  "approvals": {
+    "exec": {
+      "enabled": true,
+      "timeout": 3600
+    }
+  }
+}
+```
+
 ### If allowlist needs updating
 
 1. Find resolved paths: `realpath ~/.openclaw/workspace/scripts/gog-email-read.sh`
