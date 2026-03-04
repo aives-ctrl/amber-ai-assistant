@@ -1,0 +1,4 @@
+#!/bin/bash
+# Flush high priority notifications (hourly)
+cd "$(dirname "$0")"
+python3 ./notification-queue.py flush high

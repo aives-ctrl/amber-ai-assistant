@@ -1,0 +1,27 @@
+#!/bin/bash
+# Install notification queue batch delivery schedule for macOS
+
+WORKSPACE="/Users/amberives/.openclaw/workspace"
+LAUNCH_AGENTS="$HOME/Library/LaunchAgents"
+
+echo "Installing notification queue launchd agents..."
+
+# Create logs directory
+mkdir -p "$WORKSPACE/logs"
+
+# Copy plist files
+cp "$WORKSPACE/ai.openclaw.notification.high.plist" "$LAUNCH_AGENTS/"
+cp "$WORKSPACE/ai.openclaw.notification.medium.plist" "$LAUNCH_AGENTS/"
+
+# Load the agents
+launchctl load "$LAUNCH_AGENTS/ai.openclaw.notification.high.plist"
+launchctl load "$LAUNCH_AGENTS/ai.openclaw.notification.medium.plist"
+
+echo "Installed agents:"
+launchctl list | grep openclaw.notification
+
+echo ""
+echo "High priority notifications: Flush every hour at :00 minutes"
+echo "Medium priority notifications: Flush every 3 hours (12am, 3am, 6am, 9am, 12pm, 3pm, 6pm, 9pm)"
+echo ""
+echo "Logs: $WORKSPACE/logs/notification-*.log"
