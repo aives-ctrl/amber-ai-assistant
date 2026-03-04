@@ -39,92 +39,40 @@ memorySearch: {
 
 Combines semantic (vector) search with keyword (BM25) search. Temporal decay ensures recent memories rank higher.
 
-## 3. Exec-Approvals (Read-Only Operations)
+## 3. Exec-Approvals (Read-Only Operations) -- CONFIGURED
 
 The goal: email/calendar READS flow freely, SENDS require Dave's Telegram approval.
 
-### Option A: Allowlist the wrapper scripts (preferred)
+### Working Configuration (as of 2026-03-04)
 
-In `~/.openclaw/exec-approvals.json` (or `openclaw config set`):
-
-1. Find the RESOLVED paths of the wrapper scripts:
-```bash
-realpath ~/.openclaw/workspace/scripts/gog-email-read.sh
-realpath ~/.openclaw/workspace/scripts/gog-cal-read.sh
-```
-
-2. Add those exact paths to the allowlist:
-```json5
-agents: {
-  main: {
-    allowlist: [
-      // ... existing entries ...
-      "<RESOLVED_PATH>/gog-email-read.sh",
-      "<RESOLVED_PATH>/gog-cal-read.sh"
-    ]
+In `~/.openclaw/openclaw.json` under `tools.exec`:
+```json
+{
+  "tools": {
+    "exec": {
+      "host": "gateway",
+      "security": "allowlist",
+      "ask": "on-miss",
+      "allowlist": [
+        "/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh",
+        "/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh"
+      ]
+    }
   }
 }
 ```
 
-3. Verify that raw `gog` is NOT on the allowlist.
+**How it works:**
+- Wrapper scripts are allowlisted -- email/calendar reads flow without approval
+- Raw `gog` (`/usr/local/bin/gog`) is NOT on the allowlist -- sends trigger approval via Telegram
+- `on-miss` = "ask" -- any unlisted command prompts Dave for approval rather than being blocked
 
-### Option B: If wrappers still trigger on-miss
+### If allowlist needs updating
 
-If the wrapper scripts trigger `on-miss` even after adding their resolved paths, the likely cause is that OpenClaw intercepts the `exec gog` call INSIDE the script (the nested execution). In that case:
-
-**Approach B1 -- Allowlist gog with on-miss=ask (not deny):**
-```json5
-agents: {
-  main: {
-    allowlist: [
-      // ... existing entries ...
-      "<RESOLVED_PATH>/gog-email-read.sh",
-      "<RESOLVED_PATH>/gog-cal-read.sh"
-    ],
-    onMiss: "ask"   // Changed from "deny" to "ask"
-  }
-}
-```
-This means the first time Amber runs a wrapper, Dave approves once, and after that it flows. Not ideal but functional.
-
-**Approach B2 -- Allowlist gog itself with argument patterns (if supported):**
-Check if OpenClaw supports argument-level allowlisting:
-```json5
-allowlist: [
-  { "path": "/usr/local/bin/gog", "args": ["gmail", "messages", "search", "*"] },
-  { "path": "/usr/local/bin/gog", "args": ["gmail", "messages", "get", "*"] },
-  { "path": "/usr/local/bin/gog", "args": ["gmail", "thread", "get", "*"] },
-  { "path": "/usr/local/bin/gog", "args": ["cal", "events", "*"] }
-]
-```
-Run `openclaw help exec-approvals` to check if argument patterns are supported.
-
-**Approach B3 -- Use allow-always for wrappers only:**
-When the approval prompt fires for a wrapper script call, approve with `allow-always` for that specific script path. Raw `gog` calls should still use `allow-once`.
-
-### Troubleshooting
-
-If wrappers trigger `on-miss`, run these diagnostic commands:
-```bash
-# 1. Check what path OpenClaw resolves for the scripts
-which gog-email-read.sh
-realpath $(which gog-email-read.sh 2>/dev/null || echo ~/.openclaw/workspace/scripts/gog-email-read.sh)
-
-# 2. Check what's currently on the allowlist
-openclaw config get agents.main.allowlist
-
-# 3. Check if gog itself is on the allowlist (it should NOT be)
-which gog
-openclaw config get agents.main.allowlist | grep gog
-
-# 4. Check the exec-approval on-miss policy
-openclaw config get agents.main.onMiss
-
-# 5. Test with verbose logging
-OPENCLAW_LOG=debug gog-email-read.sh gmail labels list
-```
-
-Report the output back to Dave so Claude Code can diagnose further.
+1. Find resolved paths: `realpath ~/.openclaw/workspace/scripts/gog-email-read.sh`
+2. Edit `~/.openclaw/openclaw.json` and update the `allowlist` array
+3. Test: `gog-email-read.sh gmail labels list` should work without approval
+4. Test: `gog gmail send ...` should still trigger approval
 
 ## 4. Session Identity Links (Cross-channel continuity)
 
