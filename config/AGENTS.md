@@ -70,6 +70,7 @@ Write a session summary to daily notes covering:
 - This wrapper is read-only safe and should be on the exec allowlist
 - If the wrapper triggers exec-approval anyway, approve it -- it's safe. Then tell Dave so the allowlist can be fixed.
 - See TOOLS.md "If wrapper scripts trigger on-miss" for details
+- **INBOX CLARITY:** You read YOUR inbox (aives@mindfiremail.info), not Dave's. Dave cc's you on emails so you can act on them. When Dave says "check my email" or "check email," he means YOUR inbox for things relevant to him.
 
 **Before sending any email (approval REQUIRED):**
 - Draft the email first. Show Dave the draft via Telegram with context.
