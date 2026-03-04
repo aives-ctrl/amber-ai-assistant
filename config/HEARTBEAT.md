@@ -11,7 +11,7 @@
 
 1. Run `python3 scripts/daily-cost-tracker.py --summary`
 2. Only alert Dave if: Daily >$100 or top session >$30
-3. Goal: $40/day target
+3. Monthly budget: ~$2-2.5k/month (~$67-83/day)
 
 **Do NOT run --json mode during heartbeat.** Use --summary only.
 

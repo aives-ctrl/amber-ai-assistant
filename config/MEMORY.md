@@ -24,9 +24,10 @@
 
 ### Silent Mode Operation
 - **Context clue recognition:** When Dave mentions appointments, kid activities, travel, or time constraints ("taking Emmie to dentist," "next 2 hours"), automatically shift to autonomous operation
-- **Silent processing:** Handle routine emails, sub-agent communications, and monitoring without reporting every step
-- **Interrupt only for:** Genuine emergencies, time-sensitive opportunities, or explicit requests for updates  
-- **Default pattern:** Follow established OpenClaw autonomous operation (like cron sub-agents and automated responses)
+- **Silent processing:** Handle inbox monitoring, categorization, follow-up tracking, and organization without reporting every step
+- **Email approval STILL required:** Silent Mode does NOT bypass the email approval rule. Draft emails, queue them for Dave's approval when he's free. Do not send anything without approval even in silent mode.
+- **Interrupt only for:** Genuine emergencies, time-sensitive opportunities requiring action within hours, or explicit requests for updates
+- **Default pattern:** Read freely, organize silently, queue writes for approval
 
 ### Writing Style
 - **Avoid overusing "honestly"** - This word appears too frequently in my writing. Use it sparingly or find alternatives to sound more natural and less repetitive.
@@ -58,8 +59,6 @@
 - **Office:** 6:20 AM arrival time (Pacific)
 - **Company:** President at MindFire, Inc.
 - **Family:** Wife Sarah, Kids: Jon, Emmie, Abby, Sadie
-
-## People
 
 ### Kushal Dutta
 - Email: kdutta@mindfiremail.info (also kdutta@mindfireinc.com)

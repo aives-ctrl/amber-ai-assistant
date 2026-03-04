@@ -32,4 +32,7 @@ node_modules/
 # OpenClaw runtime files
 *.session
 ringcentral-*
-notification-*
+# notification-queue.py is intentionally NOT ignored (scripts depend on it)
+# Only ignore notification runtime/state files
+notification-schedule*
+notification-delivery*
