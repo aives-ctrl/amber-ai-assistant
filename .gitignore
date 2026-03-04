@@ -1,1 +1,39 @@
+# Environment and secrets
+.env*
+*.plist
+client_secret.json
+*.pid
+
+# Logs and databases
+logs/
+*.log
+*.db
+*-state.json
+*-last-*.txt
+
+# Temporary and backup files
+backup-*/
+temp/
+*.tmp
+
+# Media files (unless specifically needed)
 media/
+*.wav
+*.jpg
+*.png
+*.pdf
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Node modules (if any)
+node_modules/
+
+# OpenClaw runtime files
+*.session
+ringcentral-*
+# notification-queue.py is intentionally NOT ignored (scripts depend on it)
+# Only ignore notification runtime/state files
+notification-schedule*
+notification-delivery*

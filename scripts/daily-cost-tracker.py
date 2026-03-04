@@ -87,7 +87,7 @@ def analyze_session_file_today_only(file_path, target_date):
         'cost_entries': costs_today
     }, None
 
-def analyze_daily_costs(target_date=None):
+def analyze_daily_costs(target_date=None, quiet=False):
     """Analyze all session files for today's costs only."""
     if target_date is None:
         target_date = datetime.now().date()
@@ -100,10 +100,11 @@ def analyze_daily_costs(target_date=None):
     if not session_dir.exists():
         return None, f"Session directory not found: {session_dir}"
     
-    print(f"=== DAILY COST ANALYSIS - {target_str} ===")
-    print(f"Analyzing session logs: {session_dir}")
-    print(f"Following OpenClaw best practices (same as built-in /usage cost)")
-    print()
+    if not quiet:
+        print(f"=== DAILY COST ANALYSIS - {target_str} ===")
+        print(f"Analyzing session logs: {session_dir}")
+        print(f"Following OpenClaw best practices (same as built-in /usage cost)")
+        print()
     
     # Find all .jsonl session files
     session_files = list(session_dir.glob('*.jsonl'))
@@ -113,14 +114,16 @@ def analyze_daily_costs(target_date=None):
     all_models = set()
     file_results = []
     
-    print(f"Scanning {len(session_files)} session files...")
+    if not quiet:
+        print(f"Scanning {len(session_files)} session files...")
     
     # Analyze each file for today's costs
     for file_path in session_files:
         result, error = analyze_session_file_today_only(file_path, target_date)
         
         if error:
-            print(f"⚠️  {error}")
+            if not quiet:
+                print(f"⚠️  {error}")
             continue
             
         if result and result['total_cost'] > 0:
@@ -132,20 +135,21 @@ def analyze_daily_costs(target_date=None):
     # Sort by cost (highest first)
     file_results.sort(key=lambda x: x['total_cost'], reverse=True)
     
-    # Report results
-    print("=== TOP COST FILES (Today Only) ===")
-    for result in file_results[:5]:  # Top 5
-        models_str = ', '.join(result['models_used'])
-        model_short = 'Opus' if 'opus' in models_str else 'Sonnet'
-        print(f"{result['file'][:35]}... ${result['total_cost']:.3f} ({result['message_count']} msgs, {model_short})")
-    
-    print()
-    print("=== TODAY'S SUMMARY ===")
-    print(f"Date analyzed: {target_str}")
-    print(f"Files with costs: {len(file_results)}")
-    print(f"Messages today: {total_messages_today}")
-    print(f"Models used: {', '.join(sorted(all_models))}")
-    print(f"**TOTAL COST TODAY: ${total_cost_today:.2f}**")
+    if not quiet:
+        # Report results
+        print("=== TOP COST FILES (Today Only) ===")
+        for result in file_results[:5]:  # Top 5
+            models_str = ', '.join(result['models_used'])
+            model_short = 'Opus' if 'opus' in models_str else 'Sonnet'
+            print(f"{result['file'][:35]}... ${result['total_cost']:.3f} ({result['message_count']} msgs, {model_short})")
+        
+        print()
+        print("=== TODAY'S SUMMARY ===")
+        print(f"Date analyzed: {target_str}")
+        print(f"Files with costs: {len(file_results)}")
+        print(f"Messages today: {total_messages_today}")
+        print(f"Models used: {', '.join(sorted(all_models))}")
+        print(f"**TOTAL COST TODAY: ${total_cost_today:.2f}**")
     
     # Model breakdown
     model_costs = {}
@@ -154,7 +158,7 @@ def analyze_daily_costs(target_date=None):
             model_name = 'Opus' if 'opus' in model else 'Sonnet'
             model_costs[model_name] = model_costs.get(model_name, 0) + result['total_cost']
     
-    if model_costs:
+    if model_costs and not quiet:
         print()
         print("=== MODEL BREAKDOWN ===")
         for model, cost in sorted(model_costs.items(), key=lambda x: x[1], reverse=True):
@@ -176,6 +180,8 @@ def main():
     parser = argparse.ArgumentParser(description='Analyze OpenClaw daily costs from session logs')
     parser.add_argument('--date', help='Date to analyze (YYYY-MM-DD, default: today)')
     parser.add_argument('--json', action='store_true', help='Output JSON format')
+    parser.add_argument('--summary', action='store_true', help='Compact one-line summary (low token cost for heartbeat)')
+    parser.add_argument('--top', type=int, default=5, help='Number of top sessions to show')
     
     args = parser.parse_args()
     
@@ -187,11 +193,25 @@ def main():
             print(f"Invalid date format: {args.date}. Use YYYY-MM-DD")
             return 1
     
-    result, error = analyze_daily_costs(target_date)
+    result, error = analyze_daily_costs(target_date, quiet=args.summary)
     
     if error:
         print(f"Error: {error}")
         return 1
+    
+    if args.summary:
+        # Compact one-line output for heartbeat checks (minimal tokens)
+        model_parts = []
+        for model, cost in sorted(result.get('model_breakdown', {}).items(), key=lambda x: x[1], reverse=True):
+            pct = (cost / result['total_cost'] * 100) if result['total_cost'] > 0 else 0
+            model_parts.append(f"{model}: {pct:.0f}%")
+        monthly_proj = result['total_cost'] * 30
+        print(f"💰 Daily: ${result['total_cost']:.2f} | {' | '.join(model_parts)} | Monthly proj: ${monthly_proj:.0f} | Msgs: {result['message_count']}")
+        # Show top cost session if notably large
+        if result.get('files') and result['files'][0]['total_cost'] > result['total_cost'] * 0.3:
+            top = result['files'][0]
+            print(f"⚠️ Top session: ${top['total_cost']:.2f} ({top['message_count']} msgs) - {top['file'][:30]}")
+        return 0
     
     if args.json:
         print(json.dumps(result, indent=2))
