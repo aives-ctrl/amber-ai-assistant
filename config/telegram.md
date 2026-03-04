@@ -34,21 +34,27 @@ send it? or changes?
 
 ## Exec-Approval Prompts (iPhone-Friendly)
 
-When the exec-approval system fires (for `gog gmail send`, `gog gmail reply`, etc.), Dave gets a prompt with a UUID. **Always present the approval command as a single copyable line** so Dave can tap-copy-paste on his phone.
+When the exec-approval system fires (for `gog gmail send`, `gog gmail reply`, etc.), Dave gets a prompt with a UUID. He approves on his iPhone by long-pressing a message to copy it, then pasting it back.
 
-Format your Telegram message like:
+**Send TWO separate messages:**
+
+Message 1 (context):
 ```
-sending reply to Vinny re: meeting time
-approval needed -- copy this line:
+sending reply to Vinny re: meeting time -- approval needed, copy-paste next msg back to me
+```
 
+Message 2 (ONLY the approval command, nothing else):
+```
 /approve 6befb701-abc1-2345-def6-789012345678 allow-once
 ```
 
+**CRITICAL: Message 2 must contain ONLY the `/approve` command. No other text, no explanation, no punctuation around it.** Dave long-presses this message on iPhone to copy the whole thing, then pastes it back. Any extra text in that message breaks the command.
+
 Rules:
-- Put the `/approve` command on its OWN line with nothing else on that line
+- ALWAYS send the `/approve` as its own separate standalone message
 - Use the FULL UUID (not truncated)
 - Always use `allow-once` (never `allow-always` for gog commands)
-- Include a brief one-liner above it saying what the command does
+- The context message comes first, then the copyable command message immediately after
 - If the approval times out (60 min), tell Dave and offer to re-run the command
 
 ## Presenting Calendar Proposals
