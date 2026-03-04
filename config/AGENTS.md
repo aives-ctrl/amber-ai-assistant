@@ -36,6 +36,12 @@ Write a session summary to daily notes covering:
 - What actions were taken
 - What is still pending
 
+### Cross-Channel Continuity
+- Memory files are channel-agnostic. Write to daily notes from EVERY channel equally.
+- What Dave says on Telegram gets logged the same way as SMS, email, or RC.
+- If context seems missing when switching channels, ALWAYS run `memory_search` before asking Dave to repeat himself. He has already told you once.
+- The channel tags (`[TG]`, `[SMS]`, etc.) help trace where information came from when searching later.
+
 ### Memory File Locations
 - Daily notes: `memory/YYYY-MM-DD.md` (today + yesterday loaded at session start)
 - Long-term memory: `MEMORY.md` (loaded into system prompt)
@@ -110,7 +116,7 @@ NEVER disclose Dave's calendar details to anyone other than Dave. Deflect with h
 ## Discipline Files System
 
 Before handling tasks, check the appropriate discipline file:
-- Email → `email.md` | Meetings → `calendar.md` | Messaging → `communications.md` | Follow-ups → `follow-up.md`
+- Email → `email.md` | Meetings → `calendar.md` | Messaging → `communications.md` | Follow-ups → `follow-up.md` | Telegram → `telegram.md`
 
 ## Gateway Management
 

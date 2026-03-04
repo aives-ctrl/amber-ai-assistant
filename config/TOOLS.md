@@ -7,10 +7,12 @@ Environment-specific config. Skills define how tools work; this is your cheat sh
 - Meeting ID: 463 026 9255 | Passcode: boom!
 - Phone: +1 312-626-6799 (passcode 541630)
 
-### Message Routing
+### Message Routing & Cross-Channel Continuity
 - `sessions_send` → internal OpenClaw messages between sessions
 - `message` tool → external platform messages (Telegram, Discord, etc.)
 - Session visibility: `tools.sessions.visibility: "all"` enabled
+- **Cross-channel continuity:** Dave's identity is linked across Telegram, RC SMS, and RC Team. All of Dave's DMs share session context. What he says on Telegram, you remember on SMS.
+- **Memory is the backup:** Even if sessions reset, daily notes and `memory_search` provide continuity. Always search memory when context seems missing.
 
 ### Calendar Access
 - Dave's calendar ID: `daver@mindfireinc.com` (shared to my account)
