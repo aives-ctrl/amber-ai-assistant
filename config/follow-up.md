@@ -57,10 +57,22 @@
 
 ## Integration with Other Systems
 
-### Daily Heartbeat Checks
-- **Check follow-up-tracker.md** during heartbeat routine
-- **Look for overdue items** and alert Dave if follow-up needed
-- **Update tracker** when responses found in inbox
+### Heartbeat Integration (per HEARTBEAT.md)
+- Every heartbeat during business hours, scan follow-up-tracker.md for overdue items
+- Before alerting Dave, first check inbox for responses that might have been missed
+- Present overdue items in Telegram with: who, what topic, days overdue, proposed follow-up draft
+- Update tracker immediately when responses are found
+
+### Auto-Detection of New Follow-Up Items
+- When processing incoming emails, automatically detect items that need follow-up
+- If Dave is CC'd on an email exchange that implies a pending response, add to tracker
+- When an email says "I'll get back to you by [date]," add a tracker entry with that date
+- When Amber sends an email expecting a response, add to tracker immediately
+
+### Friday Afternoon Summary (Weekly)
+- Compile all pending follow-ups for the week
+- Present to Dave via Telegram: what's resolved, what's still pending, what needs escalation
+- Clean up completed items (move to Completed section in tracker)
 
 ### Notification Queue Integration
 - **Overdue follow-ups:** Medium priority notification to Dave
