@@ -69,23 +69,9 @@ In `~/.openclaw/openclaw.json` under `tools.exec`:
 
 ### Approval Timeout
 
-The default exec-approval timeout is 120s (2 min), which is too short for Dave to notice and respond on his phone. Set it to 3600 (60 min):
+The default exec-approval timeout is 120s. The timeout is NOT a global config setting -- it's passed per-command by Amber when she invokes exec calls. AGENTS.md and TOOLS.md instruct her to use `timeout: 3600` in her exec calls so Dave has 60 min to respond on his phone.
 
-```bash
-openclaw config set approvals.exec.timeout 3600
-```
-
-Or in `~/.openclaw/openclaw.json` under `approvals.exec`:
-```json
-{
-  "approvals": {
-    "exec": {
-      "enabled": true,
-      "timeout": 3600
-    }
-  }
-}
-```
+**Do NOT add `"timeout"` to `openclaw.json`** -- OpenClaw will reject it as an unrecognized key.
 
 ### If allowlist needs updating
 
