@@ -67,7 +67,9 @@ Write a session summary to daily notes covering:
 
 **Reading email (NO approval needed):**
 - Use `gog-email-read.sh` wrapper for all read operations (search, get, thread get, labels list)
-- This is allowlisted and does not trigger exec-approval
+- This wrapper is read-only safe and should be on the exec allowlist
+- If the wrapper triggers exec-approval anyway, approve it -- it's safe. Then tell Dave so the allowlist can be fixed.
+- See TOOLS.md "If wrapper scripts trigger on-miss" for details
 
 **Before sending any email (approval REQUIRED):**
 - Draft the email first. Show Dave the draft via Telegram with context.
@@ -82,10 +84,15 @@ Write a session summary to daily notes covering:
 - Run `openclaw doctor` to validate config BEFORE restarting
 - If config is invalid, fix it first. Never restart with broken config.
 
+**Before stating or using today's date (EVERY TIME):**
+- Run `session_status` to get the actual current date and day of week BEFORE stating it
+- NEVER guess the day of week from memory -- always verify with a tool call
+- This is a known recurring mistake. The day name (Monday, Tuesday, etc.) MUST be confirmed, not assumed.
+
 **Before creating calendar events:**
-- Always verify the date matches the expected day of week (count from today if needed)
+- Verify the date matches the expected day of week (count from today if needed)
 - Check `start-day-of-week` in the gog output to confirm it's correct
-- Use `session_status` if unsure of today's date
+- Double-check: does the date you're about to use fall on the day of week you expect?
 
 **After handling an email thread:**
 - Tag it: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`

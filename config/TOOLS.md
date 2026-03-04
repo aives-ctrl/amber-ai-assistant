@@ -42,10 +42,17 @@ Environment-specific config. Skills define how tools work; this is your cheat sh
 - If Dave is unavailable, `askFallback: "deny"` blocks the command
 
 **Configuration:**
-- `gog-email-read.sh` and `gog-cal-read.sh` are on the exec allowlist
+- `gog-email-read.sh` and `gog-cal-read.sh` should be on the exec allowlist
 - Raw `gog` binary is NOT on the allowlist (all raw gog commands need approval)
 - All other binaries in `/bin/*`, `/usr/bin/*`, `/usr/local/bin/*` (except gog) are allowlisted
 - Config: `tools.exec.host=gateway`, `tools.exec.security=allowlist`, `approvals.exec.enabled=true`
+
+**If wrapper scripts trigger on-miss (allowlist not working):**
+- The wrappers enforce read-only safety even without the allowlist -- they reject send/reply commands
+- If the approval prompt fires for a wrapper call, approve it -- it's safe (read-only)
+- Use `allow-always` for the wrapper script paths specifically (NOT for raw gog)
+- See `docs/RUNTIME-CONFIG.md` section 3 for troubleshooting steps
+- Report the issue to Dave so Claude Code can diagnose the allowlist configuration
 
 ### Discipline Files
 - Email → `email.md` | Follow-ups → `follow-up.md` | Calendar → `calendar.md` | Comms → `communications.md`
