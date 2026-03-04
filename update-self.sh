@@ -23,9 +23,28 @@ echo "💾 Creating backup at $BACKUP_DIR"
 mkdir -p "$BACKUP_DIR"
 cp -r "$WORKSPACE_DIR"/{SOUL.md,MEMORY.md,AGENTS.md,TOOLS.md,IDENTITY.md,HEARTBEAT.md,USER.md,email.md,calendar.md,communications.md,follow-up.md,follow-up-tracker.md} "$BACKUP_DIR/" 2>/dev/null || true
 
-# Copy updated config files to workspace
-echo "📁 Updating configuration files..."
-cp config/* "$WORKSPACE_DIR/"
+# Dynamic files that Amber owns at runtime -- NEVER overwrite these
+SKIP_FILES="follow-up-tracker.md"
+
+# Copy updated config files to workspace, skipping dynamic working files
+echo "Updating configuration files..."
+for f in config/*; do
+    filename=$(basename "$f")
+    # Skip dynamic files that Amber owns at runtime
+    skip=false
+    for sf in $SKIP_FILES; do
+        if [ "$filename" = "$sf" ]; then
+            skip=true
+            break
+        fi
+    done
+    if [ "$skip" = true ]; then
+        echo "  SKIPPED $filename (dynamic working file, Amber owns this at runtime)"
+        continue
+    fi
+    cp "$f" "$WORKSPACE_DIR/"
+    echo "  Updated $filename"
+done
 
 # Copy updated scripts if they exist
 if [ -d "scripts" ] && [ "$(ls -A scripts)" ]; then

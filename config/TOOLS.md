@@ -18,15 +18,32 @@ Environment-specific config. Skills define how tools work; this is your cheat sh
 - Create events: `gog cal create daver@mindfireinc.com --summary ... --from ... --to ...`
 - My calendar (aives@mindfiremail.info) has no primary events; always use Dave's ID
 
-### Exec Approvals (gog/email guardrail) - ACTIVE
-- `gog` is NOT on the exec allowlist. Every `gog` command requires Dave's approval via Telegram.
-- Dave receives a 🔒 prompt with full UUID, command details, and expiry.  
-- Dave approves with `/approve <FULL-UUID> allow-once` (NEVER `allow-always` for gog).
-- **IMPORTANT:** Always use `timeout: 3600` (60 min) on gog exec calls so Dave has time to approve.
-- **NOTE:** Cannot auto-send copy-paste approval lines (approval forwarding bypasses main session).
-- All other binaries in `/bin/*`, `/usr/bin/*`, `/usr/local/bin/*` (except gog) are allowlisted.
+### Exec Approvals (Email Safety System) - ACTIVE
+
+**Read operations (NO approval needed):**
+- Email reads: Use `gog-email-read.sh gmail messages search ...` (allowlisted wrapper)
+- Email thread reads: Use `gog-email-read.sh gmail thread get ...` (allowlisted wrapper)
+- Calendar reads: Use `gog-cal-read.sh cal events ...` (allowlisted wrapper)
+- These wrapper scripts ONLY permit read-only gog subcommands. They reject sends/creates.
+
+**Write operations (approval REQUIRED):**
+- Email sends: Use `gog gmail send ...` (requires Dave's Telegram approval)
+- Email replies: Use `gog gmail reply ...` (requires Dave's Telegram approval)
+- Calendar creates: Use `gog cal create ...` (requires Dave's Telegram approval)
+- Thread modifications: Use `gog gmail thread modify ...` (requires Dave's Telegram approval)
+
+**Approval mechanics:**
+- Dave receives a prompt with full UUID, command details, and expiry
+- Dave approves with `/approve <FULL-UUID> allow-once` (NEVER `allow-always` for gog)
+- Always use `timeout: 3600` (60 min) so Dave has time to approve
+- Cannot auto-send copy-paste approval lines (approval forwarding bypasses main session)
+- If Dave is unavailable, `askFallback: "deny"` blocks the command
+
+**Configuration:**
+- `gog-email-read.sh` and `gog-cal-read.sh` are on the exec allowlist
+- Raw `gog` binary is NOT on the allowlist (all raw gog commands need approval)
+- All other binaries in `/bin/*`, `/usr/bin/*`, `/usr/local/bin/*` (except gog) are allowlisted
 - Config: `tools.exec.host=gateway`, `tools.exec.security=allowlist`, `approvals.exec.enabled=true`
-- If Dave is unavailable, `askFallback: "deny"` blocks the command.
 
 ### Discipline Files
 - Email → `email.md` | Follow-ups → `follow-up.md` | Calendar → `calendar.md` | Comms → `communications.md`

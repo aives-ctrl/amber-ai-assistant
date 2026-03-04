@@ -1,8 +1,46 @@
 # AGENTS.md - Rules of Engagement
 
-## Memory System
+## Memory Protocol (MANDATORY -- EVERY SESSION)
 
-Memory doesn't survive sessions, so files are the only way to persist knowledge. Daily notes go in `memory/YYYY-MM-DD.md`. Distilled preferences in `MEMORY.md`. Reference material in `memory/reference/` (surfaced by semantic search). **Write it down or it didn't happen.** 📝
+You have NO session memory between conversations. Files are your ONLY persistence. This protocol is not optional.
+
+### On Session Start (BEFORE responding to first message)
+1. Read today's daily notes: `memory_get memory/YYYY-MM-DD.md`
+2. Read yesterday's daily notes: `memory_get memory/YYYY-MM-DD.md` (yesterday's date)
+3. Skim MEMORY.md for any recent updates
+4. This gives you continuity. Do it BEFORE responding.
+
+### Before Responding About Past Events
+1. Run `memory_search` with relevant keywords FIRST
+2. Check daily notes for the past 3 days
+3. Only THEN respond. Never say "I don't recall" or "we haven't discussed this" without searching.
+4. If search finds nothing, say so honestly, but confirm you searched.
+
+### After Every Significant Action
+Write to `memory/YYYY-MM-DD.md` IMMEDIATELY after:
+- Sending or drafting an email
+- Scheduling or modifying a calendar event
+- Receiving important information from Dave
+- Completing a follow-up task
+- Making a decision or commitment
+- Any action someone might ask about later
+
+Format: `## HH:MM [Channel] - [Action Type]\n[Brief description of what happened and outcome]`
+
+Channel tags: `[TG]` Telegram, `[SMS]` text, `[RC]` RingCentral team, `[EMAIL]` email, `[HB]` heartbeat
+
+### Before Session Ends or Goes Idle
+Write a session summary to daily notes covering:
+- What was discussed
+- What was decided
+- What actions were taken
+- What is still pending
+
+### Memory File Locations
+- Daily notes: `memory/YYYY-MM-DD.md` (today + yesterday loaded at session start)
+- Long-term memory: `MEMORY.md` (loaded into system prompt)
+- Reference material: `memory/reference/` (surfaced by semantic search)
+- Follow-up tracker: `follow-up-tracker.md` (check during heartbeats)
 
 ## Pre-Action Checklists (ALWAYS)
 
@@ -18,17 +56,19 @@ Memory doesn't survive sessions, so files are the only way to persist knowledge.
 - Surface relevant context to Dave proactively
 
 **Before claiming "we haven't discussed this" or answering questions about past conversations:**
-- ALWAYS use `memory_search` tool first with relevant keywords
-- Check today's daily memory: `memory_get memory/YYYY-MM-DD.md`
-- Only respond after checking both semantic search AND recent daily files
-- Never rely on session memory alone - files are the source of truth
+- Follow the Memory Protocol above (search first, then respond)
+- This is the #1 cause of appearing forgetful. ALWAYS search before saying you don't know.
 
-**Before sending any email:**
-- **CRITICAL: Exec approval system is ACTIVE for gog commands**
-- Every `gog gmail send`, `gog gmail reply`, `gog cal create` requires Dave's approval via Telegram
-- Use `timeout: 3600` on gog commands so Dave has 60 min to approve
-- Log the action to memory/YYYY-MM-DD.md FIRST
-- After sending: update follow-up tracker + daily notes immediately
+**Reading email (NO approval needed):**
+- Use `gog-email-read.sh` wrapper for all read operations (search, get, thread get, labels list)
+- This is allowlisted and does not trigger exec-approval
+
+**Before sending any email (approval REQUIRED):**
+- Draft the email first. Show Dave the draft via Telegram with context.
+- Wait for Dave's explicit approval before running `gog gmail send` or `gog gmail reply`
+- Exec approval system is ACTIVE: raw `gog` commands require Dave's Telegram approval
+- Use `timeout: 3600` so Dave has 60 min to approve
+- After sending: log to daily notes + update follow-up tracker immediately
 
 **Before restarting gateway:**
 - ALWAYS warn Dave first and wait for OK
