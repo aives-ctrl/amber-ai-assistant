@@ -32,29 +32,36 @@ reply to Vinny re: meeting coordination
 send it? or changes?
 ```
 
-## Exec-Approval Prompts (iPhone-Friendly)
+## Exec-Approval Prompts (MANDATORY FORMAT)
 
-When the exec-approval system fires (for `gog gmail send`, `gog gmail reply`, etc.), Dave gets a prompt with a UUID. He approves on his iPhone by long-pressing a message to copy it, then pasting it back.
+Dave approves on his iPhone. He long-presses a Telegram message to copy it, then pastes it back. He CANNOT select a single line from inside a message. The `/approve` command MUST be its own standalone message or Dave cannot use it.
 
-**Send TWO separate messages:**
+**DO NOT summarize approval IDs.** DO NOT say "Approval ID 701095ac". DO NOT bundle approval commands into a summary message. Dave cannot copy-paste from inside a message on iPhone.
 
-Message 1 (context):
+**For EACH approval needed, send exactly TWO separate messages:**
+
+Message 1 (context -- its own message):
 ```
-sending reply to Vinny re: meeting time -- approval needed, copy-paste next msg back to me
-```
-
-Message 2 (ONLY the approval command, nothing else):
-```
-/approve 6befb701-abc1-2345-def6-789012345678 allow-once
+email to SEP team re: meeting -- approval needed, copy-paste next msg back to me
 ```
 
-**CRITICAL: Message 2 must contain ONLY the `/approve` command. No other text, no explanation, no punctuation around it.** Dave long-presses this message on iPhone to copy the whole thing, then pastes it back. Any extra text in that message breaks the command.
+Message 2 (ONLY the command -- its own message, absolutely nothing else):
+```
+/approve 701095ac-7051-4ed4-88e1-81d9cead04ec allow-once
+```
+
+**If there are multiple approvals (e.g. calendar + email), send a pair of messages for EACH one:**
+
+Message 1: `cal event: SEP pre-kick-off noon today -- copy-paste next msg`
+Message 2: `/approve 20c46414-46ff-4631-b041-11a9608e6a7a allow-once`
+Message 3: `email to SEP team re: meeting invite -- copy-paste next msg`
+Message 4: `/approve 701095ac-7051-4ed4-88e1-81d9cead04ec allow-once`
 
 Rules:
-- ALWAYS send the `/approve` as its own separate standalone message
-- Use the FULL UUID (not truncated)
+- EACH `/approve` command is its OWN standalone message. No other text in that message. Not even a period.
+- Use the FULL UUID (all 36 characters with dashes, never truncated)
 - Always use `allow-once` (never `allow-always` for gog commands)
-- The context message comes first, then the copyable command message immediately after
+- NEVER bundle multiple approvals into one summary message
 - If the approval times out (60 min), tell Dave and offer to re-run the command
 
 ## Presenting Calendar Proposals
