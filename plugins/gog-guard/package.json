@@ -1,0 +1,11 @@
+{
+  "name": "gog-guard",
+  "version": "0.1.0",
+  "description": "Routes gog read/tag commands to allowlisted wrapper scripts for auto-approval",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

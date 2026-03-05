@@ -21,6 +21,9 @@
  * gog-email-tag.sh). The wrapper scripts validate the subcommand before executing.
  */
 
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
+import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
+
 const SCRIPTS_DIR = "/Users/amberives/.openclaw/workspace/scripts";
 
 // Patterns that identify read-only email operations → route to gog-email-read.sh
@@ -35,9 +38,7 @@ const EMAIL_READ_PATTERNS = [
 ];
 
 // Patterns that identify thread tagging → route to gog-email-tag.sh
-const EMAIL_TAG_PATTERNS = [
-  /^gog\s+gmail\s+threads?\s+modify\b/,
-];
+const EMAIL_TAG_PATTERNS = [/^gog\s+gmail\s+threads?\s+modify\b/];
 
 // Patterns that identify read-only calendar operations → route to gog-cal-read.sh
 const CAL_READ_PATTERNS = [
@@ -46,54 +47,63 @@ const CAL_READ_PATTERNS = [
   /^gog\s+cal\s+list\b/,
 ];
 
-function matchesAny(cmd, patterns) {
-  return patterns.some(p => p.test(cmd));
+function matchesAny(cmd: string, patterns: RegExp[]): boolean {
+  return patterns.some((p) => p.test(cmd));
 }
 
-module.exports = function (api) {
-  api.on("before_tool_call", (event) => {
-    // Only intercept exec tool calls
-    if (event.toolName !== "exec") return;
+const plugin = {
+  id: "gog-guard",
+  name: "Gog Command Guard",
+  description:
+    "Routes gog read/tag commands to allowlisted wrapper scripts for auto-approval. Write commands pass through unchanged and require Dave's approval via Telegram.",
+  configSchema: emptyPluginConfigSchema(),
 
-    const cmd = (event.params?.command || "").trim();
+  register(api: OpenClawPluginApi) {
+    api.registerHook("before_tool_call", (event) => {
+      // Only intercept exec tool calls
+      if (event.toolName !== "exec") return;
 
-    // Only care about gog commands
-    if (!cmd.startsWith("gog ")) return;
+      const cmd = ((event.params?.command as string) || "").trim();
 
-    // Route read-only email ops to the allowlisted wrapper
-    if (matchesAny(cmd, EMAIL_READ_PATTERNS)) {
-      event.params.command = cmd.replace(
-        /^gog\s+/,
-        `${SCRIPTS_DIR}/gog-email-read.sh `
-      );
-      return; // allow with rewritten command
-    }
+      // Only care about gog commands
+      if (!cmd.startsWith("gog ")) return;
 
-    // Route thread tagging to the allowlisted wrapper
-    if (matchesAny(cmd, EMAIL_TAG_PATTERNS)) {
-      event.params.command = cmd.replace(
-        /^gog\s+/,
-        `${SCRIPTS_DIR}/gog-email-tag.sh `
-      );
-      return; // allow with rewritten command
-    }
+      // Route read-only email ops to the allowlisted wrapper
+      if (matchesAny(cmd, EMAIL_READ_PATTERNS)) {
+        event.params.command = cmd.replace(
+          /^gog\s+/,
+          `${SCRIPTS_DIR}/gog-email-read.sh `,
+        );
+        return { params: event.params };
+      }
 
-    // Route read-only calendar ops to the allowlisted wrapper
-    if (matchesAny(cmd, CAL_READ_PATTERNS)) {
-      event.params.command = cmd.replace(
-        /^gog\s+/,
-        `${SCRIPTS_DIR}/gog-cal-read.sh `
-      );
-      return; // allow with rewritten command
-    }
+      // Route thread tagging to the allowlisted wrapper
+      if (matchesAny(cmd, EMAIL_TAG_PATTERNS)) {
+        event.params.command = cmd.replace(
+          /^gog\s+/,
+          `${SCRIPTS_DIR}/gog-email-tag.sh `,
+        );
+        return { params: event.params };
+      }
 
-    // Everything else (gmail send, gmail reply, cal create, etc.)
-    // passes through UNCHANGED → hits /usr/local/bin/gog → NOT in allowlist
-    // → triggers normal exec-approval → Dave approves via Telegram
-    return;
-  });
+      // Route read-only calendar ops to the allowlisted wrapper
+      if (matchesAny(cmd, CAL_READ_PATTERNS)) {
+        event.params.command = cmd.replace(
+          /^gog\s+/,
+          `${SCRIPTS_DIR}/gog-cal-read.sh `,
+        );
+        return { params: event.params };
+      }
 
-  if (api.logger) {
-    api.logger.info("[gog-guard] Loaded — reads/tags route to wrappers, writes require approval");
-  }
+      // Everything else (gmail send, gmail reply, cal create, etc.)
+      // passes through UNCHANGED → hits /usr/local/bin/gog → NOT in allowlist
+      // → triggers normal exec-approval → Dave approves via Telegram
+    });
+
+    api.logger.info(
+      "[gog-guard] Loaded — reads/tags route to wrappers, writes require approval",
+    );
+  },
 };
+
+export default plugin;
