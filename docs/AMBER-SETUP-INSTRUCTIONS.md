@@ -22,65 +22,106 @@ You should see: `email-read/`, `email-send/`, `calendar-read/`, `calendar-create
 
 ---
 
-## STEP 2: Fix the exec allowlist (glob patterns + shell tools)
+## STEP 2: Fix the exec allowlist (MUST edit JSON directly)
 
-First, check current allowlist entries:
+**⚠️ CRITICAL: Do NOT use `openclaw approvals allowlist add` for this.** The CLI adds entries to `agents.*.allowlist` (a wildcard/fallback section), but Amber's main agent has its own explicit `agents.main.allowlist` that takes precedence. CLI-added entries in `agents.*` are never consulted for the main agent. You must edit the JSON file directly.
+
+### 2a. Back up the file
 ```bash
-cat ~/.openclaw/exec-approvals.json
+cp ~/.openclaw/exec-approvals.json ~/.openclaw/exec-approvals.json.bak
 ```
 
-Remove any entries that point to wrong paths or the raw `gog` binary:
+### 2b. Add wrapper script entries to agents.main.allowlist
+
+Run this Python script to surgically update the correct section:
 ```bash
-openclaw approvals allowlist remove "<wrong-path>"
+python3 -c "
+import json
+
+with open('/Users/amberives/.openclaw/exec-approvals.json', 'r') as f:
+    data = json.load(f)
+
+main_list = data.get('agents', {}).get('main', {}).get('allowlist', [])
+
+# Entries to add to agents.main.allowlist
+entries_to_add = [
+    {'id': 'gog-email-read-basename', 'pattern': 'gog-email-read.sh'},
+    {'id': 'gog-cal-read-basename', 'pattern': 'gog-cal-read.sh'},
+    {'id': 'gog-scripts-glob', 'pattern': '/Users/amberives/.openclaw/workspace/scripts/gog-*'},
+]
+
+existing_patterns = {e.get('pattern') for e in main_list}
+
+for entry in entries_to_add:
+    if entry['pattern'] not in existing_patterns:
+        main_list.append(entry)
+        print(f'Added: {entry[\"pattern\"]}')
+    else:
+        print(f'Already exists: {entry[\"pattern\"]}')
+
+# SECURITY: Remove raw gog so sends still require approval
+before = len(main_list)
+main_list = [e for e in main_list if e.get('pattern') != '/usr/local/bin/gog']
+if len(main_list) < before:
+    print('Removed: /usr/local/bin/gog')
+
+data['agents']['main']['allowlist'] = main_list
+
+with open('/Users/amberives/.openclaw/exec-approvals.json', 'w') as f:
+    json.dump(data, f, indent=2)
+
+print('Done.')
+"
 ```
 
-Then add the correct entries with globs:
+### 2c. Verify the changes
+
 ```bash
-openclaw approvals allowlist add "/Users/amberives/.openclaw/workspace/scripts/gog-*"
+cat ~/.openclaw/exec-approvals.json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+main_list = data.get('agents', {}).get('main', {}).get('allowlist', [])
+print('=== agents.main.allowlist entries containing gog ===')
+for e in main_list:
+    if 'gog' in e.get('pattern', '').lower():
+        print(f'  {e}')
+print()
+print('Looking for /usr/local/bin/gog (should be GONE):')
+raw = [e for e in main_list if e.get('pattern') == '/usr/local/bin/gog']
+print(f'  {\"FOUND (BAD!)\" if raw else \"Not found (GOOD)\"}')
+"
 ```
 
-Add basename fallbacks (catches calls without full path):
-```bash
-openclaw approvals allowlist add "gog-email-read.sh"
-openclaw approvals allowlist add "gog-cal-read.sh"
-```
+Should show:
+- `gog-email-read.sh` (basename) ✅
+- `gog-cal-read.sh` (basename) ✅
+- `/Users/amberives/.openclaw/workspace/scripts/gog-*` (glob) ✅
+- `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh` (full path, pre-existing) ✅
+- `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh` (full path, pre-existing) ✅
+- `/usr/local/bin/gog` should be GONE ✅
 
-**⚠️ Why both?** Amber sometimes calls `gog-email-read.sh` instead of the full path. The glob catches full-path calls, the basenames catch shorthand calls. Both are read-only wrapper scripts, so this is safe.
+**⚠️ Why all three patterns?** Amber calls wrapper scripts in different ways:
+- Full path: matched by the pre-existing full-path entries
+- Basename (`gog-email-read.sh`): matched by the basename entries
+- Glob: catches any future `gog-*.sh` scripts added to the directory
 
-Add basic shell tools so grep/cat/ls stop triggering approval:
-```bash
-openclaw approvals allowlist add "/usr/bin/grep"
-openclaw approvals allowlist add "/usr/bin/cat"
-openclaw approvals allowlist add "/usr/bin/ls"
-openclaw approvals allowlist add "/usr/bin/python3"
-openclaw approvals allowlist add "/opt/homebrew/bin/grep"
-```
-
-Verify by checking the file directly:
-```bash
-cat ~/.openclaw/exec-approvals.json
-```
-
-Should show wrapper script globs + shell tools. Should NOT show raw `/usr/local/bin/gog`.
-
-**⚠️ Note:** `openclaw approvals allowlist list` may not exist in all versions. Use `cat ~/.openclaw/exec-approvals.json` to inspect the allowlist instead.
+**⚠️ Security: `/usr/local/bin/gog` must NOT be in the allowlist.** Raw `gog` can send emails, modify calendars, etc. Only the read-only wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`) should be auto-approved. Raw `gog` calls must trigger Dave's approval.
 
 ---
 
-## STEP 2B: Add scripts directory to PATH
+## STEP 2B: Always use full paths for wrapper scripts
 
-The wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`) live in the workspace scripts directory. Without this in PATH, calling them by basename fails with "command not found" even when the allowlist approves them.
+**⚠️ The OpenClaw gateway does NOT source `~/.zshrc` or `~/.zshenv`.** Adding the scripts directory to PATH has no effect — the gateway spawns non-interactive shells that bypass all zsh init files.
 
-```bash
-echo 'export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+**The solution:** All config files (HEARTBEAT.md, SKILL.md, etc.) must use the full path:
+```
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
+/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh
 ```
 
-Verify it works:
-```bash
-which gog-email-read.sh
-# Should output: /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
-```
+**NEVER use the basename** (`gog-email-read.sh`) in any command Amber will execute. It will fail with "command not found" even when the allowlist approves it.
+
+The allowlist still has basename entries as a safety net (in case she improvises), but all documented commands must use full paths.
 
 ---
 
@@ -238,6 +279,19 @@ After completing steps 1-8, confirm:
 - [ ] Raw gog sends DO trigger approval
 - [ ] Approval prompts arrive in Dave's PRIVATE Telegram, not Amber's channel
 - [ ] grep/cat/ls don't trigger approval
-- [ ] `cat ~/.openclaw/exec-approvals.json` shows no raw `gog` entry in allowlist
+- [ ] `cat ~/.openclaw/exec-approvals.json` shows no raw `gog` entry in **`agents.main.allowlist`**
+- [ ] Basename entries (`gog-email-read.sh`, `gog-cal-read.sh`) are in **`agents.main.allowlist`** (not just `agents.*`)
 - [ ] `askFallback` is set to `"deny"` in exec-approvals.json
 - [ ] Email backlog is being processed
+
+### Troubleshooting: Allowlist entries not working
+
+If wrapper scripts still trigger approval after adding entries:
+
+1. **Check which section the entry is in.** `openclaw approvals allowlist add` puts entries in `agents.*.allowlist`. If `agents.main.allowlist` exists, it takes precedence and `agents.*` is ignored. Edit the JSON directly to add entries to `agents.main.allowlist`.
+
+2. **Check `safeBinTrustedDirs`.** Run `openclaw config get tools.exec.safeBinTrustedDirs` — the scripts directory should be listed. This provides a second path for approval bypass.
+
+3. **Check PATH.** Run `which gog-email-read.sh` — should resolve to the full path. If "not found", the scripts directory isn't in PATH (see Step 2B).
+
+4. **Always restart gateway** after JSON edits: `openclaw gateway restart`
