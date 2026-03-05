@@ -28,6 +28,14 @@ Write to `memory/YYYY-MM-DD.md` IMMEDIATELY after:
 - Making a decision or commitment
 - Any action someone might ask about later
 
+**⚠️ HOW to write daily notes (IMPORTANT — read this):**
+- **DO NOT use the `edit` tool** for daily notes. The edit tool uses find-and-replace, which fails on append-only log files. This is a known issue.
+- **USE the `write` tool:** Read the file first with `memory_get`, then `write` the full file back with new content appended at the end.
+- **OR use shell append:** `echo "## HH:MM [TG] - Action summary" >> memory/YYYY-MM-DD.md`
+- If the file doesn't exist yet (first entry of the day), create it with `write`.
+- **Keep entries concise.** Daily notes should stay under ~5KB per day (~150 lines). If a file exceeds this, you're logging too much detail. Summarize, don't transcribe.
+- Format: `## HH:MM [Channel] - Action Type` followed by 1-3 lines of context.
+
 ### After Dave Corrects a Draft
 When Dave requests changes to an email draft, this is a learning moment. BEFORE sending the corrected version:
 1. Log the correction to `memory/reference/email-style-lessons.md` (see `skills/email-send/SKILL.md` for format)
@@ -127,8 +135,9 @@ Write a session summary to daily notes covering:
 - Check `start-day-of-week` in the gog output to confirm it's correct
 - Double-check: does the date you're about to use fall on the day of week you expect?
 
-**After handling an email thread:**
-- Tag it: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+**After handling an email thread (NO approval needed):**
+- Tag it: `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+- NEVER use raw `gog` for thread tagging. Use the wrapper script (full path).
 - Update follow-up tracker if response expected
 - Log to daily notes
 

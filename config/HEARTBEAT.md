@@ -194,3 +194,4 @@ Stop and genuinely reflect on the day. Ask yourself:
 - If Dave is in back-to-back meetings (check calendar), reduce to essentials only
 - Gmail pub-sub webhooks handle real-time email arrival; heartbeat catches anything missed
 - RingCentral plugins handle real-time messages; heartbeat is backup only
+- **Daily notes size guardrail:** On the FIRST heartbeat of each day, check today's daily notes file size: `wc -c < memory/YYYY-MM-DD.md`. If it exceeds 5,000 bytes (~5KB), the file is getting too large. Summarize older entries (keep the last 2 hours of detail, compress everything before that into 1-2 line summaries). Target: each day's notes should stay under ~150 lines / 5KB. If yesterday's notes exceeded 8KB, log a warning to today's notes so you're aware.

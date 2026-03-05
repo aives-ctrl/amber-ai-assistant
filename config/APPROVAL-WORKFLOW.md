@@ -7,7 +7,8 @@
 3. **For needs-reply or needs-action:** Draft response, send to Dave via Telegram with context
 4. **Dave reviews:** requests changes or approves
 5. **Send via `gog gmail send/reply`** (triggers exec-approval, Dave confirms via Telegram)
-6. **After sending:** Log to daily notes, update follow-up tracker, tag thread "Handled"
+6. **After sending:** Log to daily notes, update follow-up tracker
+7. **Tag thread "Handled"** (no approval needed, use `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`)
 
 ## Calendar Approval Workflow
 

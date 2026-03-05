@@ -61,7 +61,7 @@
 - **Missing something?** Check unread first, then search by name/topic if needed
 
 ### Email Status Tracking
-- **After handling emails:** Tag thread with "Handled" label: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+- **After handling emails (NO approval needed):** Tag thread: `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
 - **When checking inbox:** Use `-label:Handled` to skip already-processed threads
 - **Always cc Dave** on emails I send (daver@mindfireinc.com) unless told otherwise
 
