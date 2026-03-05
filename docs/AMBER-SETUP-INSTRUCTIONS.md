@@ -39,6 +39,14 @@ Then add the correct entries with globs:
 openclaw approvals allowlist add "/Users/amberives/.openclaw/workspace/scripts/gog-*"
 ```
 
+Add basename fallbacks (catches calls without full path):
+```bash
+openclaw approvals allowlist add "gog-email-read.sh"
+openclaw approvals allowlist add "gog-cal-read.sh"
+```
+
+**⚠️ Why both?** Amber sometimes calls `gog-email-read.sh` instead of the full path. The glob catches full-path calls, the basenames catch shorthand calls. Both are read-only wrapper scripts, so this is safe.
+
 Add basic shell tools so grep/cat/ls stop triggering approval:
 ```bash
 openclaw approvals allowlist add "/usr/bin/grep"
