@@ -28,6 +28,13 @@ Write to `memory/YYYY-MM-DD.md` IMMEDIATELY after:
 - Making a decision or commitment
 - Any action someone might ask about later
 
+### After Dave Corrects a Draft
+When Dave requests changes to an email draft, this is a learning moment. BEFORE sending the corrected version:
+1. Log the correction to `memory/reference/email-style-lessons.md` (see `skills/email-send/SKILL.md` for format)
+2. Then revise and send
+
+These lessons accumulate over time and are searched before every new draft. The goal: fewer corrections needed as you learn Dave's preferences.
+
 Format: `## HH:MM [Channel] - [Action Type]\n[Brief description of what happened and outcome]`
 
 Channel tags: `[TG]` Telegram, `[SMS]` text, `[RC]` RingCentral team, `[EMAIL]` email, `[HB]` heartbeat

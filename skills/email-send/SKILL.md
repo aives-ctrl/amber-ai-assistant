@@ -9,16 +9,32 @@ Send emails and replies. ALWAYS requires Dave's approval.
 
 ## Process (MANDATORY - no exceptions)
 
-1. **Draft the email** in your head first
-2. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
+1. **Check style lessons first:** `memory_search "email style [recipient name]"` to surface past corrections for this person or context. Also skim `memory/reference/email-style-lessons.md` if you haven't recently.
+2. **Draft the email** with lessons in mind
+3. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
    - Who it's to (name, not just email)
    - One-line summary
    - **The original email** (quote the key parts so Dave has context for the reply)
    - The full draft text
    - "send it? or changes?"
-3. **Wait for Dave's approval** in Telegram
-4. **Only then** run the gog send command
-5. After sending: log to daily notes + update follow-up tracker
+4. **Wait for Dave's approval** in Telegram
+5. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
+6. **Only then** run the gog send command
+7. After sending: log to daily notes + update follow-up tracker
+
+## Learning From Corrections
+
+**When Dave adjusts a draft, log the lesson BEFORE sending the corrected version.**
+
+Append to `memory/reference/email-style-lessons.md`:
+```markdown
+### YYYY-MM-DD — [Recipient name or "general"]
+**What I wrote:** [the part Dave changed]
+**Dave's feedback:** [what he said]
+**Lesson:** [the takeaway — be specific enough to apply next time]
+```
+
+This builds your style memory over time. The more lessons you log, the fewer corrections you'll need.
 
 ## Commands
 
