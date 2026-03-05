@@ -70,11 +70,39 @@ cd /Users/amberives/amber-ai-assistant && git add memory/reference/email-style-l
 
 This builds your style memory over time. The more lessons you log, the fewer corrections you'll need.
 
-## Commands
+## Commands — PREFERRED: Verified Workflow
+
+**For replies, use the Opus-verified Lobster workflow.** This catches threading, CC, and format errors BEFORE sending — an Opus 4.6 model reviews your command and blocks it if something is wrong.
+
+```bash
+# PREFERRED: Verified reply (Opus checks, then exec-approval for Dave)
+lobster run email-send \
+  --arg original_from="Sender Name <sender@example.com>" \
+  --arg original_to="Recipient <recipient@example.com>" \
+  --arg original_cc="CC Person <cc@example.com>" \
+  --arg message_id="<messageId>" \
+  --arg thread_id="<threadId>" \
+  --arg subject="RE: Original Subject" \
+  --arg body_html="<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+  --arg is_reply="true"
+```
+
+**The workflow handles everything:** Opus verification → send (with exec-approval) → tag Handled. You don't need to run separate gog send and tag commands.
+
+**Get the original headers from when you READ the email.** When you read an email, note:
+- `original_from` — the From header
+- `original_to` — the To header
+- `original_cc` — the CC header (NEVER skip this)
+- `message_id` — for threading
+- `thread_id` — for Handled tagging
+
+## Commands — FALLBACK: Direct Send
+
+Only use direct gog commands if the Lobster workflow is unavailable. **All the same rules still apply.**
 
 Send commands use the **full binary path** `/usr/local/bin/gog` and WILL trigger exec-approval (Dave approves via Telegram). Tag commands use the allowlisted wrapper script `gog-email-tag.sh` — no approval needed.
 
-**⚠️ CRITICAL: Send commands MUST use `/usr/local/bin/gog`, not bare `gog`.** Bare `gog` resolves to a safety wrapper that blocks sends. If you see "BLOCKED: This wrapper does not allow write operations," you used the wrong path. Use the full path shown below.
+**⚠️ CRITICAL: Send commands MUST use `/usr/local/bin/gog`, not bare `gog`.** Bare `gog` resolves to a safety wrapper that blocks sends. If you see "BLOCKED: This wrapper does not allow write operations," you used the wrong path.
 
 ```bash
 # Send new email (ALWAYS --body-html, ALWAYS font-size div, ALWAYS exact signature)

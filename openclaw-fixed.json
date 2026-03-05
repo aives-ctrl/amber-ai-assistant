@@ -110,6 +110,19 @@
     "entries": {
       "telegram": {
         "enabled": true
+      },
+      "llm-task": {
+        "enabled": true,
+        "config": {
+          "defaultProvider": "anthropic",
+          "defaultModel": "claude-sonnet-4-20250514",
+          "allowedModels": [
+            "anthropic/claude-sonnet-4-20250514",
+            "anthropic/claude-opus-4-6"
+          ],
+          "maxTokens": 800,
+          "timeoutMs": 30000
+        }
       }
     }
   }

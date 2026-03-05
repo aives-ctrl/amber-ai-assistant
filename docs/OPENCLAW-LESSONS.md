@@ -605,4 +605,65 @@ Shell glob `gog-*` requires at least one character after the dash. It does NOT m
 
 ---
 
+## 11. Use Smarter Models as Verifiers, Not Replacements — Opus Pre-Flight for Sends
+
+**Date:** 2026-03-05
+**Severity:** Recurring — same mistakes (threading, CC drops) happened 3+ times in one day
+**Time to resolve:** Ongoing; this is the architectural solution
+
+### The Problem
+
+Amber (running Sonnet 4) keeps making the same email mistakes despite:
+- Doc-level instructions (SKILL.md, bolded, repeated, with examples)
+- Structural wrappers (gog wrapper with hard blocks)
+- Logged lessons (email-style-lessons.md with dates and names)
+- Multiple session restarts
+
+The mistakes aren't intelligence failures — she *knows* the rules when prompted. They're **attention and consistency** failures, which is where model tier matters. Sonnet is fast and cost-effective but doesn't reliably follow multi-step checklists.
+
+### What Doesn't Work (Reliably)
+
+1. **Adding more docs** — Lesson #8 established this. LLM training patterns override in-context instructions.
+2. **Making docs more emphatic** — Bold, caps, shame ("you did this with Bob on 3/5") helps somewhat but isn't reliable.
+3. **Structural wrapper blocks** — Catches errors WHEN Amber routes through the wrapper, but she sometimes calls `/usr/local/bin/gog` directly, bypassing it.
+
+### What We Built
+
+**Opus 4.6 verifier step in a Lobster workflow** (`workflows/email-send.lobster.yaml`):
+
+1. Amber drafts the email and gathers parameters (original headers, messageId, body)
+2. She invokes `lobster run email-send` with those parameters
+3. **Opus 4.6** reviews the parameters: Is `--reply-to-message-id` used for replies? Is `--reply-all` present? Is `--body-html` used? Does the signature match?
+4. If Opus says FAIL → workflow stops, Amber sees specific errors
+5. If Opus says PASS → gog send executes (triggering exec-approval for Dave)
+6. After send succeeds → auto-tag Handled
+
+**Key architectural insight:** Use the fast model (Sonnet) for creative work (drafting, reasoning, triage). Use the smart model (Opus) for **validation** — a cheap, structured yes/no check. The Opus call costs fractions of a cent (tiny prompt, JSON output, temp=0) but catches every mistake we've seen.
+
+### Configuration
+
+- `openclaw-fixed.json`: Added `llm-task` plugin config with `allowedModels` including Opus
+- `workflows/email-send.lobster.yaml`: Lobster workflow with `llm-task` verifier step
+- `skills/email-send/SKILL.md`: Updated to reference workflow as preferred send method
+- `config/TOOLS.md`: Lists the new workflow
+
+### The Pattern (Generalizable)
+
+This is the **verifier sub-agent pattern**:
+- Fast model does the work (drafts, categorizes, reasons)
+- Smart model checks the work (validates, catches errors)
+- Deterministic orchestration (Lobster) enforces the order
+- Structural wrappers (gog) provide defense-in-depth
+
+Apply this pattern to ANY operation where:
+1. The fast model keeps making the same mistake
+2. The mistake is detectable by reviewing the command/output
+3. The cost of an Opus call is negligible compared to the cost of the mistake
+
+### Takeaway
+
+Don't replace your fast model with a smarter one for everything — that's expensive. Instead, use the smarter model as a **checkpoint** at critical moments. Think of it as a senior reviewer who spends 2 seconds checking a junior's work before it goes out the door.
+
+---
+
 *Add new lessons below as you encounter them. Include the date, what went wrong, what you tried, and what fixed it.*
