@@ -36,7 +36,7 @@ All read commands use the **allowlisted wrapper script** `gog-email-read.sh`. Th
 
 Before drafting a reply to any email, check if you've already sent a response:
 ```bash
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail search "in:sent to:<sender-email> subject:<subject-keyword>" --limit 3
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail search "in:sent to:<sender-email> subject:<subject-keyword>" --max 3
 ```
 
 If you find a sent message in the same thread, **do NOT draft another reply.** Tag the thread as Handled and move on. Dave should never have to tell you "you already replied to this one."

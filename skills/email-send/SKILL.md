@@ -40,14 +40,20 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 9. **Tag the thread as Handled:** `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
 10. Log to daily notes + update follow-up tracker
 
-## Learning From Corrections
+## Learning From ALL Feedback (Not Just Draft Changes)
 
-**When Dave adjusts a draft, log the lesson BEFORE sending the corrected version.**
+**Log a lesson ANY time Dave gives you corrective feedback.** This includes:
+- Draft corrections (wording, tone, length)
+- Process corrections ("use the wrapper script," "you already replied to this")
+- Behavioral feedback ("stop doing X," "remember to Y")
+- Style guidance, general preferences, anything where Dave says you should do it differently
+
+**The rule: if Dave corrected you, write it down BEFORE moving on.**
 
 Append to `memory/reference/email-style-lessons.md`:
 ```markdown
 ### YYYY-MM-DD — [Recipient name or "general"]
-**What I wrote:** [the part Dave changed]
+**What I did:** [what you did wrong or differently than Dave wanted]
 **Dave's feedback:** [what he said]
 **Lesson:** [the takeaway — be specific enough to apply next time]
 ```

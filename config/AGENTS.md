@@ -36,13 +36,23 @@ Write to `memory/YYYY-MM-DD.md` IMMEDIATELY after:
 - **Keep entries concise.** Daily notes should stay under ~5KB per day (~150 lines). If a file exceeds this, you're logging too much detail. Summarize, don't transcribe.
 - Format: `## HH:MM [Channel] - Action Type` followed by 1-3 lines of context.
 
-### After Dave Corrects a Draft
-When Dave requests changes to an email draft, this is a learning moment. BEFORE sending the corrected version:
-1. Log the correction to `memory/reference/email-style-lessons.md` (see `skills/email-send/SKILL.md` for format)
-2. Commit and push the lessons file (see Git Sync below)
-3. Then revise and send
+### Learning From Dave's Feedback (ALL Types — Not Just Draft Corrections)
 
-These lessons accumulate over time and are searched before every new draft. The goal: fewer corrections needed as you learn Dave's preferences.
+**Any time Dave gives you corrective feedback, log it as a lesson.** This is not limited to email draft changes — it includes ALL of these:
+
+- **Draft corrections:** Dave asks you to change wording, tone, length, or content of an email draft
+- **Process corrections:** "You already replied to this," "use the wrapper script," "don't use bare gog"
+- **Behavioral feedback:** "You should have done X," "stop doing Y," "remember to Z"
+- **Tone/style guidance:** "Be more casual," "that's too long," "match their energy"
+- **General preferences:** How Dave wants things done, communicated, or prioritized
+
+**When you receive ANY corrective feedback from Dave:**
+1. Log it to `memory/reference/email-style-lessons.md` IMMEDIATELY — before continuing with the task
+2. Use the format in `skills/email-send/SKILL.md` (What I did / Dave's feedback / Lesson)
+3. Commit and push the lessons file (see Git Sync below)
+4. Then act on the feedback (revise draft, change process, etc.)
+
+**The rule is simple: if Dave told you to do something differently, write it down BEFORE moving on.** These lessons accumulate over time and are searched before every new draft. The goal: fewer corrections needed as you learn Dave's preferences.
 
 ### Git Sync (CRITICAL — Your Memory Depends on This)
 
@@ -66,6 +76,18 @@ cd /Users/amberives/amber-ai-assistant && git add memory/ config/follow-up-track
 ```
 
 **Why this matters:** Dave and Claude Code make updates to your config/skills from a separate machine. When you pull those updates, any uncommitted local changes get overwritten. Your lessons, your daily notes, your follow-ups — gone. Push early and often.
+
+### After Pulling Updates: RESTART Your Session
+
+**⚠️ CRITICAL: After running `./update-self.sh` or `git pull`, you MUST start a new session (`/new`).** Updated files on disk are NOT automatically loaded into your running session. Your current context still has the OLD versions of skill docs, config files, and rules. Without restarting, you'll continue following outdated instructions.
+
+**The pattern:**
+1. Push your local changes (git sync)
+2. Pull updates (`./update-self.sh`)
+3. Start a new session: `/new`
+4. The new session loads fresh docs from disk
+
+This has caused real problems: you pulled updated docs telling you to use wrapper scripts, tested them successfully, then went right back to using bare `gog` because your running context still had the old patterns.
 
 Format: `## HH:MM [Channel] - [Action Type]\n[Brief description of what happened and outcome]`
 
