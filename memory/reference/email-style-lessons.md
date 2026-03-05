@@ -60,6 +60,11 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **Dave's feedback:** "Handled" means you actually HANDLED it. If the email needs a reply, tagging it Handled without replying means it falls through the cracks.
 **Lesson:** NEVER tag a thread as "Handled" until the action is COMPLETE. If it needs a reply → draft it, get approval, SEND it, THEN tag Handled. If it needs Dave's input → flag it to Dave, THEN tag Handled. The tag is the LAST step, not the first.
 
+### 2026-03-05 — Steve Potter email: missed CC field
+**What I did:** Read Dave's email to Steve Potter where the body said "Jeff, see below." I only reported the To field (Steve Potter) and asked Dave if Jeff should be forwarded/added to the thread. Jeff was already CC'd — I just didn't read the CC header.
+**Dave's feedback:** Check ALL headers, not just From and To. CC is just as important.
+**Lesson:** When reading an email, ALWAYS check and report From, To, AND CC. When the body mentions someone by name, cross-reference against CC before asking unnecessary questions. "Is Jeff supposed to be on this?" is embarrassing when Jeff is literally on the CC line.
+
 ---
 
 ## Per-Person Lessons

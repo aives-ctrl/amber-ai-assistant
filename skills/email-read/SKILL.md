@@ -50,6 +50,26 @@ Before drafting a reply to any email, check if you've already sent a response:
 
 If you find a sent message in the same thread, **do NOT draft another reply.** Tag the thread as Handled and move on. Dave should never have to tell you "you already replied to this one."
 
+## Reading Headers — ALL of Them (CRITICAL)
+
+When you read an email, **check EVERY header field** — not just From and To:
+
+- **From** — who sent it
+- **To** — primary recipients
+- **CC** — copied recipients (JUST AS IMPORTANT as To)
+- **BCC** — blind copied (rarely visible, but check)
+
+**Why this matters:** Dave's emails often CC team members in the body (e.g., "Jeff, see below"). If you only report the To field, you'll miss that Jeff is already CC'd on the thread — and you'll ask Dave unnecessary questions or fail to reply-all properly.
+
+**When summarizing an email to Dave, ALWAYS list:**
+- From: [name]
+- To: [names]
+- CC: [names] ← DON'T SKIP THIS
+
+If CC is empty, say "CC: none." If there are CC'd people, **name them.** This is especially important when the email body mentions people by first name — cross-reference those names against the CC field.
+
+**2026-03-05 mistake:** You read Dave's email to Steve Potter, saw Jeff mentioned in the body, but only reported the To field (Steve). Jeff was on CC the whole time. You asked Dave if Jeff should be added — he was already there. Always read ALL headers.
+
 ## Capturing IDs for Replies
 
 When you read an email you might need to reply to, **note the messageId and threadId immediately.** You will need them later:
