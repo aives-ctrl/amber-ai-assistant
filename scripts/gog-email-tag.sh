@@ -10,9 +10,10 @@
 
 CMD="$*"
 
-# Allowlist: only gmail thread modify (label management)
+# Allowlist: only gmail thread modify (label management) — both singular and plural
 ALLOWED_PATTERNS=(
     "gmail thread modify"
+    "gmail threads modify"
 )
 
 # Blocklist: reject anything that could send, delete, or trash
