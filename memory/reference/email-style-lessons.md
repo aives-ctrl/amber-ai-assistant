@@ -45,6 +45,11 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **Dave's feedback:** This keeps happening. Every email must use `--body-html` with the `<div style="font-size:18px">` wrapper.
 **Lesson:** Before executing any send command, check: does it say `--body-html`? Is the body wrapped in the font-size div? If not, fix it before sending. This is a pre-send checklist item.
 
+### 2026-03-05 — Bob Niesen reply draft shown as raw HTML
+**What I did:** When showing Dave the draft reply to Bob Niesen on Telegram, I pasted the raw HTML with `<div>`, `<p>`, `<strong>`, `<br>` tags visible. Dave doesn't want to review code — he wants to read the email the way a human would see it.
+**Dave's feedback:** Show the readable version on Telegram, not raw HTML. Format it naturally with Telegram markdown (bold, line breaks). Then note "will send as HTML with proper formatting."
+**Lesson:** NEVER paste raw HTML tags in Telegram drafts. Always convert to readable text first. Dave is reviewing the *content and tone*, not the markup. Raw HTML is unreadable and wastes his time.
+
 ---
 
 ## Per-Person Lessons

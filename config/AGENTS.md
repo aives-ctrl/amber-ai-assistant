@@ -91,7 +91,9 @@ Write a session summary to daily notes covering:
 - **INBOX CLARITY:** You read YOUR inbox (aives@mindfiremail.info), not Dave's. Dave cc's you on emails so you can act on them.
 
 **Before sending any email (approval REQUIRED) -- see `skills/email-send/SKILL.md`:**
-- Draft the email first. Show Dave the draft via Telegram (readable text, NOT raw HTML).
+- Draft the email first. Show Dave the draft via Telegram as **readable text — NEVER raw HTML**.
+- **⚠️ This means NO `<div>`, `<p>`, `<strong>`, `<br>` tags in the Telegram message.** Format naturally using Telegram markdown (bold, line breaks). End with: "will send as HTML with proper formatting. send it? or changes?"
+- Dave is reviewing content and tone, not markup. Raw HTML is unreadable and wastes his time.
 - Wait for Dave's explicit approval before running `gog gmail send` or `gog gmail reply`
 - Use `timeout: 3600` so Dave has 60 min to approve
 - **When exec-approval fires:** Send a short context message on Telegram BEFORE the approval (e.g., "sending email to SEP team re: meeting"). Dave approves via inline Telegram buttons (one tap).
