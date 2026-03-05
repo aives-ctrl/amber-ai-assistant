@@ -47,6 +47,7 @@ main_list = data.get('agents', {}).get('main', {}).get('allowlist', [])
 entries_to_add = [
     {'id': 'gog-email-read-basename', 'pattern': 'gog-email-read.sh'},
     {'id': 'gog-cal-read-basename', 'pattern': 'gog-cal-read.sh'},
+    {'id': 'gog-email-tag-basename', 'pattern': 'gog-email-tag.sh'},
     {'id': 'gog-scripts-glob', 'pattern': '/Users/amberives/.openclaw/workspace/scripts/gog-*'},
 ]
 
@@ -95,6 +96,7 @@ print(f'  {\"FOUND (BAD!)\" if raw else \"Not found (GOOD)\"}')
 Should show:
 - `gog-email-read.sh` (basename) ✅
 - `gog-cal-read.sh` (basename) ✅
+- `gog-email-tag.sh` (basename) ✅
 - `/Users/amberives/.openclaw/workspace/scripts/gog-*` (glob) ✅
 - `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh` (full path, pre-existing) ✅
 - `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh` (full path, pre-existing) ✅
@@ -105,7 +107,15 @@ Should show:
 - Basename (`gog-email-read.sh`): matched by the basename entries
 - Glob: catches any future `gog-*.sh` scripts added to the directory
 
-**⚠️ Security: `/usr/local/bin/gog` must NOT be in the allowlist.** Raw `gog` can send emails, modify calendars, etc. Only the read-only wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`) should be auto-approved. Raw `gog` calls must trigger Dave's approval.
+**⚠️ Security: `/usr/local/bin/gog` must NOT be in the allowlist.** Raw `gog` can send emails, modify calendars, etc. Only the safe wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`, `gog-email-tag.sh`) should be auto-approved. Raw `gog` calls must trigger Dave's approval.
+
+**Wrapper script summary:**
+| Script | Purpose | Safe? |
+|--------|---------|-------|
+| `gog-email-read.sh` | Read-only email ops (search, get, labels) | ✅ Auto-approved |
+| `gog-cal-read.sh` | Read-only calendar ops (events, get, list) | ✅ Auto-approved |
+| `gog-email-tag.sh` | Thread labeling only (add/remove labels) | ✅ Auto-approved |
+| `gog` (raw) | Everything including send, reply, create | ❌ Requires approval |
 
 ---
 
@@ -276,6 +286,7 @@ After completing steps 1-8, confirm:
 - [ ] `skills/` directory has 5 skill folders
 - [ ] `workflows/` directory has `email-triage.lobster.yaml`
 - [ ] Wrapper script reads don't trigger approval
+- [ ] Wrapper script thread tagging doesn't trigger approval
 - [ ] Raw gog sends DO trigger approval
 - [ ] Approval prompts arrive in Dave's PRIVATE Telegram, not Amber's channel
 - [ ] grep/cat/ls don't trigger approval
