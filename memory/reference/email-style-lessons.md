@@ -60,6 +60,11 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **Dave's feedback:** "Handled" means you actually HANDLED it. If the email needs a reply, tagging it Handled without replying means it falls through the cracks.
 **Lesson:** NEVER tag a thread as "Handled" until the action is COMPLETE. If it needs a reply → draft it, get approval, SEND it, THEN tag Handled. If it needs Dave's input → flag it to Dave, THEN tag Handled. The tag is the LAST step, not the first.
 
+### 2026-03-05 — Alex email: reply dropped all CC recipients
+**What I did:** Replied to Alex's thread about the print provider deal but only sent to Alex, dropping everyone else who was CC'd on the original thread. Used `--to` instead of `--reply-to-message-id --reply-all`. Same mistake as Bob Niesen.
+**Dave's feedback:** Use --reply-all. It automatically includes everyone on To and CC. And show me the full recipient list in the draft so I can verify before you send.
+**Lesson:** REPLY = `--reply-to-message-id <messageId> --reply-all`. ALWAYS. The --reply-all flag keeps all To and CC recipients. When showing Dave the draft, list EVERY recipient (To + CC) so he can catch errors before the email goes out. This is the THIRD time this mistake has happened (Bob Niesen, Alex). There's no excuse anymore.
+
 ### 2026-03-05 — Steve Potter email: missed CC field
 **What I did:** Read Dave's email to Steve Potter where the body said "Jeff, see below." I only reported the To field (Steve Potter) and asked Dave if Jeff should be forwarded/added to the thread. Jeff was already CC'd — I just didn't read the CC header.
 **Dave's feedback:** Check ALL headers, not just From and To. CC is just as important.
