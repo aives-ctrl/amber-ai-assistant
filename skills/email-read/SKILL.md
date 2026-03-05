@@ -45,5 +45,6 @@ All commands use the read-only wrapper script. This is allowlisted and does NOT 
 
 If the wrapper triggers exec-approval anyway:
 1. Approve it (it's read-only safe)
-2. Tell Dave so the allowlist can be fixed
-3. Check: `openclaw approvals allowlist list` to see if the path matches
+2. Tell Dave so the config can be fixed
+3. Check: `cat ~/.openclaw/exec-approvals.json` to see if the path is in the allowlist
+4. Verify the scripts directory is in `safeBinTrustedDirs`: `openclaw config get tools.exec.safeBinTrustedDirs`

@@ -94,7 +94,7 @@ Write a session summary to daily notes covering:
 - The allowlist matches on BINARY PATHS, not subcommands. If raw `gog` gets allowlisted via "Always Allow", ALL gog commands bypass approval including sends.
 - **NEVER** approve `gog` with "Always Allow" / `allow-always`. Only "Allow Once" / `allow-once`.
 - Only wrapper scripts should be on the allowlist. Raw `gog` must NEVER be allowlisted.
-- If sends go through without prompting Dave: `openclaw approvals allowlist list`, remove any `gog` entry, restart gateway.
+- If sends go through without prompting Dave: check `cat ~/.openclaw/exec-approvals.json`, remove any raw `gog` entry, restart gateway.
 - Verify: `autoAllowSkills` = `false`, `askFallback` = `"deny"`. See RUNTIME-CONFIG.md Section 3.
 
 **During long sessions (MANDATORY cost control):**
