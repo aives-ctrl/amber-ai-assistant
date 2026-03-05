@@ -241,4 +241,112 @@ If your plugin doesn't appear in `openclaw plugins list`, the format is probably
 
 ---
 
+## 5. Session Context Doesn't Reload After File Updates
+
+**Date:** 2026-03-05
+**Severity:** High — causes assistant to ignore fixes you just deployed
+**Time to resolve:** ~1 hour of confusion
+
+### The Problem
+
+After Amber ran `./update-self.sh` (which updates config/skill files on disk), she tested the new wrapper script commands successfully — then immediately went back to using bare `gog` for all subsequent email reads. Every search triggered exec-approval, exactly the problem the update was supposed to fix.
+
+### Root Cause
+
+**The running LLM session doesn't re-read skill docs from disk.** When a session starts, OpenClaw loads config files and skill docs into the LLM context. Updating files on disk mid-session has zero effect — the LLM is still operating from whatever was loaded at session start.
+
+So: Amber pulled updated docs telling her to use wrapper scripts. She tested the wrapper (by copy-pasting the exact command Dave gave her). Then she went back to processing emails using the patterns already in her context — which were the OLD patterns from before the update.
+
+### The Fix
+
+**After `./update-self.sh` or `git pull`, always run `/new` to start a fresh session.** The new session loads the updated docs from disk.
+
+The pattern:
+1. Push local changes (git sync)
+2. Pull updates (`./update-self.sh`)
+3. Start new session: `/new`
+4. New session loads fresh docs
+
+We added this as:
+- A prominent warning in `update-self.sh` output
+- A dedicated section in `AGENTS.md` ("After Pulling Updates: RESTART Your Session")
+
+### Takeaway
+
+Treat file updates to an OpenClaw assistant like deploying code to a running server — the changes aren't live until you restart. The LLM is not a filesystem watcher; it's a snapshot of context from session start.
+
+---
+
+## 6. Git Sync: AI Assistants That Edit Shared Repos Must Push Before Pulling
+
+**Date:** 2026-03-05
+**Severity:** Critical — silent data loss of accumulated lessons and daily notes
+**Time to resolve:** ~30 minutes
+
+### The Problem
+
+Amber edits files at runtime (daily notes, email style lessons, follow-up tracker) that live in a git repo shared with Dave's machine. When Dave pushed config updates and Amber ran `git pull`, her uncommitted local changes were silently overwritten. Lessons she'd logged, daily notes she'd written — gone.
+
+### Root Cause
+
+`update-self.sh` ran `git pull origin main` without first committing and pushing Amber's local changes. Standard git behavior: pull overwrites dirty files.
+
+### The Fix
+
+Added Step 0 to `update-self.sh` — before pulling, auto-commit and push any changes to `memory/` and `config/follow-up-tracker.md`:
+
+```bash
+if [ -n "$(git status --porcelain)" ]; then
+    git add memory/ config/follow-up-tracker.md
+    if ! git diff --cached --quiet; then
+        git commit -m "Amber: auto-sync local changes"
+        git push origin main
+    fi
+fi
+```
+
+Also documented the manual sync command in AGENTS.md and skill docs for when Amber should push proactively (after logging lessons, writing daily notes, etc.).
+
+### Takeaway
+
+If your AI assistant writes to files in a shared repo, the update/pull script MUST commit+push first. This is easy to miss because the assistant doesn't complain — it just silently loses its accumulated knowledge.
+
+---
+
+## 7. LLM Lesson-Logging Requires Broad Triggers
+
+**Date:** 2026-03-05
+**Severity:** Medium — assistant doesn't learn from feedback
+**Time to resolve:** ~20 minutes to diagnose, quick doc fix
+
+### The Problem
+
+Amber processed 8 emails with Dave giving feedback throughout. Zero new entries were logged to `email-style-lessons.md`. The lesson file wasn't even in her git push.
+
+### Root Cause
+
+The lesson-logging trigger in the docs was too narrow. It said: **"When Dave adjusts a draft..."** This only fired when Dave explicitly requested wording changes to a specific email draft. It missed:
+
+- Process corrections ("you already replied to this one")
+- Behavioral feedback ("use the wrapper script, not bare gog")
+- General style guidance ("be more casual")
+- Any feedback not tied to a specific draft revision
+
+Dave gave feedback in all these categories, but none of them matched the "adjusts a draft" trigger, so Amber never logged them.
+
+### The Fix
+
+Broadened the trigger in both AGENTS.md and email-send SKILL.md:
+
+**Old:** "When Dave adjusts a draft, log the lesson."
+**New:** "Any time Dave gives you corrective feedback — drafts, process, behavior, style, preferences — log it as a lesson BEFORE moving on."
+
+Added explicit examples of each feedback type so the LLM can pattern-match more broadly.
+
+### Takeaway
+
+When instructing an LLM to log/learn from feedback, make the trigger as broad as possible with concrete examples. LLMs interpret narrow triggers literally. "When Dave adjusts a draft" → only draft adjustments. "When Dave gives ANY corrective feedback" + 5 examples → much broader coverage. The more specific your examples, the more patterns the LLM will catch.
+
+---
+
 *Add new lessons below as you encounter them. Include the date, what went wrong, what you tried, and what fixed it.*

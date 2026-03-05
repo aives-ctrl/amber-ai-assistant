@@ -80,7 +80,11 @@ if [ -d "skills" ] && [ "$(ls -A skills)" ]; then
     cp -r skills/* "$WORKSPACE_DIR/skills/"
 fi
 
-echo "✅ Update complete! Amber has been updated with the latest configuration."
+echo "✅ Update complete! Files on disk are updated."
 echo "📂 Backup created at: $BACKUP_DIR"
 echo ""
-echo "🔄 Note: You may need to restart the OpenClaw session to pick up all changes."
+echo "⚠️  IMPORTANT: You MUST start a new session now to load the updated docs."
+echo "   Run: /new"
+echo ""
+echo "   Without /new, your current session still has OLD config/skill docs in context."
+echo "   This means you'll keep following outdated instructions until you restart."
