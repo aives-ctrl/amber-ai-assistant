@@ -37,3 +37,7 @@ ringcentral-*
 # Only ignore notification runtime/state files
 notification-schedule*
 notification-delivery*
+
+# gog-real is a machine-specific hard copy of the gog binary
+# (placed in scripts/ for OpenClaw safeBinTrustedDirs auto-approval)
+scripts/gog-real

@@ -466,4 +466,72 @@ When an LLM assistant consistently ignores doc-level instructions for tool usage
 
 ---
 
+## 9. OpenClaw Resolves Symlinks — Use Hard Copies in Trusted Dirs
+
+**Date:** 2026-03-05
+**Severity:** Critical — completely defeats auto-approval mechanism
+**Time to resolve:** ~2 hours
+
+### The Problem
+
+After building the `gog` PATH wrapper (Lesson #8), we needed `gog-real` in the trusted scripts dir to avoid triggering exec-approval on the `exec` call. We created a symlink:
+
+```bash
+ln -sf /usr/local/bin/gog /Users/amberives/.openclaw/workspace/scripts/gog-real
+```
+
+All wrapper scripts were updated to `exec gog-real` instead of `exec /usr/local/bin/gog`. But reads and tags **still** triggered exec-approval.
+
+### Root Cause
+
+**OpenClaw resolves symlinks to their real path before checking `safeBinTrustedDirs`.** The symlink `scripts/gog-real → /usr/local/bin/gog` resolved to `/usr/local/bin/gog`, which is NOT in the trusted dir. So OpenClaw still saw an untrusted binary execution.
+
+This was invisible from terminal testing — running `gog gmail labels list` in a terminal worked fine because the terminal doesn't have OpenClaw's exec monitoring. The approval check only happens when the LLM agent executes commands through OpenClaw.
+
+### What We Tried That Failed
+
+1. **Symlink (`ln -sf`)** — OpenClaw resolves it to real path → triggers approval
+2. **`cp` on top of existing symlink** — `cp /usr/local/bin/gog .../gog-real` returned "are identical (not copied)" because `cp` followed the symlink and saw source and destination as the same file
+
+### What Actually Worked
+
+**Remove the symlink first, then hard copy:**
+
+```bash
+rm /Users/amberives/.openclaw/workspace/scripts/gog-real
+cp /usr/local/bin/gog /Users/amberives/.openclaw/workspace/scripts/gog-real
+```
+
+Then hard-restart the gateway:
+```bash
+pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+```
+
+A hard copy creates a real file in the trusted dir. OpenClaw checks the file's actual path (`scripts/gog-real`) — it IS in `safeBinTrustedDirs` — auto-approved.
+
+### The Working Architecture
+
+```
+gog (wrapper, trusted dir)
+  → matches safe pattern → exec gog-real (HARD COPY in trusted dir) → auto-approved ✅
+  → matches dangerous pattern → BLOCKS → LLM uses /usr/local/bin/gog → approval fires ✅
+```
+
+### Maintenance
+
+After `gog` binary updates (e.g., `brew upgrade`), re-copy:
+```bash
+rm /Users/amberives/.openclaw/workspace/scripts/gog-real
+cp /usr/local/bin/gog /Users/amberives/.openclaw/workspace/scripts/gog-real
+pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+```
+
+`gog-real` is in `.gitignore` because it's a machine-specific binary that shouldn't be in the repo.
+
+### Takeaway
+
+OpenClaw's `safeBinTrustedDirs` check resolves symlinks before matching. A symlink in a trusted dir pointing to a binary outside the trusted dir will NOT auto-approve. Use a hard copy (`cp`) instead. This is a subtle security behavior — the system prevents symlink-based trust escalation, which is arguably correct from a security perspective, but it's undocumented and cost us hours of debugging.
+
+---
+
 *Add new lessons below as you encounter them. Include the date, what went wrong, what you tried, and what fixed it.*
