@@ -8,7 +8,7 @@ Heartbeat runs every 30 minutes during active hours. On each run, check these it
 
 ## 1. Email Monitoring (Every heartbeat)
 
-1. Run: `gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 10`
+1. Run: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 10`
 2. For each unread email, categorize:
    - **needs-reply**: A real person wrote something that deserves a response. Draft Telegram summary for Dave.
    - **needs-action**: Requires Amber to do something (schedule, research, etc.). Draft Telegram summary.
@@ -46,7 +46,7 @@ Heartbeat runs every 30 minutes during active hours. On each run, check these it
 
 ## 2. Calendar Check (Every heartbeat)
 
-1. Check Dave's next 4 hours of events using `gog-cal-read.sh cal events daver@mindfireinc.com --from now --to +4h`
+1. Check Dave's next 4 hours of events using `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal events daver@mindfireinc.com --from now --to +4h`
 2. If meeting in next 15 minutes AND no reminder sent yet for that meeting:
    - Send Telegram: "heads up: [meeting name] in 15 min"
    - If relevant person context exists in MEMORY.md, include a one-liner
@@ -57,7 +57,7 @@ Heartbeat runs every 30 minutes during active hours. On each run, check these it
 
 1. Read follow-up-tracker.md
 2. For items where follow-up due date has passed:
-   - First, check inbox for responses: `gog-email-read.sh gmail messages search 'from:[person] newer_than:7d'`
+   - First, check inbox for responses: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'from:[person] newer_than:7d'`
    - If response found: update tracker status, log to daily notes
    - If no response and overdue: alert Dave via Telegram: "[Person] hasn't responded re: [topic] (sent [date]). follow up?"
 3. For items due today: mention in morning briefing
@@ -93,7 +93,7 @@ morning! here's today:
 ### Step 1: Find threads you tagged Handled today but never replied to
 
 ```bash
-gog-email-read.sh gmail messages search 'label:Handled newer_than:1d -from:aives@mindfiremail.info -from:daver@mindfireinc.com -from:daver@mindfiremail.info' --max 20
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'label:Handled newer_than:1d -from:aives@mindfiremail.info -from:daver@mindfireinc.com -from:daver@mindfiremail.info' --max 20
 ```
 
 For each result, ask: **Did this email need a reply?** Apply the categorization test — would this person feel ignored if they didn't hear back? If yes, you made a mistake. Untag it and draft a reply.
@@ -101,7 +101,7 @@ For each result, ask: **Did this email need a reply?** Apply the categorization 
 ### Step 2: Find unread emails you may have missed
 
 ```bash
-gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 10
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 10
 ```
 
 Anything here that's been sitting unread for hours is a potential miss. Categorize it now.
@@ -109,7 +109,7 @@ Anything here that's been sitting unread for hours is a potential miss. Categori
 ### Step 3: Verify your sent emails are properly threaded and tagged
 
 ```bash
-gog-email-read.sh gmail messages search 'from:aives@mindfiremail.info newer_than:1d' --max 20
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'from:aives@mindfiremail.info newer_than:1d' --max 20
 ```
 
 For each sent email:
