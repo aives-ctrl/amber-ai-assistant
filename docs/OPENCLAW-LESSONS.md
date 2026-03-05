@@ -534,4 +534,75 @@ OpenClaw's `safeBinTrustedDirs` check resolves symlinks before matching. A symli
 
 ---
 
+## 10. Glob `gog-*` Does NOT Match `gog` — Add Explicit Allowlist Entry for Wrapper
+
+**Date:** 2026-03-05
+**Severity:** Critical — tags and thread modify operations triggered approval despite wrapper being in trusted dir
+**Time to resolve:** ~3 hours
+
+### The Problem
+
+After getting reads working through the gog PATH wrapper (Lessons #8 and #9), thread tagging (`gog gmail thread modify`) still triggered exec-approval. Reads worked perfectly — only tag/modify operations prompted for approval.
+
+### Root Cause
+
+The exec-approval allowlist had a glob entry:
+```
+/Users/amberives/.openclaw/workspace/scripts/gog-*
+```
+
+This matches `gog-email-read.sh`, `gog-email-tag.sh`, `gog-cal-read.sh`, and `gog-real` — all of which have a **dash** after "gog". But `gog-*` does **NOT** match `gog` (the wrapper script itself, which has no dash).
+
+**Why reads worked anyway:** Amber was calling `gog-email-read.sh` directly (matched by both the glob and individual full-path entries). Tags failed because Amber called bare `gog` → resolved to `scripts/gog` → no allowlist match → approval triggered.
+
+### Debugging
+
+Dumped the full allowlist to confirm:
+```bash
+python3 -c "
+import json
+with open('/Users/amberives/.openclaw/exec-approvals.json','r') as f: data=json.load(f)
+for e in data['agents']['main']['allowlist']:
+    if 'gog' in e.get('pattern','').lower():
+        print(e)
+"
+```
+
+Output showed `gog-*` glob but no entry for `scripts/gog` itself.
+
+### What Fixed It
+
+Added an explicit allowlist entry for the wrapper:
+```bash
+python3 -c "
+import json
+with open('/Users/amberives/.openclaw/exec-approvals.json','r') as f: data=json.load(f)
+ml=data['agents']['main']['allowlist']
+ml.append({'id':'gog-wrapper','pattern':'/Users/amberives/.openclaw/workspace/scripts/gog'})
+data['agents']['main']['allowlist']=ml
+with open('/Users/amberives/.openclaw/exec-approvals.json','w') as f: json.dump(data,f,indent=2)
+print('Added gog wrapper entry')
+" && pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+```
+
+After applying + gateway restart, `gog gmail thread modify <threadId> --add "Handled" --force` auto-approved immediately.
+
+### The Complete Working Allowlist (gog-related)
+
+```
+gog-email-read      → /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
+gog-cal-read        → /Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh
+gog-email-tag       → /Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh (if present)
+gog-scripts-glob    → /Users/amberives/.openclaw/workspace/scripts/gog-*
+gog-wrapper         → /Users/amberives/.openclaw/workspace/scripts/gog   ← THIS WAS MISSING
+```
+
+### Takeaway
+
+Shell glob `gog-*` requires at least one character after the dash. It does NOT match `gog` with no suffix. When your wrapper script has a different name pattern than the scripts it wraps, you need a separate allowlist entry for it. Always dump the full allowlist and test each binary path against each pattern when debugging approval issues.
+
+**Also: don't trust the LLM's diagnostic output.** During debugging, Amber confidently stated `exec-approvals.json` doesn't exist (it's 27KB). We had to run the diagnostic command directly on her machine to get accurate results. Trust but verify.
+
+---
+
 *Add new lessons below as you encounter them. Include the date, what went wrong, what you tried, and what fixed it.*

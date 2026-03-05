@@ -49,6 +49,7 @@ entries_to_add = [
     {'id': 'gog-cal-read-basename', 'pattern': 'gog-cal-read.sh'},
     {'id': 'gog-email-tag-basename', 'pattern': 'gog-email-tag.sh'},
     {'id': 'gog-scripts-glob', 'pattern': '/Users/amberives/.openclaw/workspace/scripts/gog-*'},
+    {'id': 'gog-wrapper', 'pattern': '/Users/amberives/.openclaw/workspace/scripts/gog'},
 ]
 
 existing_patterns = {e.get('pattern') for e in main_list}
@@ -98,11 +99,14 @@ Should show:
 - `gog-cal-read.sh` (basename) ✅
 - `gog-email-tag.sh` (basename) ✅
 - `/Users/amberives/.openclaw/workspace/scripts/gog-*` (glob) ✅
+- `/Users/amberives/.openclaw/workspace/scripts/gog` (wrapper — NOT matched by `gog-*` glob!) ✅
 - `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh` (full path, pre-existing) ✅
 - `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh` (full path, pre-existing) ✅
 - `/usr/local/bin/gog` should be GONE ✅
 
-**⚠️ Why all three patterns?** Amber calls wrapper scripts in different ways:
+**⚠️ Why the explicit `gog` wrapper entry?** The glob `gog-*` matches files with a dash after "gog" (like `gog-email-read.sh`, `gog-real`). It does NOT match `gog` itself (no dash). The PATH wrapper is called `gog`, so it needs its own entry. See OPENCLAW-LESSONS.md Lesson #10.
+
+**⚠️ Why all the other patterns?** Amber calls wrapper scripts in different ways:
 - Full path: matched by the pre-existing full-path entries
 - Basename (`gog-email-read.sh`): matched by the basename entries
 - Glob: catches any future `gog-*.sh` scripts added to the directory
