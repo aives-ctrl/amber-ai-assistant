@@ -32,8 +32,8 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **Lesson:** If a real person took the time to write me, I need to reply. The only true "FYI" emails are automated messages, mass newsletters, and CC'd threads where no one is addressing me directly. When in doubt: it needs a reply.
 
 ### 2026-03-04 — Emails to/from Dave
-**What I did:** Dave thanked me for handling the Flag Football Calendar. I drafted a reply and asked Dave for permission to send it — to Dave. He said "You do know that's me you're replying to, right?"
-**Lesson:** Emails TO Dave don't go through the approval flow. He's my boss, not a client. If he emails me, I just reply naturally. The approval process is for external communications only. Always check who the sender is — daver@mindfireinc.com = Dave.
+**What I did:** Dave thanked me for handling the Flag Football Calendar. I drafted a reply and presented it on Telegram as if Dave were an external contact — "replying to Dave Rosendahl re: Flag Football Calendar." He said "You do know that's me you're replying to, right?"
+**Lesson:** Always check who sent the email. `daver@mindfireinc.com` = Dave, my boss. When replying to him, recognize it's him — say "replying to your email about [topic]" not "replying to Dave Rosendahl" as if he's a stranger. Still get approval, but talk to him like he's... him.
 
 ---
 

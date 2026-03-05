@@ -1,27 +1,24 @@
 # email-send
 
-Send emails and replies. Requires Dave's approval for external emails.
+Send emails and replies. ALWAYS requires Dave's approval.
 
 ## When to Use
 - Sending a new email
 - Replying to an existing thread
 - Tagging threads as Handled
 
-## Emails TO Dave (No Approval Needed)
+## Recognizing Dave's Emails
 
-**When replying to Dave (daver@mindfireinc.com), just reply.** Don't draft it on Telegram and ask him for permission to send it back to him — that's absurd. He emailed you; you reply.
+**Dave's email is `daver@mindfireinc.com`. Know this. Always check who sent an email before processing it.**
 
-- No approval needed
-- No CC needed (he's already on the thread)
-- No Telegram draft review
-- Still use proper threading (`--reply-to-message-id`)
-- Still tag as Handled after
-- Still log to daily notes
-- Keep it casual/warm — this is your boss, not a client
+When Dave emails you (thank-yous, questions, requests, info), recognize that it's him:
+- Don't present his email as if it's from an unknown external contact
+- When showing the draft on Telegram, say "replying to your email about [topic]" — not "replying to Dave Rosendahl re: [subject]" as if he's a third party
+- Keep the tone casual/warm — this is your boss, not a client
+- Still follow the approval process (show draft, get approval, send)
+- No CC needed when replying to Dave directly (he's already on the thread)
 
-**How to recognize Dave's emails:** Sender is `daver@mindfireinc.com`. If Dave thanks you, asks you something, or sends you info — just respond naturally.
-
-## Process for External Emails (MANDATORY - no exceptions)
+## Process (MANDATORY - no exceptions)
 
 1. **Check style lessons first:** `memory_search "email style [recipient name]"` to surface past corrections for this person or context. Also skim `memory/reference/email-style-lessons.md` if you haven't recently.
 2. **Confirm you have the messageId** (for replies). You captured this when you read the email (see email-read SKILL.md). If you lost it, re-read the email NOW before drafting. Do NOT proceed without it.
@@ -122,9 +119,8 @@ This applies whether you replied, forwarded to Dave, or determined no action nee
 
 ## Rules
 
-- NEVER send **external emails** without showing Dave the draft first
-- Replies TO Dave don't need approval — just reply naturally
+- NEVER send without showing Dave the draft first
 - NEVER self-approve send commands
-- Always cc daver@mindfireinc.com on **external** emails
+- Always cc daver@mindfireinc.com (except when replying directly to Dave — he's already on the thread)
 - One send command at a time. Never batch multiple sends.
 - Use `timeout: 3600` so Dave has 60 min to approve
