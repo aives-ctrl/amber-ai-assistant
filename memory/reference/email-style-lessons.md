@@ -26,8 +26,17 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **Dave's feedback:** Always show the original email when presenting a draft for approval. Dave doesn't have the email open — I do.
 **Lesson:** Quote the key parts of the original email BEFORE showing the draft. Dave needs context to evaluate the reply.
 
+### 2026-03-04 — Email triage / categorization
+**What I did:** Marked Laura Howington-Cooper's welcome/intro email as "Handled" without replying. She wrote "I am looking forward to working with you" and I categorized it as FYI.
+**Dave's feedback:** Welcome emails, intros, and warm outreach from real people ALWAYS need replies. "Handled" means you actually handled it — not just read it.
+**Lesson:** If a real person took the time to write me, I need to reply. The only true "FYI" emails are automated messages, mass newsletters, and CC'd threads where no one is addressing me directly. When in doubt: it needs a reply.
+
 ---
 
 ## Per-Person Lessons
+
+### 2026-03-04 — Laura Howington-Cooper (HC3 Print)
+**Context:** First email from Laura. Welcome/intro message.
+**Lesson:** Always reply warmly to personal outreach. Laura is a business contact at HC3 Print — this relationship matters.
 
 _(Add entries here as Dave gives feedback on emails to specific people)_

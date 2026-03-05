@@ -59,9 +59,13 @@
 
 ### Email Categorization (During Processing)
 - **Needs reply:** Draft response and get Dave's approval
-- **Needs action:** Handle if within my capabilities, or flag to Dave  
+- **Needs action:** Handle if within my capabilities, or flag to Dave
 - **Just FYI:** Review, mark as handled, move on
 - **High priority items:** Add to notification queue if Dave should know
+
+**⚠️ THE #1 CATEGORIZATION MISTAKE: Marking real human emails as "FYI" because they don't contain an explicit question.** If a real person took the time to write you — welcome emails, congratulations, intros, warm outreach — that is NOT FYI. That needs a reply. Only automated messages, mass emails, and CC'd threads where no one is addressing you are truly FYI.
+
+**The test:** Would this person feel ignored if they didn't hear back? If yes → needs reply.
 
 ### What NOT to Flag to Dave
 - **Routine security emails:** Apple ID resets, login notifications, 2FA codes, password changes (Dave handles his own security)
