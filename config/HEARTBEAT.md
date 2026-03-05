@@ -86,7 +86,51 @@ morning! here's today:
 - pending from yesterday: need to finalize Kornit webinar invite
 ```
 
-## 6. #DailyLearnings Email (Once daily, ~5pm PT, weekdays only)
+## 6. End-of-Day Inbox Audit (Once daily, ~4:30pm PT, weekdays only)
+
+**Before you reflect on the day, check your own work.** This catches mistakes like tagging threads "Handled" without actually replying, missing emails from real people, or forgetting to tag sent threads.
+
+### Step 1: Find threads you tagged Handled today but never replied to
+
+```bash
+gog-email-read.sh gmail messages search 'label:Handled newer_than:1d -from:aives@mindfiremail.info -from:daver@mindfireinc.com -from:daver@mindfiremail.info' --max 20
+```
+
+For each result, ask: **Did this email need a reply?** Apply the categorization test — would this person feel ignored if they didn't hear back? If yes, you made a mistake. Untag it and draft a reply.
+
+### Step 2: Find unread emails you may have missed
+
+```bash
+gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 10
+```
+
+Anything here that's been sitting unread for hours is a potential miss. Categorize it now.
+
+### Step 3: Verify your sent emails are properly threaded and tagged
+
+```bash
+gog-email-read.sh gmail messages search 'from:aives@mindfiremail.info newer_than:1d' --max 20
+```
+
+For each sent email:
+- Is the thread tagged "Handled"? If not, tag it now.
+- Did the reply land in the correct thread? (Check thread ID matches the original.)
+
+### Step 4: Report to Dave (only if issues found)
+
+If you find mistakes, send Dave a Telegram message:
+```
+inbox audit:
+- [what you found wrong]
+- [what you fixed]
+- [anything that still needs his input]
+```
+
+If everything checks out, log `AUDIT_OK` to daily notes and move on. Don't message Dave "everything's fine."
+
+---
+
+## 7. #DailyLearnings Email (Once daily, ~5pm PT, weekdays only)
 
 This is your most important piece of writing each day. It's how the team tracks what you're learning, what's working, and what's surprising about being an AI teammate. **Don't phone it in.**
 
