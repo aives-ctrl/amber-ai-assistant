@@ -261,15 +261,19 @@ agents: {
 
 ## 8. Prompt Caching
 
+Cache retention is configured per-profile under `agents.defaults`:
+
 ```json5
-model: {
-  caching: true
+agents: {
+  defaults: {
+    cacheRetention: "long"   // or "short" — depends on profile type
+  }
 }
 ```
 
-Or via CLI: `openclaw config set model.caching true`
+Check current setting: `openclaw config get agents.defaults | grep cacheRetention`
 
-This can cut API bills by 50-70% by caching the system prompt across calls.
+**⚠️ `model.caching` does not exist.** The old `openclaw config set model.caching true` command is wrong. Cache retention is already configured by default (API key profiles get "short", OAuth/setup-token profiles get "long"). No action needed unless you want to change the retention period.
 
 ## 9. Approval Channel Separation (PREVENTS SELF-APPROVAL)
 
@@ -426,7 +430,7 @@ After applying these settings, verify by running:
 
 1. `openclaw config get compaction.memoryFlush.enabled` -- should be `true`
 2. `openclaw config get memorySearch.enabled` -- should be `true`
-3. `openclaw config get model.caching` -- should be `true`
+3. `openclaw config get agents.defaults | grep cacheRetention` -- should show "long" or "short"
 4. `openclaw sessions` -- check that Dave's sessions share an identity key
 5. Have Amber check email with full-path wrapper -- should NOT trigger approval:
    `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list`
