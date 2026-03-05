@@ -2,17 +2,17 @@
 
 ## Email Approval Workflow
 
-1. **Read incoming email** (no approval needed, use `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`)
+1. **Read incoming email** (no approval needed — `gog gmail messages search ...` is auto-routed by the gog-guard plugin)
 2. **Categorize:** needs-reply / needs-action / FYI / ignore
 3. **For needs-reply or needs-action:** Draft response, send to Dave via Telegram with context
 4. **Dave reviews:** requests changes or approves
-5. **Send via `gog gmail send/reply`** (triggers exec-approval, Dave confirms via Telegram)
+5. **Send via `gog gmail send`** (triggers exec-approval, Dave confirms via Telegram)
 6. **After sending:** Log to daily notes, update follow-up tracker
-7. **Tag thread "Handled"** (no approval needed, use `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`)
+7. **Tag thread "Handled"** (no approval needed — `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force` is auto-routed by the gog-guard plugin)
 
 ## Calendar Approval Workflow
 
-1. **Check Dave's calendar freely** (no approval needed, use `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh`)
+1. **Check Dave's calendar freely** (no approval needed — `gog cal events/get/list` is auto-routed by the gog-guard plugin)
 2. **For new events:** Propose time/details to Dave via Telegram
 3. **Dave approves**
 4. **Create via `gog cal create`** (triggers exec-approval, Dave confirms via Telegram)

@@ -55,25 +55,25 @@ This builds your style memory over time. The more lessons you log, the fewer cor
 
 ## Commands
 
-**⚠️ Send commands MUST use `/usr/local/bin/gog`** (the full path to the real binary). Do NOT use bare `gog` for sends — the router will block it. This is by design: sends require Dave's approval, which only triggers via the real binary path.
+Send commands use `gog` and WILL trigger exec-approval (Dave approves via Telegram). Read and tag commands are automatically routed to allowlisted wrapper scripts by the gog-guard plugin — no approval needed.
 
 ```bash
 # Send new email (ALWAYS --body-html, ALWAYS font-size div, ALWAYS exact signature)
-/usr/local/bin/gog gmail send \
+gog gmail send \
   --to "recipient@example.com" \
   --cc "daver@mindfireinc.com" \
   --subject "Subject here" \
   --body-html "<div style=\"font-size:18px\"><p>Email body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
 
 # Reply to existing thread (preserves threading)
-/usr/local/bin/gog gmail send \
+gog gmail send \
   --reply-to-message-id <messageId> \
   --reply-all \
   --cc daver@mindfireinc.com \
   --subject "RE: Original Subject" \
   --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
 
-# Tag thread as Handled after processing (router handles this automatically)
+# Tag thread as Handled after processing (auto-routed to wrapper, no approval needed)
 gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
 ```
 

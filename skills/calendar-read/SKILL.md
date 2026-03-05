@@ -10,27 +10,25 @@ Read-only calendar operations. List events, check availability, get event detail
 
 ## Commands
 
-All commands use the read-only wrapper script. This is allowlisted and does NOT require exec approval.
+All read commands use `gog` directly. The **gog-guard plugin** automatically rewrites these to use the allowlisted wrapper scripts — no exec approval needed.
 
 ```bash
 # List events for a time range
-/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal events daver@mindfireinc.com --from "2026-03-04T00:00:00" --to "2026-03-04T23:59:59"
+gog cal events daver@mindfireinc.com --from "2026-03-04T00:00:00" --to "2026-03-04T23:59:59"
 
 # Next 4 hours (for heartbeat)
-/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal events daver@mindfireinc.com --from now --to +4h
+gog cal events daver@mindfireinc.com --from now --to +4h
 
 # Get specific event details
-/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal get daver@mindfireinc.com <eventId>
+gog cal get daver@mindfireinc.com <eventId>
 
 # List all calendars
-/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal list
+gog cal list
 ```
 
 ## Rules
 
-- ALWAYS use the FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh`
-- NEVER use basename `gog-cal-read.sh` (allowlist won't match)
-- NEVER use raw `gog cal events` for reads (triggers approval)
+- Use `gog` for all read commands — the gog-guard plugin routes them to safe wrapper scripts automatically
 - Dave's calendar ID is always: `daver@mindfireinc.com`
 - ALWAYS verify day-of-week with `session_status` before stating dates
 - Run commands ONE AT A TIME, sequentially.

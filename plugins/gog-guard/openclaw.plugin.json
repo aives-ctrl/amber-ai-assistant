@@ -1,0 +1,6 @@
+{
+  "id": "gog-guard",
+  "name": "Gog Command Guard",
+  "description": "Routes gog read/tag commands to allowlisted wrapper scripts (auto-approved). Write commands (send, reply, create) pass through unchanged and trigger normal exec-approval for Dave to approve via Telegram.",
+  "version": "0.1.0"
+}
