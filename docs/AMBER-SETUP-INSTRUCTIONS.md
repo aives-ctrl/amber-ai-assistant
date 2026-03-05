@@ -115,7 +115,8 @@ Should show:
 | `gog-email-read.sh` | Read-only email ops (search, get, labels) | ✅ Auto-approved |
 | `gog-cal-read.sh` | Read-only calendar ops (events, get, list) | ✅ Auto-approved |
 | `gog-email-tag.sh` | Thread labeling only (add/remove labels) | ✅ Auto-approved |
-| `gog` (raw) | Everything including send, reply, create | ❌ Requires approval |
+| `gog` (via router) | Reads/tags routed to wrappers; sends BLOCKED | ✅ Auto-approved (reads) / 🚫 Blocked (sends) |
+| `/usr/local/bin/gog` | Direct binary — send, reply, create | ❌ Requires approval |
 
 ---
 
@@ -194,12 +195,14 @@ This means:
 
 ## STEP 4: Configure safe bins (shell tool approvals)
 
-Add trusted directories so basic shell tools AND wrapper scripts don't trigger approval:
+Add trusted directories so basic shell tools, wrapper scripts, AND the gog-router don't trigger approval:
 ```bash
-openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin", "/Users/amberives/.openclaw/workspace/scripts"]'
+openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin", "/Users/amberives/.openclaw/workspace/scripts", "/Users/amberives/.openclaw/bin-overrides"]'
 ```
 
-**⚠️ Including the scripts directory is critical.** The exec-approval allowlist matching can fail on wrapper scripts even when paths are correct. Adding the scripts directory to `safeBinTrustedDirs` bypasses this by trusting all binaries in that directory.
+**⚠️ Both directories are critical:**
+- **`/Users/amberives/.openclaw/workspace/scripts`** — trusts the wrapper scripts (`gog-email-read.sh`, etc.)
+- **`/Users/amberives/.openclaw/bin-overrides`** — trusts the gog-router shadow wrapper, which intercepts raw `gog` calls and routes reads to the correct wrappers. Send commands are BLOCKED by the router (not passed through), forcing Amber to use `/usr/local/bin/gog` explicitly — which triggers exec-approval as intended.
 
 ---
 
