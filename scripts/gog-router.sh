@@ -13,14 +13,16 @@
 # 4. Read-only email ops → routed to gog-email-read.sh (no approval needed)
 # 5. Read-only calendar ops → routed to gog-cal-read.sh (no approval needed)
 # 6. Thread tagging → routed to gog-email-tag.sh (no approval needed)
-# 7. Everything else (send, reply, create) → passed to real gog (triggers approval)
+# 7. Send/reply/create → BLOCKED with error message directing to /usr/local/bin/gog
 #
-# SAFETY: Send/reply/create operations are NOT intercepted. They pass through to
-# the real gog binary at /usr/local/bin/gog, which still requires Dave's approval.
+# SECURITY NOTE: This router is trusted (in safeBinTrustedDirs), so it runs without
+# exec-approval. If we passed sends through to real gog via `exec`, they would ALSO
+# bypass approval (exec replaces the process inside the already-approved subprocess).
+# Therefore sends MUST be blocked here, forcing Amber to call /usr/local/bin/gog
+# explicitly, which IS subject to exec-approval.
 
 CMD="$*"
 SCRIPTS_DIR="/Users/amberives/.openclaw/workspace/scripts"
-REAL_GOG="/usr/local/bin/gog"
 
 # --- Route read-only email operations to gog-email-read.sh ---
 EMAIL_READ_PATTERNS=(
@@ -55,6 +57,18 @@ if [[ "$CMD" == *"gmail thread modify"* ]]; then
     exec "$SCRIPTS_DIR/gog-email-tag.sh" $CMD
 fi
 
-# --- Everything else: pass through to real gog (requires approval) ---
-# This includes: gmail send, gmail reply, gmail draft, cal create, cal update, etc.
-exec "$REAL_GOG" $CMD
+# --- BLOCK everything else (sends, creates, etc.) ---
+# These operations require Dave's approval. Since this router is trusted,
+# we CANNOT pass through to real gog (it would bypass approval).
+# Instead, block and direct Amber to use the real binary path explicitly.
+echo ""
+echo "═══════════════════════════════════════════════════════════"
+echo "  BLOCKED: This command requires Dave's approval."
+echo "  Use the full path to the real gog binary:"
+echo ""
+echo "  /usr/local/bin/gog $CMD"
+echo ""
+echo "  The approval system only works with /usr/local/bin/gog."
+echo "═══════════════════════════════════════════════════════════"
+echo ""
+exit 1
