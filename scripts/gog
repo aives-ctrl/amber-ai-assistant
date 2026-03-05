@@ -1,0 +1,109 @@
+#!/bin/bash
+
+# gog — Structural wrapper that intercepts bare `gog` calls and routes
+# read-only operations to allowlisted wrapper scripts automatically.
+#
+# WHY THIS EXISTS:
+# Amber (the LLM) repeatedly uses bare `gog` for email reads despite docs
+# saying to use gog-email-read.sh. This is a training-data pattern that
+# doc-level instructions can't override reliably. This wrapper sits earlier
+# in PATH than /usr/local/bin/gog and transparently routes safe reads to
+# the allowlisted scripts — so even when she types `gog gmail messages search`,
+# it actually runs gog-email-read.sh (auto-approved, no exec-approval needed).
+#
+# Dangerous operations (send, reply, create) pass through to the real
+# /usr/local/bin/gog binary, which is NOT in the allowlist, so exec-approval
+# fires as intended.
+#
+# INSTALL:
+#   1. Place this script in the scripts directory (already there if you see this)
+#   2. Add the scripts directory to PATH *before* /usr/local/bin:
+#      export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"
+#   3. chmod +x this file
+#   4. Restart gateway
+#
+# TEST:
+#   which gog          → should show /Users/amberives/.openclaw/workspace/scripts/gog
+#   gog gmail labels list  → should NOT trigger approval (routed to gog-email-read.sh)
+#   gog gmail send ...     → should trigger approval (passes to /usr/local/bin/gog)
+
+REAL_GOG="/usr/local/bin/gog"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CMD="$*"
+
+# ─── EMAIL READ patterns → route to gog-email-read.sh ───
+EMAIL_READ_PATTERNS=(
+    "gmail messages search"
+    "gmail message search"
+    "gmail search"
+    "gmail messages get"
+    "gmail message get"
+    "gmail messages list"
+    "gmail message list"
+    "gmail threads get"
+    "gmail thread get"
+    "gmail threads list"
+    "gmail thread list"
+    "gmail labels list"
+    "gmail labels get"
+    "gmail inbox"
+)
+
+# ─── EMAIL TAG patterns → route to gog-email-tag.sh ───
+EMAIL_TAG_PATTERNS=(
+    "gmail thread modify"
+    "gmail threads modify"
+)
+
+# ─── CALENDAR READ patterns → route to gog-cal-read.sh ───
+CAL_READ_PATTERNS=(
+    "cal events"
+    "cal get"
+    "cal list"
+)
+
+# ─── DANGEROUS patterns — always pass through to real gog (triggers approval) ───
+# These are checked FIRST for safety. Even if a pattern above matches,
+# a dangerous keyword overrides it.
+DANGEROUS_PATTERNS=(
+    "gmail send"
+    "gmail reply"
+    "gmail draft"
+    "gmail delete"
+    "gmail trash"
+    "cal create"
+    "cal update"
+    "cal delete"
+)
+
+# Safety: check dangerous patterns first
+for pattern in "${DANGEROUS_PATTERNS[@]}"; do
+    if [[ "$CMD" == *"$pattern"* ]]; then
+        exec "$REAL_GOG" "$@"
+    fi
+done
+
+# Check email read patterns
+for pattern in "${EMAIL_READ_PATTERNS[@]}"; do
+    if [[ "$CMD" == *"$pattern"* ]]; then
+        exec "$SCRIPT_DIR/gog-email-read.sh" "$@"
+    fi
+done
+
+# Check email tag patterns
+for pattern in "${EMAIL_TAG_PATTERNS[@]}"; do
+    if [[ "$CMD" == *"$pattern"* ]]; then
+        exec "$SCRIPT_DIR/gog-email-tag.sh" "$@"
+    fi
+done
+
+# Check calendar read patterns
+for pattern in "${CAL_READ_PATTERNS[@]}"; do
+    if [[ "$CMD" == *"$pattern"* ]]; then
+        exec "$SCRIPT_DIR/gog-cal-read.sh" "$@"
+    fi
+done
+
+# ─── Fallback: anything not matched → pass through to real gog ───
+# This triggers exec-approval for unknown commands, which is the safe default.
+exec "$REAL_GOG" "$@"

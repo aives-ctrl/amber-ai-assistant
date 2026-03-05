@@ -349,4 +349,76 @@ When instructing an LLM to log/learn from feedback, make the trigger as broad as
 
 ---
 
+## 8. Doc-Level Enforcement Fails for LLM Tool Usage — Use Structural Interception
+
+**Date:** 2026-03-05
+**Severity:** Critical — assistant ignores documented commands and invents its own
+**Time to resolve:** ~6 hours across multiple attempts
+
+### The Problem
+
+Amber's skill docs said "ALWAYS use the full wrapper script path `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`" and "NEVER use bare `gog` for reads." Despite this being documented in 3+ places, restated in bold, and reinforced across 4+ doc updates and multiple session restarts, she continued generating bare `gog` commands:
+
+- `gog gmail messages search 'is:unread'` (should use wrapper)
+- `gog gmail threads get <id>` (should use wrapper)
+- `gog gmail inbox` (a subcommand that doesn't even exist in gog or the docs)
+
+Each bare `gog` call resolved to `/usr/local/bin/gog`, which was not in the exec-approval allowlist, triggering approval prompts for safe read operations.
+
+### What We Tried That Failed
+
+#### Attempt 1: Doc-level instructions (4+ iterations)
+
+Updated skill docs to say "NEVER use bare gog," added warnings, bolded them, added troubleshooting sections. After each update, ran `/new` to reload context.
+
+**Result:** She'd use the wrapper for a few commands, then revert to bare `gog`. The LLM's training-data patterns for CLI tool usage (`gog <subcommand>`) are stronger than in-context instructions telling her to use a different command.
+
+#### Attempt 2: gog-guard plugin (before_tool_call hook)
+
+Built a plugin to intercept `gog` at the OpenClaw tool layer and rewrite read commands to use wrapper scripts before exec-approval checked them.
+
+**Result:** The plugin never loaded reliably. OpenClaw's user plugin system (v2026.3.2) has issues with user-installed plugins in `~/.openclaw/extensions/`. See Lesson #1 for details.
+
+#### Attempt 3: Multiple session restarts
+
+Thought maybe old context was persisting. Ran `/new` after every doc update.
+
+**Result:** Fresh sessions loaded the updated docs correctly, but the LLM still generated bare `gog` from training patterns. The docs are read, but training-data patterns for CLI usage override them during generation.
+
+### What Actually Worked
+
+**A PATH wrapper script.** A bash script named `gog` placed in the scripts directory, which is added to PATH before `/usr/local/bin`. When the LLM generates `gog gmail messages search ...`, the shell resolves `gog` to the wrapper (not the real binary), and the wrapper routes the command to the appropriate allowlisted script.
+
+```
+LLM generates: gog gmail messages search 'is:unread'
+Shell resolves: /path/to/scripts/gog  (wrapper, not real binary)
+Wrapper routes: /path/to/scripts/gog-email-read.sh gmail messages search 'is:unread'
+Exec-approval: auto-approved (wrapper is in allowlist)
+```
+
+For dangerous operations (send, reply, create), the wrapper passes through to `/usr/local/bin/gog`, which triggers exec-approval as intended.
+
+The key insight: **don't fight the LLM's training-data patterns — intercept them at the system level.** Let it generate whatever `gog` commands it wants, and route them appropriately before they hit the approval system.
+
+### Design Decisions
+
+1. **Dangerous patterns checked first** — if the command matches `gmail send`, `gmail reply`, etc., it always passes to the real binary regardless of other patterns
+2. **Unknown commands fall through to real binary** — safe default; new/invented subcommands trigger approval rather than silently failing
+3. **No doc changes needed for the LLM** — the wrapper is invisible to Amber. She can use bare `gog` or wrapper scripts; both work. This eliminates the entire class of "she used the wrong command" errors
+4. **Lives in the git repo** — updated via `git pull` like everything else
+
+### Setup
+
+1. Script at `scripts/gog` (already in repo)
+2. Add scripts dir to PATH before `/usr/local/bin`: `export PATH="/path/to/scripts:$PATH"` in `~/.zshrc`
+3. `chmod +x scripts/gog`
+4. Restart gateway
+5. Verify: `which gog` → should show the scripts directory, not `/usr/local/bin`
+
+### Takeaway
+
+When an LLM assistant consistently ignores doc-level instructions for tool usage, the problem isn't the docs — it's that training-data patterns are stronger than in-context instructions during generation. The fix is to intercept at the system level (PATH, shell wrapper, proxy) rather than continuing to update docs. This is the same principle as using guardrails/filters instead of relying on prompt engineering alone.
+
+---
+
 *Add new lessons below as you encounter them. Include the date, what went wrong, what you tried, and what fixed it.*

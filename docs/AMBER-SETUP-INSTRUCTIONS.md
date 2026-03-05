@@ -179,6 +179,80 @@ No re-copy needed — the symlink points to the repo copy, so `git pull` updates
 
 ---
 
+## STEP 2C: Install the gog PATH wrapper (PRIMARY STRUCTURAL ENFORCEMENT)
+
+**⚠️ This is the fix that actually works.** The plugin (Step 2B) has reliability issues loading. This PATH wrapper achieves the same result at the shell level — simpler and more reliable.
+
+### Why this exists
+
+Amber's LLM repeatedly generates bare `gog` commands for email reads despite docs saying to use `gog-email-read.sh`. This is a training-data pattern that doc-level instructions cannot override. We tried:
+1. Updating skill docs 4+ times → she still uses bare `gog`
+2. Multiple session restarts with fresh context → same result
+3. The `gog-guard` plugin (Step 2B) → plugin loader is unreliable
+
+The PATH wrapper is a ~90 line bash script called `gog` that sits in the scripts directory. When that directory is in PATH *before* `/usr/local/bin`, it intercepts all `gog` calls and routes them:
+
+| Amber types | Wrapper routes to | Approval? |
+|------------|-------------------|-----------|
+| `gog gmail messages search ...` | `gog-email-read.sh` | ✅ Auto-approved |
+| `gog gmail thread get ...` | `gog-email-read.sh` | ✅ Auto-approved |
+| `gog gmail labels list` | `gog-email-read.sh` | ✅ Auto-approved |
+| `gog gmail thread modify ...` | `gog-email-tag.sh` | ✅ Auto-approved |
+| `gog cal events ...` | `gog-cal-read.sh` | ✅ Auto-approved |
+| `gog gmail send ...` | `/usr/local/bin/gog` | ❌ Requires approval |
+| `gog cal create ...` | `/usr/local/bin/gog` | ❌ Requires approval |
+| Any unknown command | `/usr/local/bin/gog` | ❌ Requires approval |
+
+### Install
+
+```bash
+# 1. Pull latest repo (wrapper is at scripts/gog)
+cd ~/.openclaw/workspace && git pull origin main
+
+# 2. Make it executable
+chmod +x ~/.openclaw/workspace/scripts/gog
+
+# 3. Add scripts directory to PATH BEFORE /usr/local/bin
+echo 'export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 4. Verify PATH resolution
+which gog
+# Should show: /Users/amberives/.openclaw/workspace/scripts/gog
+# NOT: /usr/local/bin/gog
+
+# 5. Restart gateway
+openclaw gateway restart
+```
+
+### Test
+
+```bash
+# Read — should NOT trigger approval (routed to gog-email-read.sh)
+gog gmail labels list
+
+# Send — SHOULD trigger approval (passed to /usr/local/bin/gog)
+gog gmail send --to "test@example.com" --subject "test" --body-html "<p>test</p>"
+# (Cancel after verifying approval fires)
+```
+
+### How it works (defense in depth)
+
+The wrapper checks patterns in this order:
+1. **Dangerous patterns first** (send, reply, delete, create) → always pass to real `/usr/local/bin/gog` → triggers approval
+2. **Email read patterns** → route to `gog-email-read.sh` → auto-approved
+3. **Email tag patterns** → route to `gog-email-tag.sh` → auto-approved
+4. **Calendar read patterns** → route to `gog-cal-read.sh` → auto-approved
+5. **Anything else** → pass to real `/usr/local/bin/gog` → triggers approval (safe default)
+
+This means even if Amber invents `gog` subcommands not in any docs (which she does — e.g., `gog gmail inbox`), unknown commands fall through to the real binary and trigger approval rather than silently failing.
+
+### Updating
+
+The wrapper lives in the git repo at `scripts/gog`. After `git pull`, it's updated in place — no re-copy needed.
+
+---
+
 ## STEP 3: Configure approval channel separation (PREVENTS SELF-APPROVAL)
 
 Route exec approvals to Dave's PRIVATE Telegram DM (chat ID `8703088279`):
@@ -332,10 +406,10 @@ After completing steps 1-8, confirm:
 
 - [ ] `skills/` directory has 5 skill folders
 - [ ] `workflows/` directory has `email-triage.lobster.yaml`
-- [ ] `gog-guard` plugin is installed and loaded (`openclaw plugins list` shows it)
-- [ ] `gog gmail labels list` does NOT trigger approval (plugin rewrites to wrapper)
-- [ ] `gog gmail threads modify` does NOT trigger approval (plugin rewrites to wrapper)
-- [ ] `gog gmail send` DOES trigger approval (plugin leaves it unchanged)
+- [ ] `which gog` shows `/Users/amberives/.openclaw/workspace/scripts/gog` (PATH wrapper active)
+- [ ] `gog gmail labels list` does NOT trigger approval (wrapper routes to gog-email-read.sh)
+- [ ] `gog gmail threads modify` does NOT trigger approval (wrapper routes to gog-email-tag.sh)
+- [ ] `gog gmail send` DOES trigger approval (wrapper passes to /usr/local/bin/gog)
 - [ ] Approval prompts arrive in Dave's PRIVATE Telegram, not Amber's channel
 - [ ] grep/cat/ls don't trigger approval
 - [ ] `cat ~/.openclaw/exec-approvals.json` shows no raw `gog` entry in **`agents.main.allowlist`**
