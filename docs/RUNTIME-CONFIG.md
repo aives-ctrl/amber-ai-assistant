@@ -63,18 +63,16 @@ The goal: email/calendar READS flow freely, SENDS require Dave's Telegram approv
 **⚠️ The allowlist itself is NOT in `openclaw.json`.** It lives in `~/.openclaw/exec-approvals.json` and is managed via CLI:
 ```bash
 openclaw approvals allowlist add "/Users/amberives/.openclaw/workspace/scripts/gog-*"
-openclaw approvals allowlist add "/usr/local/bin/gog-email-read.sh"
-openclaw approvals allowlist add "/usr/local/bin/gog-cal-read.sh"
 cat ~/.openclaw/exec-approvals.json  # verify entries
 openclaw approvals allowlist remove <path>  # if needed
 ```
 
 **Do NOT put `"allowlist": [...]` in `openclaw.json`** — it's an unrecognized key and will crash the gateway.
 
-**Allowlisted paths (use globs to cover both locations):**
-- `/Users/amberives/.openclaw/workspace/scripts/gog-*` (glob covers all gog wrapper scripts in workspace)
-- `/usr/local/bin/gog-email-read.sh` (if symlinked to /usr/local/bin)
-- `/usr/local/bin/gog-cal-read.sh` (if symlinked to /usr/local/bin)
+**Allowlisted paths:**
+- `/Users/amberives/.openclaw/workspace/scripts/gog-*` (glob covers all gog wrapper scripts)
+
+**⚠️ The ONLY valid path for wrapper scripts is `/Users/amberives/.openclaw/workspace/scripts/`.** Do NOT use `/usr/local/bin/` — the scripts are not symlinked there.
 
 **Also allowlist basic shell tools** (prevents grep, cat, ls from triggering approval):
 ```bash

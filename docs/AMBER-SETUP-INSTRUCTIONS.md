@@ -37,8 +37,6 @@ openclaw approvals allowlist remove "<wrong-path>"
 Then add the correct entries with globs:
 ```bash
 openclaw approvals allowlist add "/Users/amberives/.openclaw/workspace/scripts/gog-*"
-openclaw approvals allowlist add "/usr/local/bin/gog-email-read.sh"
-openclaw approvals allowlist add "/usr/local/bin/gog-cal-read.sh"
 ```
 
 Add basic shell tools so grep/cat/ls stop triggering approval:
