@@ -24,9 +24,9 @@ You should see: `email-read/`, `email-send/`, `calendar-read/`, `calendar-create
 
 ## STEP 2: Fix the exec allowlist (glob patterns + shell tools)
 
-First, clear any broken entries:
+First, check current allowlist entries:
 ```bash
-openclaw approvals allowlist list
+cat ~/.openclaw/exec-approvals.json
 ```
 
 Remove any entries that point to wrong paths or the raw `gog` binary:
@@ -50,12 +50,14 @@ openclaw approvals allowlist add "/usr/bin/python3"
 openclaw approvals allowlist add "/opt/homebrew/bin/grep"
 ```
 
-Verify:
+Verify by checking the file directly:
 ```bash
-openclaw approvals allowlist list
+cat ~/.openclaw/exec-approvals.json
 ```
 
 Should show wrapper script globs + shell tools. Should NOT show raw `/usr/local/bin/gog`.
+
+**⚠️ Note:** `openclaw approvals allowlist list` may not exist in all versions. Use `cat ~/.openclaw/exec-approvals.json` to inspect the allowlist instead.
 
 ---
 
@@ -76,24 +78,53 @@ This means:
 
 ## STEP 4: Configure safe bins (shell tool approvals)
 
+Add trusted directories so basic shell tools AND wrapper scripts don't trigger approval:
 ```bash
-openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin"]'
+openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin", "/Users/amberives/.openclaw/workspace/scripts"]'
 ```
+
+**⚠️ Including the scripts directory is critical.** The exec-approval allowlist matching can fail on wrapper scripts even when paths are correct. Adding the scripts directory to `safeBinTrustedDirs` bypasses this by trusting all binaries in that directory.
 
 ---
 
 ## STEP 5: Apply cost control settings
 
+**⚠️ The config paths are under `agents.defaults`, NOT `session`.**
+
 ```bash
-openclaw config set session.pruning.mode cache-ttl
-openclaw config set session.pruning.ttl 5m
-openclaw config set session.contextTokens 50000
+openclaw config set agents.defaults.contextPruning.mode cache-ttl
+openclaw config set agents.defaults.contextPruning.ttl 5m
+openclaw config set agents.defaults.contextTokens 50000
 openclaw config set model.caching true
 ```
 
+This caps context at 50k tokens (prevents $59 sessions) and trims stale tool output after 5 minutes.
+
 ---
 
-## STEP 6: Install telegram-approval-buttons plugin (if not already installed)
+## STEP 6: Apply safety settings (REQUIRED)
+
+Prevent skills from auto-allowlisting binaries:
+```bash
+openclaw config set tools.exec.autoAllowSkills false
+```
+
+**⚠️ `askFallback` cannot be set via CLI** (there is no `openclaw approvals defaults` subcommand). You must edit the file directly:
+
+Open `~/.openclaw/exec-approvals.json` and ensure the `"defaults"` section contains `"askFallback": "deny"`:
+```json
+{
+  "defaults": {
+    "askFallback": "deny"
+  }
+}
+```
+
+If the `"defaults"` key doesn't exist, add it. This ensures that if the approval UI is unavailable (e.g., during gateway restart), commands are DENIED rather than auto-approved.
+
+---
+
+## STEP 7: Install telegram-approval-buttons plugin (if not already installed)
 
 ```bash
 openclaw plugins install telegram-approval-buttons
@@ -106,7 +137,7 @@ openclaw plugins list
 
 ---
 
-## STEP 7: Restart gateway and test
+## STEP 8: Restart gateway and test
 
 ```bash
 openclaw doctor
@@ -133,7 +164,7 @@ grep -i "test" memory/*.md
 
 ---
 
-## STEP 8: Process the 25 unread email backlog
+## STEP 9: Process the 25 unread email backlog
 
 After everything is working, process the inbox:
 ```bash
@@ -144,7 +175,7 @@ Categorize each email per HEARTBEAT.md rules. Send Dave ONE consolidated Telegra
 
 ---
 
-## STEP 9 (FUTURE): Gmail PubSub setup
+## STEP 10 (FUTURE): Gmail PubSub setup
 
 Google Calendar API is now enabled (2026-03-04). Remaining setup:
 
@@ -175,7 +206,7 @@ This eliminates polling. Emails arrive in real time, pre-fetched. Heartbeat beco
 
 ## Verification Summary
 
-After completing steps 1-7, confirm:
+After completing steps 1-8, confirm:
 
 - [ ] `skills/` directory has 5 skill folders
 - [ ] `workflows/` directory has `email-triage.lobster.yaml`
@@ -183,5 +214,6 @@ After completing steps 1-7, confirm:
 - [ ] Raw gog sends DO trigger approval
 - [ ] Approval prompts arrive in Dave's PRIVATE Telegram, not Amber's channel
 - [ ] grep/cat/ls don't trigger approval
-- [ ] `openclaw approvals allowlist list` shows no raw `gog` entry
+- [ ] `cat ~/.openclaw/exec-approvals.json` shows no raw `gog` entry in allowlist
+- [ ] `askFallback` is set to `"deny"` in exec-approvals.json
 - [ ] Email backlog is being processed
