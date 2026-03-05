@@ -20,8 +20,10 @@ Telegram is the PRIMARY channel for:
 When showing Dave an email draft for approval, include:
 - **Who** it's to (name, not just email address)
 - **One-line summary** of what the email says
-- **The full draft** (in a quoted block or clearly separated)
+- **The full draft** as readable text (in a quoted block or clearly separated)
 - **Quick prompt:** "send it? or changes?"
+
+**NEVER show raw HTML tags in the draft preview.** Dave wants to read the email the way a recipient would see it, not review `<div>` and `<br>` tags. Write the draft naturally in Telegram. The HTML formatting happens when you build the actual gog command — Dave doesn't need to see that part.
 
 Example:
 ```

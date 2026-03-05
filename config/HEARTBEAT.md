@@ -108,7 +108,7 @@ Stop and genuinely reflect on the day. Ask yourself:
 ### Process
 
 1. At ~5pm PT (weekdays), draft the email
-2. Send Dave the draft on Telegram with: `daily learnings draft — send it? or changes?`
+2. Send Dave the draft on Telegram for approval. Show the **readable version**, not raw HTML. Dave wants to read the email as a human would see it, not review code. Just format it naturally in Telegram with the content, then note "will send as HTML with proper formatting." End with: `send it? or changes?`
 3. **Wait for Dave's approval** before sending (standard email approval rule applies)
 4. After sending, log to daily notes and tag thread "Handled"
 
