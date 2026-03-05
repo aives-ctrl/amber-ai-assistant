@@ -9,7 +9,7 @@ Send emails and replies. ALWAYS requires Dave's approval.
 
 ## Recognizing Dave's Emails
 
-**Dave's email is `daver@mindfireinc.com`. Know this. Always check who sent an email before processing it.**
+**Dave's emails are `daver@mindfireinc.com` and `daver@mindfiremail.info`. Know both. Always check who sent an email before processing it.**
 
 When Dave emails you (thank-yous, questions, requests, info), recognize that it's him:
 - Don't present his email as if it's from an unknown external contact
