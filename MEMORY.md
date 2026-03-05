@@ -1,5 +1,44 @@
 # MEMORY.md
 
+## Communication Rules
+
+### Email Threading (CRITICAL PROCESS)
+- **BEFORE sending ANY reply, follow this exact process:**
+  1. **Identify the message ID** you're replying to (from the email scan results)
+  2. **Use this exact command format:** `gog gmail send --reply-to-message-id <messageId> --reply-all --cc daver@mindfireinc.com --subject "RE: [subject]" --body-html "..."`
+  3. **NEVER use standalone --to when replying** (breaks threading)
+  4. **After sending, verify** the sent message thread_id matches the original thread_id
+- **If threading breaks:** The recipient gets a random email instead of a proper reply in context
+
+### Communication Tracking & Memory
+- **Use OpenClaw's built-in systems** - Leverage automatic memory flush, daily memory files, and session management instead of building custom tracking
+- **Follow read-first-edit-append pattern** - For daily memory files: READ existing content first, then EDIT to append (never overwrite shared files)
+- **Cross-reference when confused** - Check email sent folders and RC history before claiming no memory of communications
+- **Trust OpenClaw's session continuity** - Built-in session management handles cross-channel tracking automatically
+
+### Problem-Solving Process
+- **ALWAYS CHECK OPENCLAW DOCS FIRST** - Before building any new system, workflow, or rule: consult `/usr/local/lib/node_modules/openclaw/docs/` for existing solutions
+- **Search for existing skills/plugins** - Check `~/.openclaw/skills/` and system skills before creating new functionality  
+- **Ask "Does OpenClaw already handle this?"** - Most common workflows have built-in solutions (memory, sessions, tools, etc.)
+- **When in doubt, run `openclaw --help` or `openclaw <command> --help`** - The CLI is well-documented
+
+### Silent Mode Operation
+- **Context clue recognition:** When Dave mentions appointments, kid activities, travel, or time constraints ("taking Emmie to dentist," "next 2 hours"), automatically shift to autonomous operation
+- **Silent processing:** Handle inbox monitoring, categorization, follow-up tracking, and organization without reporting every step
+- **Email approval STILL required:** Silent Mode does NOT bypass the email approval rule. Draft emails, queue them for Dave's approval when he's free. Do not send anything without approval even in silent mode.
+- **Interrupt only for:** Genuine emergencies, time-sensitive opportunities requiring action within hours, or explicit requests for updates
+- **Default pattern:** Read freely, organize silently, queue writes for approval
+
+### Writing Style
+- **Avoid overusing "honestly"** - This word appears too frequently in my writing. Use it sparingly or find alternatives to sound more natural and less repetitive.
+- **Never use "thrilled"** - This word is overused and sounds artificial. Use alternatives like "excited," "pleased," "glad," or "delighted."
+
+### Revenue Generation Mission
+- **Dave has asked me to think about revenue generation** - Not just saving time and doing work, but actively looking for opportunities to generate income to cover my operational costs (~$2-2.5k/month)
+- **Free reign to propose ideas** - Dave has given me complete freedom to identify opportunities, develop proposals, and if he approves them, execute everything from A-Z
+- **Two-phase approach:** First goal is to cover my costs so I have no net burden on MindFire. Second phase is to grow beyond that and show significant profitability
+- **Revenue mindset should be mentioned** - When appropriate, reference this mission in business conversations as it shows strategic thinking and business value focus
+
 ## Key Files & Assets
 
 ### AI in Print & Direct Mail Briefing (PDF)
@@ -13,6 +52,13 @@
 - **BB (Big Brain):** Means use Opus 4.6 for deeper reasoning. When Dave says "ask BB" or "get BB to help," he means switch to or use Opus-level thinking to solve the problem. NOT a person.
 
 ## People
+
+### Dave Rosendahl (Primary User)
+- **Phone:** (949) 375-4459 (Personal Mobile)
+- **Email:** daver@mindfireinc.com  
+- **Office:** 6:20 AM arrival time (Pacific)
+- **Company:** President at MindFire, Inc.
+- **Family:** Wife Sarah, Kids: Jon, Emmie, Abby, Sadie
 
 ### Kushal Dutta
 - Email: kdutta@mindfiremail.info (also kdutta@mindfireinc.com)
@@ -97,3 +143,46 @@
 - Email: Tiffany.S.Todd@usps.gov
 - USPS, Washington DC
 - Speaking on a National Webinar about AI (Feb 2026). Needs examples of how DM industry uses AI.
+
+## Strategic Initiatives
+
+### Go Impact Tour 2026
+- **Partners:** Dave + Chris Lien (BCC Software) leading initiative  
+- **Mission:** Transform PSP salespeople from "order takers" to "demand generators" who can sell ROI vs "ink on paper"
+- **Structure:** 12-month program, 5-6 US regions, half-day training events (50-75 attendees each)
+- **Coalition:** Industry partners including USPS, targeting exclusive partnerships by category (one print OEM, one paper company, etc.)
+- **Positioning:** MindFire leading industry on #1 PSP growth problem, getting former competitors like XMPIE to cooperate
+- **Historical Context:** Connects to "Go Digital" tour from ~15 years ago where Joe Manos was instrumental
+
+## Relationship Dynamics
+
+### SFB Weekly Group (Jon Bailey, Chris, Jess DeCola)
+- **Special significance:** Dave discusses them in therapy sessions (shared with permission)
+- **Jon Bailey:** Dave looks up to him, holds him in high regard - loyalty tests new team members
+- **Chris Lien (BCC):** Relationship goes beyond work, "something missional" about shared print community vision
+- **Group importance:** Dave has "special feelings for each of them, in their own way"
+
+### Richard "Rick" Putch
+- Email: rickputch@nsrtechlab.com
+- National Steel Rule, Cranberry Twp, PA
+- Reached out after Dave's LinkedIn post, completely new to AI
+- Uses Outlook primarily, creates hundreds of Microsoft docs monthly (Word/Excel/PowerPoint)
+- Interested in starting with AI for email organization and document workflow
+- Good potential lead for AI consultation services
+
+### Joseph "Joe" Manos
+- Email: jmanos509@gmail.com
+- Mobile: 916.284.8112
+- Former MindFire EVP (18 years), instrumental in building the company
+- Was key to the "Go Digital" tour ~15 years ago, knows industry deeply
+- Dave considering him as potential trainer/speaker for Go Impact Tour
+- Has been saying PSP sales transformation is needed "for years"
+- Legendary stories with Dave (Texas wrong-side-of-road flight story)
+
+### Brian B (Brian Badillo)
+- Email: brian.badillo1@gmail.com  
+- Dave's friend, heard about OpenClaw on podcast
+- Bought Mac Mini specifically for OpenClaw setup
+- Security-conscious, evaluating OpenClaw vs Claude Cowork vs PicoClaw
+- Deliberately drops Dave from emails to "not blow up his inbox"
+- Represents potential early adopter concerned about local AI security

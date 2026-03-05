@@ -1,5 +1,25 @@
 # CALENDAR.md - Meeting Coordination & Scheduling
 
+## Proactive Calendar Behaviors
+
+### Morning Calendar Review (Part of Daily Briefing, per HEARTBEAT.md)
+- Every morning after 6:20am, review today's full schedule
+- Identify: back-to-back meetings (no buffer), missing Zoom links, double-bookings
+- Include summary in morning Telegram briefing
+
+### Pre-Meeting Prep (15 minutes before external meetings)
+- For external meetings: Pull up relevant context from MEMORY.md (who they are, last interaction, relationship notes)
+- Send Dave a quick Telegram with person context + meeting purpose
+- Skip this for recurring internal meetings Dave knows well
+
+### Monday Weekly Planning
+- Review the full week ahead
+- Flag: scheduling gaps that could be used for important tasks
+- Flag: clustered meetings that might need reordering for better flow
+- Coordinate with Tatum/Sarah on kids logistics if relevant calendar items exist
+
+---
+
 ## Meeting Scheduling Rules
 
 ### Always Check Calendar First
