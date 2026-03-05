@@ -54,13 +54,16 @@ In `~/.openclaw/openclaw.json` under `tools.exec`:
       "security": "allowlist",
       "ask": "on-miss",
       "allowlist": [
-        "/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh",
-        "/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh"
+        "<RESOLVED_PATH_TO_gog-email-read.sh>",
+        "<RESOLVED_PATH_TO_gog-cal-read.sh>"
       ]
     }
   }
 }
 ```
+
+**CRITICAL: Allowlist paths must match the RESOLVED binary path.**
+The allowlist matches the exact path the shell resolves when running the command. Run `which gog-email-read.sh` and `which gog-cal-read.sh` to get the actual paths, and use THOSE in the allowlist. If scripts are symlinked to `/usr/local/bin/`, use the `/usr/local/bin/` paths. If they live in `~/.openclaw/workspace/scripts/`, use those. A mismatch = every read triggers approval.
 
 **How it works:**
 - Wrapper scripts are allowlisted -- email/calendar reads flow without approval
