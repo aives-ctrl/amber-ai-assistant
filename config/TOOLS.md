@@ -14,45 +14,57 @@ Environment-specific config. Skills define how tools work; this is your cheat sh
 - **Cross-channel continuity:** Dave's identity is linked across Telegram, RC SMS, and RC Team. All of Dave's DMs share session context. What he says on Telegram, you remember on SMS.
 - **Memory is the backup:** Even if sessions reset, daily notes and `memory_search` provide continuity. Always search memory when context seems missing.
 
-### Calendar Access
+### Calendar Access -- see `skills/calendar-read/SKILL.md` and `skills/calendar-create/SKILL.md`
 - Dave's calendar ID: `daver@mindfireinc.com` (shared to my account)
-- List events: `gog cal events daver@mindfireinc.com --from X --to Y` (NOT `events ls`)
-- Create events: `gog cal create daver@mindfireinc.com --summary ... --from ... --to ...`
+- List events: use calendar-read skill (full path wrapper, no approval needed)
+- Create events: use calendar-create skill (raw gog, approval required)
 - My calendar (aives@mindfiremail.info) has no primary events; always use Dave's ID
+
+### Skills (Canonical Patterns)
+
+Skills define the exact commands and processes for common operations. Always follow the skill pattern instead of improvising exec commands.
+
+| Skill | Location | Approval? |
+|-------|----------|-----------|
+| email-read | `skills/email-read/SKILL.md` | NO - allowlisted wrapper |
+| email-send | `skills/email-send/SKILL.md` | YES - draft first, then approve |
+| calendar-read | `skills/calendar-read/SKILL.md` | NO - allowlisted wrapper |
+| calendar-create | `skills/calendar-create/SKILL.md` | YES - propose to Dave first |
+| startup | `skills/startup/SKILL.md` | NO - run at every session start |
+
+### Workflows (Multi-Step Pipelines)
+
+| Workflow | Location | Purpose |
+|----------|----------|---------|
+| email-triage | `workflows/email-triage.lobster.yaml` | Full inbox processing pipeline |
 
 ### Exec Approvals (Email Safety System) - ACTIVE
 
+**How it works:**
+- Wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`) are allowlisted. Reads flow without approval.
+- Raw `gog` is NOT allowlisted. Sends/creates trigger approval via Dave's Telegram.
+- Basic shell tools (grep, cat, ls) are allowlisted. They don't trigger approval.
+- Approval prompts go to Dave's PRIVATE Telegram chat. Amber cannot self-approve.
+
 **Read operations (NO approval needed):**
-- Email reads: Use `gog-email-read.sh gmail messages search ...` (allowlisted wrapper)
-- Email thread reads: Use `gog-email-read.sh gmail thread get ...` (allowlisted wrapper)
-- Calendar reads: Use `gog-cal-read.sh cal events ...` (allowlisted wrapper)
-- These wrapper scripts ONLY permit read-only gog subcommands. They reject sends/creates.
+- ALWAYS use FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh ...`
+- ALWAYS use FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh ...`
+- NEVER use basename. NEVER use raw `gog` for reads.
+- Run ONE command at a time. No parallel reads.
 
 **Write operations (approval REQUIRED):**
-- Email sends: Use `gog gmail send ...` (requires Dave's Telegram approval)
-- Email replies: Use `gog gmail reply ...` (requires Dave's Telegram approval)
-- Calendar creates: Use `gog cal create ...` (requires Dave's Telegram approval)
-- Thread modifications: Use `gog gmail thread modify ...` (requires Dave's Telegram approval)
+- Email sends: `gog gmail send ...` (Dave approves via Telegram buttons)
+- Email replies: `gog gmail send --reply-to-message-id ...` (Dave approves)
+- Calendar creates: `gog cal create ...` (Dave approves)
+- Thread modifications: `gog gmail thread modify ...` (Dave approves)
+- ONE command at a time. Wait for approval before next command.
 
-**Approval mechanics:**
-- Dave receives a prompt with full UUID, command details, and expiry
-- Dave approves with `/approve <FULL-UUID> allow-once` (NEVER `allow-always` for gog)
-- Always use `timeout: 3600` (60 min) so Dave has time to approve
-- Cannot auto-send copy-paste approval lines (approval forwarding bypasses main session)
-- If Dave is unavailable, `askFallback: "deny"` blocks the command
+**Self-approval is impossible and forbidden.** Approvals route to Dave's private chat. See AGENTS.md.
 
-**Configuration:**
-- `gog-email-read.sh` and `gog-cal-read.sh` should be on the exec allowlist
-- Raw `gog` binary is NOT on the allowlist (all raw gog commands need approval)
-- All other binaries in `/bin/*`, `/usr/bin/*`, `/usr/local/bin/*` (except gog) are allowlisted
-- Config: `tools.exec.host=gateway`, `tools.exec.security=allowlist`, `approvals.exec.enabled=true`
-
-**If wrapper scripts trigger on-miss (allowlist not working):**
-- The wrappers enforce read-only safety even without the allowlist -- they reject send/reply commands
-- If the approval prompt fires for a wrapper call, approve it -- it's safe (read-only)
-- Use `allow-always` for the wrapper script paths specifically (NOT for raw gog)
-- See `docs/RUNTIME-CONFIG.md` section 3 for troubleshooting steps
-- Report the issue to Dave so Claude Code can diagnose the allowlist configuration
+**If wrapper scripts trigger approval (allowlist not matching):**
+- Approve it (it's read-only safe)
+- Report to Dave so allowlist can be fixed
+- See `docs/RUNTIME-CONFIG.md` section 3 for troubleshooting
 
 ### Discipline Files
 - Email → `email.md` | Follow-ups → `follow-up.md` | Calendar → `calendar.md` | Comms → `communications.md`

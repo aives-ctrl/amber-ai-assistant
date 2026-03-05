@@ -62,25 +62,37 @@ The goal: email/calendar READS flow freely, SENDS require Dave's Telegram approv
 
 **⚠️ The allowlist itself is NOT in `openclaw.json`.** It lives in `~/.openclaw/exec-approvals.json` and is managed via CLI:
 ```bash
-openclaw approvals allowlist add /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
-openclaw approvals allowlist add /Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh
+openclaw approvals allowlist add "/Users/amberives/.openclaw/workspace/scripts/gog-*"
+openclaw approvals allowlist add "/usr/local/bin/gog-email-read.sh"
+openclaw approvals allowlist add "/usr/local/bin/gog-cal-read.sh"
 openclaw approvals allowlist list    # verify
 openclaw approvals allowlist remove <path>  # if needed
 ```
 
 **Do NOT put `"allowlist": [...]` in `openclaw.json`** — it's an unrecognized key and will crash the gateway.
 
-**Current allowlisted paths:**
-- `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`
-- `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh`
+**Allowlisted paths (use globs to cover both locations):**
+- `/Users/amberives/.openclaw/workspace/scripts/gog-*` (glob covers all gog wrapper scripts in workspace)
+- `/usr/local/bin/gog-email-read.sh` (if symlinked to /usr/local/bin)
+- `/usr/local/bin/gog-cal-read.sh` (if symlinked to /usr/local/bin)
+
+**Also allowlist basic shell tools** (prevents grep, cat, ls from triggering approval):
+```bash
+openclaw approvals allowlist add "/usr/bin/grep"
+openclaw approvals allowlist add "/usr/bin/cat"
+openclaw approvals allowlist add "/usr/bin/ls"
+openclaw approvals allowlist add "/opt/homebrew/bin/grep"
+```
 
 **CRITICAL: Amber must use FULL PATHS when calling wrapper scripts.**
-The scripts are not on PATH. Calling `gog-email-read.sh` by basename triggers approval because the shell can't resolve it. Use the full path:
+The allowlist matches on resolved binary paths. Calling by basename may not resolve correctly. Always use the full path:
 ```bash
 /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list     # ✅ no approval
 /Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal events ...           # ✅ no approval
 gog gmail send ...                                                                     # 🔒 triggers approval
 ```
+
+See `skills/email-read/SKILL.md` and `skills/calendar-read/SKILL.md` for the canonical command patterns.
 
 **How it works:**
 - Wrapper scripts are allowlisted -- email/calendar reads flow without approval
@@ -246,6 +258,111 @@ Or via CLI: `openclaw config set model.caching true`
 
 This can cut API bills by 50-70% by caching the system prompt across calls.
 
+## 9. Approval Channel Separation (PREVENTS SELF-APPROVAL)
+
+**Problem:** Amber operates in the same Telegram chat where `/approve` commands are processed. She can self-approve her own commands by typing `/approve <UUID> allow-once` in the same chat.
+
+**Fix:** Route exec approvals to Dave's PERSONAL Telegram DM with the bot, not the group/channel Amber uses.
+
+```json5
+approvals: {
+  exec: {
+    enabled: true,
+    targets: [
+      { channel: "telegram", to: "<DAVE_PERSONAL_CHAT_ID>" }
+    ]
+  }
+}
+```
+
+To find Dave's personal chat ID: check `openclaw sessions list` or look at the Telegram bot's message history with Dave's personal account.
+
+This way:
+- Amber converses in her regular Telegram channel
+- Approval prompts go to Dave's PRIVATE DM with the bot
+- Amber has no access to Dave's private chat, so she cannot self-approve
+- The telegram-approval-buttons plugin still works (buttons show in Dave's private chat)
+
+**CRITICAL:** This is the only reliable way to prevent self-approval. Config rules telling Amber "don't self-approve" are insufficient because the model will do it under pressure (we've observed this).
+
+## 10. Safe Bins Configuration (Shell Tool Approvals)
+
+**Problem:** Basic shell commands like `grep`, `cat`, `ls` trigger exec-approval even though they're harmless.
+
+```json5
+tools: {
+  exec: {
+    safeBinTrustedDirs: ["/bin", "/usr/bin", "/opt/homebrew/bin"]
+  }
+}
+```
+
+Or via CLI: `openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin"]'`
+
+Also explicitly allowlist commonly used tools:
+```bash
+openclaw approvals allowlist add "/usr/bin/grep"
+openclaw approvals allowlist add "/usr/bin/cat"
+openclaw approvals allowlist add "/usr/bin/ls"
+openclaw approvals allowlist add "/opt/homebrew/bin/grep"
+openclaw approvals allowlist add "/usr/bin/python3"
+```
+
+## 11. Gmail PubSub Integration (Push-Based Email)
+
+**Goal:** Instead of Amber polling every 30 minutes, Gmail pushes new emails to OpenClaw in real time.
+
+**Setup:**
+```bash
+gog gmail watch serve \
+  --topic projects/<GCP_PROJECT>/topics/gog-gmail-watch \
+  --account aives@mindfiremail.info \
+  --label INBOX \
+  --include-body --max-bytes 4096 \
+  --hook-url http://127.0.0.1:18789/hook/gmail \
+  --hook-token "$OPENCLAW_HOOK_TOKEN"
+```
+
+**Config in openclaw.json:**
+```json5
+hooks: {
+  gmail: {
+    model: "anthropic/claude-sonnet-4-20250514",
+    sessionKey: "email-{{messageId}}",
+    channel: "last"
+  }
+}
+```
+
+**Benefits:**
+- Emails arrive in real time (not 30-minute polling)
+- Email content is pre-fetched (no search/get exec calls needed)
+- Heartbeat becomes backup, not primary mechanism
+- Eliminates 80% of exec calls that currently cause approval friction
+
+**Prerequisites:**
+- Google Calendar API must be enabled (Dave's action item)
+- GCP Pub/Sub topic must be created
+- `OPENCLAW_HOOK_TOKEN` must be set in environment
+
+## 12. Skills and Workflows
+
+**Skills** are defined in `~/.openclaw/workspace/skills/` and provide Amber with canonical patterns for common operations. They replace ad-hoc exec commands with documented, repeatable workflows.
+
+Current skills (in git repo under `skills/`):
+- `email-read/` - Read-only email operations (search, get, thread, labels)
+- `email-send/` - Send emails with mandatory draft-first approval
+- `calendar-read/` - Read-only calendar operations
+- `calendar-create/` - Create events with approval
+- `startup/` - Session initialization (load context before responding)
+
+**Lobster Workflows** are defined in `workflows/` and provide multi-step pipelines with single approval gates.
+
+Current workflows:
+- `email-triage.lobster.yaml` - Full inbox processing pipeline (search -> read -> categorize -> draft -> send)
+
+After `git pull`, these are available at `~/.openclaw/workspace/skills/` and `~/.openclaw/workspace/workflows/`.
+
 ---
 
 ## Verification Checklist
@@ -256,14 +373,22 @@ After applying these settings, verify by running:
 2. `openclaw config get memorySearch.enabled` -- should be `true`
 3. `openclaw config get model.caching` -- should be `true`
 4. `openclaw sessions list` -- check that Dave's sessions share an identity key
-5. Have Amber check email with `gog-email-read.sh gmail labels list` -- should NOT trigger approval
+5. Have Amber check email with full-path wrapper -- should NOT trigger approval:
+   `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list`
 6. Have Amber try `gog gmail send` -- SHOULD trigger approval
-7. If step 5 triggers approval, run the troubleshooting commands in section 3 above and report output to Dave
+7. If step 5 triggers approval: check `openclaw approvals allowlist list` and fix paths
+8. `grep -i "brenda" memory/*.md` -- should NOT trigger approval (grep is allowlisted)
 
 ### Exec-Approval Safety Checks (run periodically)
 
-8. `openclaw approvals allowlist list` -- the raw `gog` binary should NOT appear. Only wrapper scripts should be listed.
-9. `cat ~/.openclaw/exec-approvals.json | grep -i gog` -- check for accidental `gog` entries in any allowlist
-10. `cat ~/.openclaw/exec-approvals.json | grep -i autoAllowSkills` -- should be `false`
-11. `cat ~/.openclaw/exec-approvals.json | grep -i askFallback` -- should be `"deny"`
-12. If `gog gmail send` does NOT trigger approval, the gate is broken. Run the fix commands in Section 3 ("DANGER: Always Allow" subsection).
+9. `openclaw approvals allowlist list` -- raw `gog` binary should NOT appear. Only wrapper scripts + shell tools.
+10. Approval prompts should arrive in Dave's PRIVATE Telegram chat, not the agent's channel
+11. `cat ~/.openclaw/exec-approvals.json | grep -i autoAllowSkills` -- should be `false`
+12. `cat ~/.openclaw/exec-approvals.json | grep -i askFallback` -- should be `"deny"`
+13. If `gog gmail send` does NOT trigger approval, the gate is broken. Run the fix commands in Section 3.
+
+### Skills Verification
+
+14. `ls ~/.openclaw/workspace/skills/` -- should show: email-read, email-send, calendar-read, calendar-create, startup
+15. `ls ~/.openclaw/workspace/workflows/` -- should show: email-triage.lobster.yaml
+16. After `/new`, Amber should run `startup` skill before responding (check daily notes for startup log)

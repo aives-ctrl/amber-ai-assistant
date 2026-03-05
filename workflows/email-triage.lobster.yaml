@@ -1,0 +1,100 @@
+# email-triage.lobster.yaml
+# Lobster workflow for processing inbox emails
+# Replaces the ad-hoc pattern of firing 3-5 separate exec commands
+#
+# Usage: lobster run email-triage
+# OR: reference in HEARTBEAT.md as the standard email processing pattern
+#
+# This workflow:
+# 1. Searches inbox (allowlisted, no approval)
+# 2. Agent categorizes results (LLM reasoning, no exec)
+# 3. For needs-reply items: drafts responses and shows Dave on Telegram
+# 4. Only the actual send triggers exec-approval (one prompt per email)
+#
+# KEY PRINCIPLE: All reads are allowlisted. Only sends require approval.
+# This eliminates approval spam for routine email checks.
+
+name: email-triage
+description: Search inbox, read new messages, categorize, and draft responses
+
+steps:
+  - name: search_inbox
+    description: Find unread, unhandled emails
+    exec:
+      command: /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
+      args:
+        - gmail
+        - messages
+        - search
+        - "is:unread -label:Handled -from:daver@mindfireinc.com"
+        - "--max"
+        - "20"
+    # No approval needed - wrapper is allowlisted
+
+  - name: read_threads
+    description: Read full thread context for each new message
+    condition: steps.search_inbox.exitCode == 0
+    foreach: steps.search_inbox.messages
+    exec:
+      command: /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
+      args:
+        - gmail
+        - thread
+        - get
+        - "{{item.threadId}}"
+    # No approval needed - wrapper is allowlisted
+
+  - name: categorize
+    description: |
+      Categorize each email:
+      - needs-reply: Someone expects a response
+      - needs-action: Requires Amber to do something
+      - FYI: Informational, no action needed
+      - ignore: Security alerts, marketing, automated per email.md rules
+    agent: true
+    # Pure LLM reasoning step - no exec needed
+
+  - name: handle_fyi_and_ignore
+    description: Tag FYI and ignore items as Handled silently
+    condition: steps.categorize.hasFyiOrIgnore == true
+    foreach: steps.categorize.fyiAndIgnoreThreads
+    exec:
+      command: gog
+      args:
+        - gmail
+        - thread
+        - modify
+        - "{{item.threadId}}"
+        - "--add"
+        - "Handled"
+        - "--remove"
+        - "UNREAD"
+        - "--force"
+    approve: true
+    # Thread modify needs approval (raw gog)
+
+  - name: draft_responses
+    description: Draft replies for needs-reply items, show Dave on Telegram
+    condition: steps.categorize.hasNeedsReply == true
+    agent: true
+    # LLM drafts + sends Telegram preview. No exec.
+
+  - name: send_approved_reply
+    description: Send the reply after Dave approves
+    condition: steps.draft_responses.approved == true
+    exec:
+      command: gog
+      args:
+        - gmail
+        - send
+        - "--reply-to-message-id"
+        - "{{item.messageId}}"
+        - "--reply-all"
+        - "--cc"
+        - "daver@mindfireinc.com"
+        - "--subject"
+        - "RE: {{item.subject}}"
+        - "--body-html"
+        - "{{item.htmlBody}}"
+    approve: true
+    # SINGLE approval gate for the actual send
