@@ -353,7 +353,7 @@ When instructing an LLM to log/learn from feedback, make the trigger as broad as
 
 **Date:** 2026-03-05
 **Severity:** Critical — assistant ignores documented commands and invents its own
-**Time to resolve:** ~6 hours across multiple attempts
+**Time to resolve:** ~10 hours across multiple sessions and 6 failed approaches
 
 ### The Problem
 
@@ -365,7 +365,7 @@ Amber's skill docs said "ALWAYS use the full wrapper script path `/Users/amberiv
 
 Each bare `gog` call resolved to `/usr/local/bin/gog`, which was not in the exec-approval allowlist, triggering approval prompts for safe read operations.
 
-### What We Tried That Failed
+### What We Tried That Failed (6 attempts)
 
 #### Attempt 1: Doc-level instructions (4+ iterations)
 
@@ -385,26 +385,54 @@ Thought maybe old context was persisting. Ran `/new` after every doc update.
 
 **Result:** Fresh sessions loaded the updated docs correctly, but the LLM still generated bare `gog` from training patterns. The docs are read, but training-data patterns for CLI usage override them during generation.
 
+#### Attempt 4: `pathPrepend` config
+
+Set `tools.exec.pathPrepend` to include the scripts directory, hoping OpenClaw would resolve `gog` to the wrapper.
+
+**Result:** `pathPrepend` only affects child shell environments spawned by the exec tool. It does NOT affect the gateway's own binary resolution for exec-approval decisions. The gateway still resolved `gog` to `/usr/local/bin/gog`.
+
+#### Attempt 5: Symlink in `/opt/homebrew/bin/`
+
+Created a symlink at `/opt/homebrew/bin/gog` → `scripts/gog`, since `/opt/homebrew/bin` was listed in `safeBinTrustedDirs`.
+
+**Result:** `/opt/homebrew/bin` does NOT exist on Intel Macs. Amber's MacBook Air is Intel — Homebrew installs to `/usr/local` on Intel, `/opt/homebrew` on Apple Silicon. The symlink target directory simply didn't exist. Wasted hours debugging before discovering this with `brew --prefix` → `/usr/local`.
+
+#### Attempt 6: Soft gateway restarts
+
+After adding the scripts directory to `~/.zshrc` PATH, ran `openclaw gateway restart`.
+
+**Result:** Soft restarts may not spawn a new process that inherits the updated PATH. The existing gateway process kept its old PATH. Binary resolution still pointed to `/usr/local/bin/gog`.
+
 ### What Actually Worked
 
-**A PATH wrapper script.** A bash script named `gog` placed in the scripts directory, which is added to PATH before `/usr/local/bin`. When the LLM generates `gog gmail messages search ...`, the shell resolves `gog` to the wrapper (not the real binary), and the wrapper routes the command to the appropriate allowlisted script.
+**PATH wrapper script + hard gateway kill.** Two pieces, both required:
+
+1. **The wrapper:** A bash script named `gog` in the scripts directory (which is in `safeBinTrustedDirs`). It intercepts bare `gog` calls. For safe read patterns, it calls the real binary via `exec` (subprocess inherits auto-approval). For dangerous write patterns, it BLOCKS with an error message.
+
+2. **Hard kill + restart from correct shell:** `pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart` from a shell where `which gog` returns the wrapper path. The gateway inherits PATH at startup. A soft restart doesn't create a new process.
 
 ```
-LLM generates: gog gmail messages search 'is:unread'
-Shell resolves: /path/to/scripts/gog  (wrapper, not real binary)
-Wrapper routes: /path/to/scripts/gog-email-read.sh gmail messages search 'is:unread'
-Exec-approval: auto-approved (wrapper is in allowlist)
-```
+Read:  gog gmail messages search 'is:unread'
+       → gateway resolves to scripts/gog (wrapper, in safeBinTrustedDirs)
+       → auto-approved (trusted directory)
+       → wrapper matches safe pattern → exec /usr/local/bin/gog "$@"
+       → command runs instantly
 
-For dangerous operations (send, reply, create), the wrapper passes through to `/usr/local/bin/gog`, which triggers exec-approval as intended.
+Write: gog gmail send --to someone@example.com
+       → gateway resolves to scripts/gog (wrapper, in safeBinTrustedDirs)
+       → auto-approved
+       → wrapper matches dangerous pattern → BLOCKS with error
+       → LLM retries with /usr/local/bin/gog (from skill docs)
+       → NOT in trusted dir → exec-approval fires → Dave approves
+```
 
 The key insight: **don't fight the LLM's training-data patterns — intercept them at the system level.** Let it generate whatever `gog` commands it wants, and route them appropriately before they hit the approval system.
 
 ### Design Decisions
 
-1. **Dangerous patterns checked first** — if the command matches `gmail send`, `gmail reply`, etc., it always passes to the real binary regardless of other patterns
-2. **Unknown commands fall through to real binary** — safe default; new/invented subcommands trigger approval rather than silently failing
-3. **No doc changes needed for the LLM** — the wrapper is invisible to Amber. She can use bare `gog` or wrapper scripts; both work. This eliminates the entire class of "she used the wrong command" errors
+1. **Wrapper BLOCKS dangerous commands** (doesn't pass through) — because the wrapper is in a trusted directory and auto-approves, passing sends through via `exec` would bypass approval entirely. Blocking forces the LLM to use the full path `/usr/local/bin/gog` for writes.
+2. **Unknown commands also BLOCK** — safe default; new/invented subcommands get blocked rather than silently auto-approved
+3. **No doc changes needed for the LLM** — the wrapper is invisible to Amber. She uses bare `gog` for reads (works via wrapper). Send commands in skill docs use `/usr/local/bin/gog` (full path, bypasses wrapper, triggers approval).
 4. **Lives in the git repo** — updated via `git pull` like everything else
 
 ### Setup
@@ -412,12 +440,29 @@ The key insight: **don't fight the LLM's training-data patterns — intercept th
 1. Script at `scripts/gog` (already in repo)
 2. Add scripts dir to PATH before `/usr/local/bin`: `export PATH="/path/to/scripts:$PATH"` in `~/.zshrc`
 3. `chmod +x scripts/gog`
-4. Restart gateway
+4. **Hard kill** gateway: `pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart`
 5. Verify: `which gog` → should show the scripts directory, not `/usr/local/bin`
+
+### ⚠️ Fragility: Reboots and Gateway Restarts
+
+The gateway inherits PATH from the shell that starts it. If the gateway restarts from a non-interactive context (launchd, crash recovery), `~/.zshrc` may not be read, so the scripts directory won't be in PATH. Reads will start triggering approval again.
+
+**Recovery (run from any terminal):**
+```bash
+export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH" && pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+```
+
+**Symptom:** If `gog gmail labels list` starts prompting for approval, run the recovery command above.
 
 ### Takeaway
 
 When an LLM assistant consistently ignores doc-level instructions for tool usage, the problem isn't the docs — it's that training-data patterns are stronger than in-context instructions during generation. The fix is to intercept at the system level (PATH, shell wrapper, proxy) rather than continuing to update docs. This is the same principle as using guardrails/filters instead of relying on prompt engineering alone.
+
+**Additional takeaways:**
+- Always verify Homebrew paths — Intel Macs use `/usr/local`, Apple Silicon uses `/opt/homebrew`. Run `brew --prefix` to check.
+- `pathPrepend` affects child shells, NOT gateway binary resolution.
+- Soft `openclaw gateway restart` may not spawn a new process. Always use `pkill -f openclaw-gateway` for config/PATH changes.
+- OpenClaw's exec-approval system is binary-path only — no subcommand matching. This is confirmed in the [official docs](https://docs.openclaw.ai/tools/exec-approvals). GitHub issue #2023 requested tool-level HITL for messaging; it was closed without implementation.
 
 ---
 

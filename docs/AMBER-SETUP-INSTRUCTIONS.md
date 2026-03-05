@@ -190,18 +190,18 @@ Amber's LLM repeatedly generates bare `gog` commands for email reads despite doc
 2. Multiple session restarts with fresh context → same result
 3. The `gog-guard` plugin (Step 2B) → plugin loader is unreliable
 
-The PATH wrapper is a ~90 line bash script called `gog` that sits in the scripts directory. When that directory is in PATH *before* `/usr/local/bin`, it intercepts all `gog` calls and routes them:
+The PATH wrapper is a bash script called `gog` that sits in the scripts directory. When that directory is in PATH *before* `/usr/local/bin`, it intercepts all `gog` calls. Because the scripts directory is in `safeBinTrustedDirs`, the wrapper auto-approves. For safe reads, the wrapper calls the real binary via `exec` (subprocess — no additional approval check). For dangerous writes, the wrapper blocks with an error message telling the LLM to use the full path `/usr/local/bin/gog` (which triggers exec-approval).
 
-| Amber types | Wrapper routes to | Approval? |
+| Amber types | What happens | Approval? |
 |------------|-------------------|-----------|
-| `gog gmail messages search ...` | `gog-email-read.sh` | ✅ Auto-approved |
-| `gog gmail thread get ...` | `gog-email-read.sh` | ✅ Auto-approved |
-| `gog gmail labels list` | `gog-email-read.sh` | ✅ Auto-approved |
-| `gog gmail thread modify ...` | `gog-email-tag.sh` | ✅ Auto-approved |
-| `gog cal events ...` | `gog-cal-read.sh` | ✅ Auto-approved |
-| `gog gmail send ...` | `/usr/local/bin/gog` | ❌ Requires approval |
-| `gog cal create ...` | `/usr/local/bin/gog` | ❌ Requires approval |
-| Any unknown command | `/usr/local/bin/gog` | ❌ Requires approval |
+| `gog gmail messages search ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved (wrapper is trusted) |
+| `gog gmail thread get ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
+| `gog gmail labels list` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
+| `gog gmail thread modify ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
+| `gog cal events ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
+| `gog gmail send ...` | Wrapper BLOCKS → error message | ❌ Blocked (must use `/usr/local/bin/gog`) |
+| `gog cal create ...` | Wrapper BLOCKS → error message | ❌ Blocked |
+| Any unknown command | Wrapper BLOCKS → error message | ❌ Blocked (safe default) |
 
 ### Install
 
@@ -221,31 +221,46 @@ which gog
 # Should show: /Users/amberives/.openclaw/workspace/scripts/gog
 # NOT: /usr/local/bin/gog
 
-# 5. Restart gateway
-openclaw gateway restart
+# 5. HARD KILL + restart gateway (critical — soft restart may not pick up PATH)
+pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
 ```
+
+**⚠️ The hard kill (`pkill -f openclaw-gateway`) is essential.** A soft `openclaw gateway restart` may not spawn a new process that inherits the updated PATH. The gateway resolves binary paths using its own process PATH (set at startup). If the gateway was started before the PATH change, it won't see the wrapper.
 
 ### Test
 
 ```bash
-# Read — should NOT trigger approval (routed to gog-email-read.sh)
+# Read — should NOT trigger approval
 gog gmail labels list
 
-# Send — SHOULD trigger approval (passed to /usr/local/bin/gog)
-gog gmail send --to "test@example.com" --subject "test" --body-html "<p>test</p>"
+# Send — SHOULD trigger approval (LLM must use /usr/local/bin/gog for sends)
+/usr/local/bin/gog gmail send --to "test@example.com" --subject "test" --body-html "<p>test</p>"
 # (Cancel after verifying approval fires)
 ```
 
-### How it works (defense in depth)
+### How it works
 
 The wrapper checks patterns in this order:
-1. **Dangerous patterns first** (send, reply, delete, create) → always pass to real `/usr/local/bin/gog` → triggers approval
-2. **Email read patterns** → route to `gog-email-read.sh` → auto-approved
-3. **Email tag patterns** → route to `gog-email-tag.sh` → auto-approved
-4. **Calendar read patterns** → route to `gog-cal-read.sh` → auto-approved
-5. **Anything else** → pass to real `/usr/local/bin/gog` → triggers approval (safe default)
+1. **Dangerous patterns first** (send, reply, delete, create) → BLOCKS with error message telling LLM to use `/usr/local/bin/gog`
+2. **Safe patterns** (search, get, list, labels, thread modify, cal events) → `exec /usr/local/bin/gog "$@"` (auto-approved because wrapper is in trusted dir)
+3. **Anything else** → BLOCKS with error message (safe default)
 
-This means even if Amber invents `gog` subcommands not in any docs (which she does — e.g., `gog gmail inbox`), unknown commands fall through to the real binary and trigger approval rather than silently failing.
+This means even if Amber invents `gog` subcommands not in any docs (which she does — e.g., `gog gmail inbox`), unknown commands are blocked rather than silently failing or auto-approving.
+
+**Why the wrapper blocks sends instead of passing through:** The wrapper is in `safeBinTrustedDirs`, so OpenClaw auto-approves it. If sends passed through via `exec`, they'd inherit that auto-approval — defeating the purpose. Blocking sends forces the LLM to call `/usr/local/bin/gog` directly for writes, which is NOT in safeBinTrustedDirs and triggers exec-approval.
+
+### After reboots / gateway restarts
+
+**⚠️ The PATH is fragile.** The gateway inherits PATH from the shell that starts it. If the gateway restarts automatically (crash, system reboot) from a context that doesn't read `~/.zshrc`, the scripts directory won't be in PATH and reads will start triggering approval again.
+
+**If reads start prompting for approval again, run this from a terminal:**
+```bash
+export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH" && pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+```
+
+This ensures the gateway process inherits the correct PATH with the scripts directory first.
+
+**⚠️ Intel vs Apple Silicon:** Homebrew installs to `/usr/local` on Intel Macs and `/opt/homebrew` on Apple Silicon. Amber's MacBook Air is Intel, so `/opt/homebrew/bin` does NOT exist. Don't attempt to symlink anything there.
 
 ### Updating
 
@@ -419,19 +434,26 @@ After completing steps 1-8, confirm:
 
 ### Troubleshooting: Reads still trigger approval
 
-If `gog gmail labels list` still triggers approval:
+If `gog gmail labels list` triggers approval after setup:
 
-1. **Check plugin is loaded.** Run `openclaw plugins list` — should show `gog-guard`. If not, re-create the symlink and restart:
+1. **Check which gog resolves to.** Run `which gog` — should show `/Users/amberives/.openclaw/workspace/scripts/gog`. If it shows `/usr/local/bin/gog`, the scripts directory isn't in PATH. Fix:
    ```bash
-   ln -sf ~/.openclaw/workspace/plugins/gog-guard ~/.openclaw/extensions/gog-guard
-   openclaw gateway restart
+   export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"
    ```
 
-2. **Check allowlist section.** `openclaw approvals allowlist add` puts entries in `agents.*.allowlist`. If `agents.main.allowlist` exists, it takes precedence and `agents.*` is ignored. Edit the JSON directly to add entries to `agents.main.allowlist`.
+2. **Hard kill the gateway.** A soft `openclaw gateway restart` may not pick up PATH changes. Always use:
+   ```bash
+   pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+   ```
 
-3. **Check `safeBinTrustedDirs`.** Run `openclaw config get tools.exec.safeBinTrustedDirs` — the scripts directory (`/Users/amberives/.openclaw/workspace/scripts`) should be listed.
+3. **Check `safeBinTrustedDirs`.** Run `openclaw config get tools.exec.safeBinTrustedDirs` — the scripts directory (`/Users/amberives/.openclaw/workspace/scripts`) must be listed.
 
-4. **Always restart gateway** after config/JSON edits: `openclaw gateway restart`
+4. **Check the approval prompt path.** When approval fires, look at the binary path shown. If it says `/usr/local/bin/gog`, the gateway is still resolving to the real binary (PATH not inherited). If it says `/Users/amberives/.openclaw/workspace/scripts/gog`, the wrapper is being called but isn't in a trusted dir.
+
+5. **After reboots:** The gateway may restart without the correct PATH. Run from a terminal:
+   ```bash
+   export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH" && pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+   ```
 
 ### Troubleshooting: gog commands timing out
 
