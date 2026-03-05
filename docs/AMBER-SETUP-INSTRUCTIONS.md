@@ -119,7 +119,49 @@ Should show:
 
 ---
 
-## STEP 2B: Always use full paths for wrapper scripts
+## STEP 2B: Install the gog-router shadow wrapper (STRUCTURAL ENFORCEMENT)
+
+**⚠️ Why this exists:** Amber's agent sometimes calls raw `gog` instead of the wrapper scripts, despite instructions in 4+ config files. This is a known OpenClaw community issue — prompt-level enforcement is unreliable. The shadow wrapper provides **structural** enforcement: even when she uses raw `gog`, the command gets routed to the correct wrapper automatically.
+
+### How it works
+1. A script called `gog-router.sh` lives in the repo at `scripts/gog-router.sh`
+2. It gets installed as `gog` (no `.sh`) at `/Users/amberives/.openclaw/bin-overrides/gog`
+3. OpenClaw's `pathPrepend` config puts that directory first in PATH
+4. When Amber runs `gog gmail messages search ...`, the router intercepts it and delegates to `gog-email-read.sh`
+5. When she runs `gog gmail send ...`, the router passes it through to the real `/usr/local/bin/gog` (still triggers approval)
+
+### Install commands
+```bash
+# 1. Create the bin-overrides directory
+mkdir -p /Users/amberives/.openclaw/bin-overrides
+
+# 2. Copy the router script as "gog" (no .sh extension — it shadows the real binary)
+cp ~/.openclaw/workspace/scripts/gog-router.sh /Users/amberives/.openclaw/bin-overrides/gog
+chmod +x /Users/amberives/.openclaw/bin-overrides/gog
+
+# 3. Tell OpenClaw to prepend this directory to PATH for all exec runs
+openclaw config set tools.exec.pathPrepend '["/Users/amberives/.openclaw/bin-overrides"]'
+```
+
+### Verify
+```bash
+# Should show the shadow wrapper, NOT /usr/local/bin/gog
+which gog
+# Expected: /Users/amberives/.openclaw/bin-overrides/gog
+
+# Test: read operation should work without approval
+/Users/amberives/.openclaw/bin-overrides/gog gmail labels list
+```
+
+### Updating the router
+When the repo updates `scripts/gog-router.sh`, re-copy it:
+```bash
+cp ~/.openclaw/workspace/scripts/gog-router.sh /Users/amberives/.openclaw/bin-overrides/gog
+```
+
+---
+
+## STEP 2C: Always use full paths for wrapper scripts
 
 **⚠️ The OpenClaw gateway does NOT source `~/.zshrc` or `~/.zshenv`.** Adding the scripts directory to PATH has no effect — the gateway spawns non-interactive shells that bypass all zsh init files.
 
@@ -285,9 +327,11 @@ After completing steps 1-8, confirm:
 
 - [ ] `skills/` directory has 5 skill folders
 - [ ] `workflows/` directory has `email-triage.lobster.yaml`
+- [ ] Shadow `gog` router is installed at `/Users/amberives/.openclaw/bin-overrides/gog`
+- [ ] `which gog` returns the shadow wrapper path, not `/usr/local/bin/gog`
 - [ ] Wrapper script reads don't trigger approval
 - [ ] Wrapper script thread tagging doesn't trigger approval
-- [ ] Raw gog sends DO trigger approval
+- [ ] Raw gog sends DO trigger approval (router passes them to real binary)
 - [ ] Approval prompts arrive in Dave's PRIVATE Telegram, not Amber's channel
 - [ ] grep/cat/ls don't trigger approval
 - [ ] `cat ~/.openclaw/exec-approvals.json` shows no raw `gog` entry in **`agents.main.allowlist`**
