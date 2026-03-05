@@ -81,6 +81,13 @@ Write a session summary to daily notes covering:
 - **Fallback if buttons aren't working:** Send the FULL `/approve` command (all 36 characters of the UUID, never truncated) as its OWN standalone Telegram message. NEVER summarize or truncate approval IDs.
 - After sending: log to daily notes + update follow-up tracker immediately
 
+**During long sessions (MANDATORY cost control):**
+- Run `/compact` every ~15 turns to prevent context bloat. This is the #1 cost driver.
+- A 267-message session without compacting cost $59. Context grows with every turn and each message re-caches the full context.
+- The pattern: work 10-15 turns, `/compact` to lock in progress and drop noise, continue. Repeat.
+- Before compacting, make sure important context is saved to daily notes or memory files. Compaction summarizes and drops detail.
+- If a session has been running for 2+ hours, you should have compacted at least twice.
+
 **Before restarting gateway:**
 - ALWAYS warn Dave first and wait for OK
 - Save any pending memory to disk before restart

@@ -83,7 +83,59 @@ The default exec-approval timeout is 120s. The timeout is NOT a global config se
 3. Test: `gog-email-read.sh gmail labels list` should work without approval
 4. Test: `gog gmail send ...` should still trigger approval
 
-## 4. Session Identity Links (Cross-channel continuity)
+## 4. Session Pruning & Context Cost Control
+
+Long sessions are the #1 cost driver. A 267-message session cost $59.30 because each message carried 100-130k tokens of cached context. These settings prevent that.
+
+### A. Cache-TTL Pruning (trims stale tool output)
+
+```json5
+session: {
+  pruning: {
+    mode: "cache-ttl",
+    ttl: "5m"
+  }
+}
+```
+
+Or via CLI: `openclaw config set session.pruning.mode cache-ttl && openclaw config set session.pruning.ttl 5m`
+
+This trims old tool results from in-memory context before each LLM call. Does NOT modify on-disk session history. Biggest single cost saver.
+
+### B. Context Token Limit (prevents runaway growth)
+
+```json5
+session: {
+  contextTokens: 50000
+}
+```
+
+Or via CLI: `openclaw config set session.contextTokens 50000`
+
+Without this, the agent uses the full model context window (~200k tokens). Capping at 50k forces automatic summarization when context grows too large, keeping per-message costs low.
+
+### C. Compact Long Sessions (Amber's responsibility)
+
+Amber should run `/compact` proactively every ~15 turns during long sessions. This is the "Pulse Strategy":
+1. Let context build for 10-15 turns
+2. Run `/compact` to lock in decisions and drop noise
+3. Repeat
+
+This is documented in AGENTS.md as a mandatory practice for multi-hour sessions.
+
+### D. Heartbeat Cache Warming
+
+If Anthropic's cache TTL is 5min (short), set heartbeat interval slightly under to prevent expensive full cache rewrites. Current heartbeat is every 30min (section 5). If using short cache retention, consider reducing to every 4-5 min during active hours — but weigh against the cost of each heartbeat call.
+
+For API key profiles, the default cache retention is "short" (5min). For OAuth/setup-token profiles, it may be longer. Check with: `openclaw config get model.cacheRetention`
+
+### E. Workspace File Audit
+
+Every config file (AGENTS.md, SOUL.md, TOOLS.md, etc.) is loaded into the system prompt on every turn. Every line costs tokens. Periodically audit and trim unused or redundant instructions. Target: keep total workspace config under 10k tokens.
+
+---
+
+## 5. Session Identity Links (Cross-channel continuity)
 
 ```json5
 session: {
@@ -102,7 +154,7 @@ Replace the placeholder values with Dave's actual IDs. This maps all of Dave's c
 To find Dave's Telegram ID: check `openclaw sessions list` for his existing Telegram session key.
 To find Dave's RC identifiers: check the RC plugin config or session keys.
 
-## 5. Heartbeat Configuration
+## 6. Heartbeat Configuration
 
 ```json5
 agents: {
@@ -119,7 +171,7 @@ agents: {
 }
 ```
 
-## 6. Heartbeat Model (Use Sonnet to save costs)
+## 7. Heartbeat Model (Use Sonnet to save costs)
 
 ```json5
 agents: {
@@ -131,7 +183,7 @@ agents: {
 }
 ```
 
-## 7. Prompt Caching
+## 8. Prompt Caching
 
 ```json5
 model: {
