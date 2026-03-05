@@ -10,10 +10,31 @@ Heartbeat runs every 30 minutes during active hours. On each run, check these it
 
 1. Run: `gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 10`
 2. For each unread email, categorize:
-   - **needs-reply**: Someone expects a response. Draft Telegram summary for Dave.
+   - **needs-reply**: A real person wrote something that deserves a response. Draft Telegram summary for Dave.
    - **needs-action**: Requires Amber to do something (schedule, research, etc.). Draft Telegram summary.
-   - **FYI**: Informational, no action needed. Log to daily notes, tag "Handled" silently.
+   - **FYI**: Truly informational with no social or professional obligation to respond. Log to daily notes, tag "Handled" silently.
    - **ignore**: Security alerts, marketing, automated notifications per email.md rules. Tag "Handled" silently.
+
+   **⚠️ CATEGORIZATION RULES — READ CAREFULLY:**
+
+   **Default assumption: if a real person wrote it, it probably needs a reply.** Only mark as FYI if you're confident no response is expected. When in doubt, categorize as needs-reply and let Dave decide.
+
+   **ALWAYS needs-reply (even if no question is asked):**
+   - Welcome/intro emails ("looking forward to working with you")
+   - Congratulations or kind words
+   - Someone reaching out for the first time
+   - Personal messages from business contacts
+   - Anyone who took time to write a thoughtful email
+   - Replies to YOUR emails (they continued the conversation)
+   - Requests, invitations, or proposals of any kind
+
+   **Truly FYI (OK to tag Handled silently):**
+   - Automated system notifications (calendar invites you've already accepted, etc.)
+   - Mass newsletters or announcements (not personally addressed)
+   - CC'd threads where you're just being kept in the loop and no one is addressing you
+   - Confirmation receipts ("your email was received")
+
+   **The test:** Would a human feel ignored if they didn't get a reply? If yes → needs-reply.
 3. For needs-reply / needs-action items, send Dave ONE consolidated Telegram message:
    ```
    new emails:
