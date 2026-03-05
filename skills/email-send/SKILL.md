@@ -67,18 +67,20 @@ This builds your style memory over time. The more lessons you log, the fewer cor
 
 ## Commands
 
-Send commands use `gog` and WILL trigger exec-approval (Dave approves via Telegram). Tag commands use the allowlisted wrapper script `gog-email-tag.sh` — no approval needed.
+Send commands use the **full binary path** `/usr/local/bin/gog` and WILL trigger exec-approval (Dave approves via Telegram). Tag commands use the allowlisted wrapper script `gog-email-tag.sh` — no approval needed.
+
+**⚠️ CRITICAL: Send commands MUST use `/usr/local/bin/gog`, not bare `gog`.** Bare `gog` resolves to a safety wrapper that blocks sends. If you see "BLOCKED: This wrapper does not allow write operations," you used the wrong path. Use the full path shown below.
 
 ```bash
 # Send new email (ALWAYS --body-html, ALWAYS font-size div, ALWAYS exact signature)
-gog gmail send \
+/usr/local/bin/gog gmail send \
   --to "recipient@example.com" \
   --cc "daver@mindfireinc.com" \
   --subject "Subject here" \
   --body-html "<div style=\"font-size:18px\"><p>Email body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
 
 # Reply to existing thread (preserves threading)
-gog gmail send \
+/usr/local/bin/gog gmail send \
   --reply-to-message-id <messageId> \
   --reply-all \
   --cc daver@mindfireinc.com \

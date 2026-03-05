@@ -5,31 +5,43 @@
 #
 # WHY THIS EXISTS:
 # Amber (the LLM) repeatedly uses bare `gog` for email reads despite docs
-# saying to use gog-email-read.sh. This is a training-data pattern that
-# doc-level instructions can't override reliably. This wrapper sits earlier
-# in PATH than /usr/local/bin/gog and transparently routes safe reads to
-# the allowlisted scripts — so even when she types `gog gmail messages search`,
-# it actually runs gog-email-read.sh (auto-approved, no exec-approval needed).
+# saying to use gog-email-read.sh. This wrapper is resolved via OpenClaw's
+# pathPrepend setting (NOT shell PATH) and transparently routes safe reads
+# to the allowlisted scripts.
 #
-# Dangerous operations (send, reply, create) pass through to the real
-# /usr/local/bin/gog binary, which is NOT in the allowlist, so exec-approval
-# fires as intended.
+# IMPORTANT: This wrapper lives in safeBinTrustedDirs, so it auto-approves.
+# Therefore it MUST NOT pass dangerous commands (send/reply/create) through
+# to the real binary — that would bypass exec-approval. Instead, dangerous
+# commands are BLOCKED with an error message telling the LLM to use the
+# full path /usr/local/bin/gog (which is NOT trusted, so approval fires).
 #
 # INSTALL:
-#   1. Place this script in the scripts directory (already there if you see this)
-#   2. Add the scripts directory to PATH *before* /usr/local/bin:
-#      export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"
-#   3. chmod +x this file
-#   4. Restart gateway
+#   1. Set pathPrepend: openclaw config set tools.exec.pathPrepend \
+#      '["/Users/amberives/.openclaw/workspace/scripts"]'
+#   2. chmod +x this file
+#   3. Restart gateway: openclaw gateway restart
 #
 # TEST:
-#   which gog          → should show /Users/amberives/.openclaw/workspace/scripts/gog
-#   gog gmail labels list  → should NOT trigger approval (routed to gog-email-read.sh)
-#   gog gmail send ...     → should trigger approval (passes to /usr/local/bin/gog)
+#   gog gmail labels list  → should auto-approve (routed to gog-email-read.sh)
+#   gog gmail send ...     → should print error telling LLM to use /usr/local/bin/gog
 
-REAL_GOG="/usr/local/bin/gog"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CMD="$*"
+
+# ─── DANGEROUS patterns — BLOCK these (do NOT pass through) ───
+# These MUST be blocked, not forwarded. This wrapper is in a trusted dir,
+# so anything it exec's would bypass approval. Instead, print an error
+# that tells the LLM to use the real binary path directly.
+DANGEROUS_PATTERNS=(
+    "gmail send"
+    "gmail reply"
+    "gmail draft"
+    "gmail delete"
+    "gmail trash"
+    "cal create"
+    "cal update"
+    "cal delete"
+)
 
 # ─── EMAIL READ patterns → route to gog-email-read.sh ───
 EMAIL_READ_PATTERNS=(
@@ -62,48 +74,44 @@ CAL_READ_PATTERNS=(
     "cal list"
 )
 
-# ─── DANGEROUS patterns — always pass through to real gog (triggers approval) ───
-# These are checked FIRST for safety. Even if a pattern above matches,
-# a dangerous keyword overrides it.
-DANGEROUS_PATTERNS=(
-    "gmail send"
-    "gmail reply"
-    "gmail draft"
-    "gmail delete"
-    "gmail trash"
-    "cal create"
-    "cal update"
-    "cal delete"
-)
-
-# Safety: check dangerous patterns first
+# === STEP 1: Block dangerous patterns ===
 for pattern in "${DANGEROUS_PATTERNS[@]}"; do
     if [[ "$CMD" == *"$pattern"* ]]; then
-        exec "$REAL_GOG" "$@"
+        echo "BLOCKED: This wrapper does not allow write operations (matched: $pattern)."
+        echo "Write commands require Dave's approval via exec-approval."
+        echo ""
+        echo "Run this command instead:"
+        echo "  /usr/local/bin/gog $CMD"
+        exit 1
     fi
 done
 
-# Check email read patterns
+# === STEP 2: Route email reads ===
 for pattern in "${EMAIL_READ_PATTERNS[@]}"; do
     if [[ "$CMD" == *"$pattern"* ]]; then
         exec "$SCRIPT_DIR/gog-email-read.sh" "$@"
     fi
 done
 
-# Check email tag patterns
+# === STEP 3: Route email tags ===
 for pattern in "${EMAIL_TAG_PATTERNS[@]}"; do
     if [[ "$CMD" == *"$pattern"* ]]; then
         exec "$SCRIPT_DIR/gog-email-tag.sh" "$@"
     fi
 done
 
-# Check calendar read patterns
+# === STEP 4: Route calendar reads ===
 for pattern in "${CAL_READ_PATTERNS[@]}"; do
     if [[ "$CMD" == *"$pattern"* ]]; then
         exec "$SCRIPT_DIR/gog-cal-read.sh" "$@"
     fi
 done
 
-# ─── Fallback: anything not matched → pass through to real gog ───
-# This triggers exec-approval for unknown commands, which is the safe default.
-exec "$REAL_GOG" "$@"
+# === STEP 5: Unknown commands — block with helpful error ===
+# Safer to block unknown commands than to pass them through,
+# since this wrapper is in a trusted directory.
+echo "UNKNOWN COMMAND: This wrapper doesn't recognize: gog $CMD"
+echo "If this is a read operation, add the pattern to scripts/gog."
+echo "If this is a write operation, use the full path:"
+echo "  /usr/local/bin/gog $CMD"
+exit 1
