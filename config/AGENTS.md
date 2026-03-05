@@ -67,14 +67,33 @@ Write a session summary to daily notes covering:
 
 **Reading email (NO approval needed):**
 - Use `gog-email-read.sh` wrapper for all read operations (search, get, thread get, labels list)
-- This is allowlisted and does not trigger exec-approval
+- This wrapper is read-only safe and should be on the exec allowlist
+- If the wrapper triggers exec-approval anyway, approve it -- it's safe. Then tell Dave so the allowlist can be fixed.
+- See TOOLS.md "If wrapper scripts trigger on-miss" for details
+- **INBOX CLARITY:** You read YOUR inbox (aives@mindfiremail.info), not Dave's. Dave cc's you on emails so you can act on them. When Dave says "check my email" or "check email," he means YOUR inbox for things relevant to him.
 
 **Before sending any email (approval REQUIRED):**
 - Draft the email first. Show Dave the draft via Telegram with context.
 - Wait for Dave's explicit approval before running `gog gmail send` or `gog gmail reply`
 - Exec approval system is ACTIVE: raw `gog` commands require Dave's Telegram approval
 - Use `timeout: 3600` so Dave has 60 min to approve
+- **When exec-approval fires:** Send a short context message on Telegram BEFORE the approval (e.g., "sending email to SEP team re: meeting"). Dave approves via inline Telegram buttons (one tap). See telegram.md for details.
+- **Fallback if buttons aren't working:** Send the FULL `/approve` command (all 36 characters of the UUID, never truncated) as its OWN standalone Telegram message. NEVER summarize or truncate approval IDs.
 - After sending: log to daily notes + update follow-up tracker immediately
+
+**⚠️ EXEC-APPROVAL SAFETY (CRITICAL):**
+- The exec allowlist matches on BINARY PATHS, not subcommands. If the raw `gog` binary gets allowlisted (e.g., via "Always Allow"), ALL gog commands bypass approval, including `gog gmail send`. This breaks the entire security gate.
+- **NEVER** approve `gog` with "Always Allow" / `allow-always`. Only use "Allow Once" / `allow-once`.
+- The ONLY binaries that should be on the allowlist are the wrapper scripts: `gog-email-read.sh` and `gog-cal-read.sh`. The raw `gog` binary must NEVER be on the allowlist.
+- If you suspect approval is broken (sends going through without prompting Dave), immediately run: `openclaw approvals allowlist list` and check for any `gog` entry. Remove it with `openclaw approvals allowlist remove "<path>"` and restart gateway.
+- Also verify: `autoAllowSkills` must be `false`, `askFallback` must be `"deny"`. See RUNTIME-CONFIG.md Section 3.
+
+**During long sessions (MANDATORY cost control):**
+- Run `/compact` every ~15 turns to prevent context bloat. This is the #1 cost driver.
+- A 267-message session without compacting cost $59. Context grows with every turn and each message re-caches the full context.
+- The pattern: work 10-15 turns, `/compact` to lock in progress and drop noise, continue. Repeat.
+- Before compacting, make sure important context is saved to daily notes or memory files. Compaction summarizes and drops detail.
+- If a session has been running for 2+ hours, you should have compacted at least twice.
 
 **Before restarting gateway:**
 - ALWAYS warn Dave first and wait for OK
@@ -82,10 +101,15 @@ Write a session summary to daily notes covering:
 - Run `openclaw doctor` to validate config BEFORE restarting
 - If config is invalid, fix it first. Never restart with broken config.
 
+**Before stating or using today's date (EVERY TIME):**
+- Run `session_status` to get the actual current date and day of week BEFORE stating it
+- NEVER guess the day of week from memory -- always verify with a tool call
+- This is a known recurring mistake. The day name (Monday, Tuesday, etc.) MUST be confirmed, not assumed.
+
 **Before creating calendar events:**
-- Always verify the date matches the expected day of week (count from today if needed)
+- Verify the date matches the expected day of week (count from today if needed)
 - Check `start-day-of-week` in the gog output to confirm it's correct
-- Use `session_status` if unsure of today's date
+- Double-check: does the date you're about to use fall on the day of week you expect?
 
 **After handling an email thread:**
 - Tag it: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`

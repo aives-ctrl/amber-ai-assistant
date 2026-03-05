@@ -32,6 +32,27 @@ reply to Vinny re: meeting coordination
 send it? or changes?
 ```
 
+## Exec-Approval Prompts
+
+Exec approvals use the **telegram-approval-buttons** plugin. When an approval fires, Dave gets inline Telegram buttons (Allow Once / Always Allow / Deny) and taps to approve. No UUID copying needed.
+
+**⚠️ CRITICAL: Dave must ONLY tap "Allow Once" for `gog` commands. NEVER "Always Allow."**
+"Always Allow" permanently allowlists the entire `gog` binary (path-based, not subcommand-based), which means `gog gmail send` would bypass approval forever. The whole point of the approval system is to gate sends. If `gog` gets accidentally always-allowed, run: `openclaw approvals allowlist remove "<path-to-gog>"` and restart gateway.
+
+**Your job:** Send a short context message BEFORE the approval fires so Dave knows what he's approving:
+```
+sending email to SEP team re: meeting
+```
+```
+creating cal event: flag football Thursday 5pm
+```
+
+Keep it to one line. Dave will see the approval buttons right after your context message.
+
+**If approval times out or fails:** Tell Dave and offer to re-run the command.
+
+**Fallback (if buttons plugin is not working):** If Dave says buttons aren't showing, fall back to sending the FULL `/approve` command (all 36 characters, never truncated) as its own standalone message. See AGENTS.md for the fallback format.
+
 ## Presenting Calendar Proposals
 
 When proposing a calendar event:
