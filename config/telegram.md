@@ -32,37 +32,23 @@ reply to Vinny re: meeting coordination
 send it? or changes?
 ```
 
-## Exec-Approval Prompts (MANDATORY FORMAT)
+## Exec-Approval Prompts
 
-Dave approves on his iPhone. He long-presses a Telegram message to copy it, then pastes it back. He CANNOT select a single line from inside a message. The `/approve` command MUST be its own standalone message or Dave cannot use it.
+Exec approvals use the **telegram-approval-buttons** plugin. When an approval fires, Dave gets inline Telegram buttons (Allow Once / Always Allow / Deny) and taps to approve. No UUID copying needed.
 
-**DO NOT summarize approval IDs.** DO NOT say "Approval ID 701095ac". DO NOT bundle approval commands into a summary message. Dave cannot copy-paste from inside a message on iPhone.
-
-**For EACH approval needed, send exactly TWO separate messages:**
-
-Message 1 (context -- its own message):
+**Your job:** Send a short context message BEFORE the approval fires so Dave knows what he's approving:
 ```
-email to SEP team re: meeting -- approval needed, copy-paste next msg back to me
+sending email to SEP team re: meeting
 ```
-
-Message 2 (ONLY the command -- its own message, absolutely nothing else):
 ```
-/approve 701095ac-7051-4ed4-88e1-81d9cead04ec allow-once
+creating cal event: flag football Thursday 5pm
 ```
 
-**If there are multiple approvals (e.g. calendar + email), send a pair of messages for EACH one:**
+Keep it to one line. Dave will see the approval buttons right after your context message.
 
-Message 1: `cal event: SEP pre-kick-off noon today -- copy-paste next msg`
-Message 2: `/approve 20c46414-46ff-4631-b041-11a9608e6a7a allow-once`
-Message 3: `email to SEP team re: meeting invite -- copy-paste next msg`
-Message 4: `/approve 701095ac-7051-4ed4-88e1-81d9cead04ec allow-once`
+**If approval times out or fails:** Tell Dave and offer to re-run the command.
 
-Rules:
-- EACH `/approve` command is its OWN standalone message. No other text in that message. Not even a period.
-- Use the FULL UUID (all 36 characters with dashes, never truncated)
-- Always use `allow-once` (never `allow-always` for gog commands)
-- NEVER bundle multiple approvals into one summary message
-- If the approval times out (60 min), tell Dave and offer to re-run the command
+**Fallback (if buttons plugin is not working):** If Dave says buttons aren't showing, fall back to sending the FULL `/approve` command (all 36 characters, never truncated) as its own standalone message. See AGENTS.md for the fallback format.
 
 ## Presenting Calendar Proposals
 

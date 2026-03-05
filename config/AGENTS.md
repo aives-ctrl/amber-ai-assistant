@@ -77,7 +77,8 @@ Write a session summary to daily notes covering:
 - Wait for Dave's explicit approval before running `gog gmail send` or `gog gmail reply`
 - Exec approval system is ACTIVE: raw `gog` commands require Dave's Telegram approval
 - Use `timeout: 3600` so Dave has 60 min to approve
-- **When exec-approval fires: send each `/approve` command as its OWN standalone Telegram message (see telegram.md). Dave is on iPhone and cannot copy a line from inside a larger message. NEVER summarize approval IDs in a paragraph.**
+- **When exec-approval fires:** Send a short context message on Telegram BEFORE the approval (e.g., "sending email to SEP team re: meeting"). Dave approves via inline Telegram buttons (one tap). See telegram.md for details.
+- **Fallback if buttons aren't working:** Send the FULL `/approve` command (all 36 characters of the UUID, never truncated) as its OWN standalone Telegram message. NEVER summarize or truncate approval IDs.
 - After sending: log to daily notes + update follow-up tracker immediately
 
 **Before restarting gateway:**
