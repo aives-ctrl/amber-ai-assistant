@@ -37,6 +37,7 @@ Skills define the exact commands and processes for common operations. Always fol
 | Workflow | Location | Purpose |
 |----------|----------|---------|
 | email-triage | `workflows/email-triage.lobster.yaml` | Full inbox processing pipeline |
+| email-send | `workflows/email-send.lobster.yaml` | **Opus-verified send** — catches threading/CC/format errors before sending |
 
 ### Exec Approvals (Email Safety System) - ACTIVE
 

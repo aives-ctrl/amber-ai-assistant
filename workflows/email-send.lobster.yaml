@@ -1,0 +1,106 @@
+# email-send.lobster.yaml
+# Verified email send with Opus 4.6 pre-flight validation.
+#
+# WHY THIS EXISTS: Amber (running Sonnet) repeatedly makes the same
+# email mistakes — using --to instead of --reply-to-message-id, dropping
+# CC recipients, using --body instead of --body-html. Doc-level
+# instructions don't reliably prevent these errors (see Lesson #8).
+#
+# This workflow adds an Opus 4.6 verifier step between "draft approved"
+# and "command executed." Opus reviews the actual gog command against the
+# original email headers and catches mistakes before they reach inboxes.
+#
+# FLOW:
+#   1. Amber provides: original email headers + her gog send command
+#   2. Opus verifier checks the command for known error patterns
+#   3. If FAIL → workflow stops, Amber sees specific errors to fix
+#   4. If PASS → command executes (triggers exec-approval for Dave)
+#   5. After send succeeds → auto-tag thread as Handled
+#
+# USAGE (from Amber's session):
+#   lobster run email-send \
+#     --arg original_from="Alex Fechner <AFechner@advprinting.com>" \
+#     --arg original_to="David Rosendahl <daver@mindfireinc.com>" \
+#     --arg original_cc="Bryan Beelek <bbeelek@advprinting.com>, Dan Tissi <DTissi@advprinting.com>" \
+#     --arg message_id="19cbff105304bf97" \
+#     --arg thread_id="19cbf0a3d6e227b1" \
+#     --arg subject="RE: Friday data call recap" \
+#     --arg body_html="<div style=\"font-size:18px\"><p>Thanks Alex...</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+#     --arg is_reply="true"
+
+name: email-send
+description: Opus-verified email send — catches threading, CC, and format errors before sending
+
+args:
+  original_from: {}
+  original_to: {}
+  original_cc: { default: "" }
+  message_id: {}
+  thread_id: {}
+  subject: {}
+  body_html: {}
+  is_reply: { default: "true" }
+
+steps:
+  # ──────────────────────────────────────────────
+  # STEP 1: Opus 4.6 verifies the send parameters
+  # ──────────────────────────────────────────────
+  - id: verify
+    command: >
+      openclaw.invoke --tool llm-task --action json --args-json '{
+        "prompt": "You are an email send validator. Check this outgoing email command for errors.\n\nORIGINAL EMAIL HEADERS:\n- From: ${original_from}\n- To: ${original_to}\n- CC: ${original_cc}\n\nOUTGOING COMMAND PARAMETERS:\n- is_reply: ${is_reply}\n- message_id: ${message_id}\n- subject: ${subject}\n- body_html starts with: (check for font-size div wrapper)\n\nCHECK THESE RULES:\n1. If is_reply=true, message_id MUST be provided (not empty). Using --to for a reply breaks threading.\n2. If is_reply=true, the command MUST use --reply-all (not just reply to sender). Missing --reply-all drops CC recipients.\n3. body_html MUST start with <div style=\"font-size:18px\"> (or similar font-size wrapper). Plain --body without -html renders in tiny font.\n4. Signature MUST end with exactly: Amber Ives<br>MindFire, Inc. (no title, no email address)\n5. If original_cc is not empty and is_reply=true, --reply-all will automatically include them. Verify CC recipients are not being dropped.\n6. Subject for replies MUST start with RE: and match the original thread.\n7. daver@mindfireinc.com should be CC-ed (unless Dave is already on To or CC).\n\nReturn your verdict as JSON.",
+        "input": "${body_html}",
+        "provider": "anthropic",
+        "model": "claude-opus-4-6",
+        "temperature": 0,
+        "maxTokens": 500,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "approved": {"type": "boolean", "description": "true if all checks pass"},
+            "errors": {"type": "array", "items": {"type": "string"}, "description": "List of specific errors found. Empty if approved."},
+            "warnings": {"type": "array", "items": {"type": "string"}, "description": "Non-blocking concerns."},
+            "summary": {"type": "string", "description": "One-line verdict"}
+          },
+          "required": ["approved", "errors", "summary"]
+        }
+      }'
+
+  # ──────────────────────────────────────────────
+  # STEP 2: HALT if verification failed
+  # ──────────────────────────────────────────────
+  - id: report-failure
+    command: >
+      echo "🚫 OPUS VERIFICATION FAILED" &&
+      echo "" &&
+      echo "Errors:" &&
+      echo '$verify.json.errors' | jq -r '.[]' &&
+      echo "" &&
+      echo "Fix these issues and re-run the workflow." &&
+      echo "DO NOT send the email until all checks pass."
+    condition: $verify.json.approved == false
+
+  # ──────────────────────────────────────────────
+  # STEP 3: Execute send (only if verified)
+  # Triggers exec-approval → Dave approves via Telegram
+  # ──────────────────────────────────────────────
+  - id: send-reply
+    command: >
+      /usr/local/bin/gog gmail send
+      --reply-to-message-id ${message_id}
+      --reply-all
+      --cc daver@mindfireinc.com
+      --subject "${subject}"
+      --body-html "${body_html}"
+    condition: $verify.json.approved == true
+    # This triggers exec-approval (Dave approves in Telegram)
+
+  # ──────────────────────────────────────────────
+  # STEP 4: Tag thread as Handled (only after send succeeds)
+  # ──────────────────────────────────────────────
+  - id: tag-handled
+    command: >
+      /Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh
+      gmail thread modify ${thread_id}
+      --add "Handled" --remove "UNREAD" --force
+    condition: $send-reply.exitCode == 0
