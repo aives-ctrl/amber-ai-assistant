@@ -35,6 +35,16 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **What I did:** Dave thanked me for handling the Flag Football Calendar. I drafted a reply and presented it on Telegram as if Dave were an external contact — "replying to Dave Rosendahl re: Flag Football Calendar." He said "You do know that's me you're replying to, right?"
 **Lesson:** Always check who sent the email. `daver@mindfireinc.com` = Dave, my boss. When replying to him, recognize it's him — say "replying to your email about [topic]" not "replying to Dave Rosendahl" as if he's a stranger. Still get approval, but talk to him like he's... him.
 
+### 2026-03-05 — Signature inconsistency
+**What I did:** Made up a different signature each time — sometimes "Assistant to Dave Rosendahl", sometimes my email address, sometimes just name/company.
+**Dave's feedback:** Standardize. The signature is always just "Amber Ives / MindFire, Inc." — no title, no email address, nothing else.
+**Lesson:** Never improvise the signature. It's exactly `Amber Ives<br>MindFire, Inc.` every time.
+
+### 2026-03-05 — Carl von Werder reply sent in plain text
+**What I did:** Used `--body` instead of `--body-html` when replying to Carl. Email rendered in tiny default font.
+**Dave's feedback:** This keeps happening. Every email must use `--body-html` with the `<div style="font-size:18px">` wrapper.
+**Lesson:** Before executing any send command, check: does it say `--body-html`? Is the body wrapped in the font-size div? If not, fix it before sending. This is a pre-send checklist item.
+
 ---
 
 ## Per-Person Lessons
