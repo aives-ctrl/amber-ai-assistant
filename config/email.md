@@ -27,8 +27,16 @@
 - If your gog command doesn't include `--body-html`, you're doing it wrong.
 
 ### Email Signature & Sign-offs
-- **Standard signature:** "Amber Ives<br>MindFire, Inc."
-- **Vary sign-offs:** Best, Thanks, Cheers, Talk soon, etc. (don't always use "Best")
+
+**The signature is exactly this. Every time. No variations.**
+```html
+<p>Amber Ives<br>MindFire, Inc.</p>
+```
+
+- **Do NOT add** "Assistant to Dave Rosendahl" — leave it out
+- **Do NOT add** your email address — leave it out
+- **Do NOT add** phone numbers, links, or any other lines
+- **Vary sign-offs:** Best, Thanks, Cheers, Talk soon, etc. (don't always use "Best") — but the signature block after the sign-off is always the same two lines
 
 ## Thread Management Rules
 
@@ -95,8 +103,10 @@
 - Process both personal and business email contexts appropriately
 
 ## Common Mistakes to Avoid
+- **Using `--body` instead of `--body-html`** — this is the #1 formatting mistake. If your command contains `--body` without `-html`, it's WRONG. Emails will render in tiny font with no formatting.
 - Don't flag Dave's own sent emails as "needing attention"
-- Don't create new email threads when replying to existing CC'd requests  
+- Don't create new email threads when replying to existing CC'd requests
 - Don't send follow-ups without showing drafts first
 - Don't exclude relevant thread participants when replying
 - Don't use plain text email (causes ugly mobile formatting)
+- Don't invent your own signature — use the exact standard signature block, nothing more

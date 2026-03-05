@@ -32,6 +32,10 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 5. **Wait for Dave's approval** in Telegram
 6. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
 7. **Only then** run the gog send command — for replies, use `--reply-to-message-id`, NEVER `--to`
+   **⚠️ PRE-SEND CHECKLIST — verify before executing:**
+   - Does the command use `--body-html`? (If it says `--body` without `-html`, STOP and fix it)
+   - Is the body wrapped in `<div style="font-size:18px">...</div>`?
+   - Is the signature exactly `Amber Ives<br>MindFire, Inc.`? (Nothing else — no title, no email address)
 8. **Tag the thread as Handled:** `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
 9. Log to daily notes + update follow-up tracker
 
@@ -54,12 +58,12 @@ This builds your style memory over time. The more lessons you log, the fewer cor
 These use raw `gog` and WILL trigger exec-approval. That's correct behavior.
 
 ```bash
-# Send new email (ALWAYS use --body-html, ALWAYS wrap in font-size div)
+# Send new email (ALWAYS --body-html, ALWAYS font-size div, ALWAYS exact signature)
 gog gmail send \
   --to "recipient@example.com" \
   --cc "daver@mindfireinc.com" \
   --subject "Subject here" \
-  --body-html "<div style=\"font-size:18px\"><p>Email body here</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
+  --body-html "<div style=\"font-size:18px\"><p>Email body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
 
 # Reply to existing thread (preserves threading)
 gog gmail send \
@@ -67,7 +71,7 @@ gog gmail send \
   --reply-all \
   --cc daver@mindfireinc.com \
   --subject "RE: Original Subject" \
-  --body-html "<div style=\"font-size:18px\"><p>Reply body here</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
+  --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
 
 # Tag thread as Handled after processing
 gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
@@ -91,11 +95,16 @@ Exceptions are OK when the content genuinely requires it (meeting recaps, detail
 
 ## HTML Rules (NO EXCEPTIONS)
 
-- ALWAYS use `--body-html` (never `--body`)
+- ALWAYS use `--body-html` (never `--body`). **If your command says `--body` without `-html`, it's WRONG.** This causes emails to render in tiny default font with no formatting. This is a recurring mistake — check every time.
 - ALWAYS wrap in `<div style="font-size:18px">...</div>`
 - Use `<p>` for paragraphs, `<strong>` for bold, `<br>` for line breaks
-- Signature: `Amber Ives<br>MindFire, Inc.`
 - Vary sign-offs: Best, Thanks, Cheers, Talk soon (don't always use "Best")
+
+**Signature is EXACTLY this — every email, no exceptions:**
+```html
+<p>Amber Ives<br>MindFire, Inc.</p>
+```
+Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just name and company.
 
 ## Threading Rules (CRITICAL)
 
@@ -121,6 +130,8 @@ This applies whether you replied, forwarded to Dave, or determined no action nee
 
 - NEVER send without showing Dave the draft first
 - NEVER self-approve send commands
+- NEVER use `--body` — ALWAYS use `--body-html`
+- Signature is ALWAYS `Amber Ives<br>MindFire, Inc.` — nothing else, ever
 - Always cc daver@mindfireinc.com (except when replying directly to Dave — he's already on the thread)
 - One send command at a time. Never batch multiple sends.
 - Use `timeout: 3600` so Dave has 60 min to approve

@@ -67,6 +67,23 @@ Should show wrapper script globs + shell tools. Should NOT show raw `/usr/local/
 
 ---
 
+## STEP 2B: Add scripts directory to PATH
+
+The wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`) live in the workspace scripts directory. Without this in PATH, calling them by basename fails with "command not found" even when the allowlist approves them.
+
+```bash
+echo 'export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Verify it works:
+```bash
+which gog-email-read.sh
+# Should output: /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
+```
+
+---
+
 ## STEP 3: Configure approval channel separation (PREVENTS SELF-APPROVAL)
 
 Route exec approvals to Dave's PRIVATE Telegram DM (chat ID `8703088279`):
