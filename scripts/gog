@@ -1,21 +1,22 @@
 #!/bin/bash
 
 # gog — Structural wrapper that intercepts bare `gog` calls.
-# Routes safe read operations directly to the real binary (auto-approved
-# because this wrapper is in a trusted location). Blocks dangerous
-# operations (send/reply/create) to force the LLM to use the full path
-# /usr/local/bin/gog, which triggers exec-approval.
+# Routes safe read operations to gog-real (a symlink to /usr/local/bin/gog
+# that lives in the trusted scripts dir, so OpenClaw auto-approves it).
+# Blocks dangerous operations (send/reply/create) to force the LLM to use
+# the full path /usr/local/bin/gog, which triggers exec-approval.
 #
-# INSTALL:
-#   ln -sf /path/to/this/script /opt/homebrew/bin/gog
-#   openclaw gateway restart
+# INSTALL (on Amber's machine):
+#   1. Ensure scripts dir is in PATH (via .zshrc)
+#   2. Create symlink: ln -sf /usr/local/bin/gog <scripts-dir>/gog-real
+#   3. Hard restart gateway: pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
 #
-# The symlink in /opt/homebrew/bin/ (a safeBinTrustedDirs directory) means
-# OpenClaw auto-approves this wrapper. Reads pass through to the real
-# binary. Sends are blocked, forcing the LLM to use the full path which
-# triggers proper exec-approval.
+# WHY gog-real: OpenClaw monitors exec() calls. If the wrapper calls
+# /usr/local/bin/gog directly, OpenClaw sees a new binary outside the
+# trusted dir and triggers approval. By exec'ing gog-real (a symlink
+# IN the trusted dir), the entire chain stays in trusted territory.
 
-REAL_GOG="/usr/local/bin/gog"
+REAL_GOG="/Users/amberives/.openclaw/workspace/scripts/gog-real"
 CMD="$*"
 
 # ─── DANGEROUS patterns — BLOCK (do NOT pass through) ───

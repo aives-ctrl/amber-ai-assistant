@@ -26,7 +26,7 @@ for pattern in "${ALLOWED_PATTERNS[@]}"; do
 done
 
 if [ "$ALLOWED" = true ]; then
-    exec gog $CMD
+    exec /Users/amberives/.openclaw/workspace/scripts/gog-real $CMD
 else
     echo "ERROR: This wrapper only allows read-only calendar operations."
     echo "Allowed: cal events, cal get, cal list"

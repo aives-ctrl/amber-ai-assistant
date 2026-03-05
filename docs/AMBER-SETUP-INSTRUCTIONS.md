@@ -194,11 +194,11 @@ The PATH wrapper is a bash script called `gog` that sits in the scripts director
 
 | Amber types | What happens | Approval? |
 |------------|-------------------|-----------|
-| `gog gmail messages search ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved (wrapper is trusted) |
-| `gog gmail thread get ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
-| `gog gmail labels list` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
-| `gog gmail thread modify ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
-| `gog cal events ...` | Wrapper matches safe pattern → `exec /usr/local/bin/gog` | ✅ Auto-approved |
+| `gog gmail messages search ...` | Wrapper matches safe pattern → `exec gog-real` | ✅ Auto-approved (both wrapper and gog-real are in trusted dir) |
+| `gog gmail thread get ...` | Wrapper matches safe pattern → `exec gog-real` | ✅ Auto-approved |
+| `gog gmail labels list` | Wrapper matches safe pattern → `exec gog-real` | ✅ Auto-approved |
+| `gog gmail thread modify ...` | Wrapper matches safe pattern → `exec gog-real` | ✅ Auto-approved |
+| `gog cal events ...` | Wrapper matches safe pattern → `exec gog-real` | ✅ Auto-approved |
 | `gog gmail send ...` | Wrapper BLOCKS → error message | ❌ Blocked (must use `/usr/local/bin/gog`) |
 | `gog cal create ...` | Wrapper BLOCKS → error message | ❌ Blocked |
 | Any unknown command | Wrapper BLOCKS → error message | ❌ Blocked (safe default) |
@@ -212,18 +212,23 @@ cd ~/.openclaw/workspace && git pull origin main
 # 2. Make it executable
 chmod +x ~/.openclaw/workspace/scripts/gog
 
-# 3. Add scripts directory to PATH BEFORE /usr/local/bin
+# 3. Create gog-real symlink (CRITICAL — see "Why gog-real" below)
+ln -sf /usr/local/bin/gog /Users/amberives/.openclaw/workspace/scripts/gog-real
+
+# 4. Add scripts directory to PATH BEFORE /usr/local/bin
 echo 'export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 
-# 4. Verify PATH resolution
+# 5. Verify PATH resolution
 which gog
 # Should show: /Users/amberives/.openclaw/workspace/scripts/gog
 # NOT: /usr/local/bin/gog
 
-# 5. HARD KILL + restart gateway (critical — soft restart may not pick up PATH)
+# 6. HARD KILL + restart gateway (critical — soft restart may not pick up PATH)
 pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
 ```
+
+**⚠️ Why gog-real:** OpenClaw monitors `exec()` calls. When the wrapper previously called `exec /usr/local/bin/gog`, OpenClaw saw a NEW binary execution outside the trusted dir and triggered approval — defeating the whole purpose. By symlinking the real binary INTO the trusted scripts dir as `gog-real`, the `exec` stays within trusted territory and auto-approves. The other wrapper scripts (`gog-email-read.sh`, `gog-email-tag.sh`, `gog-cal-read.sh`) also use `gog-real` for the same reason.
 
 **⚠️ The hard kill (`pkill -f openclaw-gateway`) is essential.** A soft `openclaw gateway restart` may not spawn a new process that inherits the updated PATH. The gateway resolves binary paths using its own process PATH (set at startup). If the gateway was started before the PATH change, it won't see the wrapper.
 
@@ -242,12 +247,14 @@ gog gmail labels list
 
 The wrapper checks patterns in this order:
 1. **Dangerous patterns first** (send, reply, delete, create) → BLOCKS with error message telling LLM to use `/usr/local/bin/gog`
-2. **Safe patterns** (search, get, list, labels, thread modify, cal events) → `exec /usr/local/bin/gog "$@"` (auto-approved because wrapper is in trusted dir)
+2. **Safe patterns** (search, get, list, labels, thread modify, cal events) → `exec gog-real "$@"` (auto-approved because both wrapper and gog-real symlink are in trusted dir)
 3. **Anything else** → BLOCKS with error message (safe default)
 
 This means even if Amber invents `gog` subcommands not in any docs (which she does — e.g., `gog gmail inbox`), unknown commands are blocked rather than silently failing or auto-approving.
 
-**Why the wrapper blocks sends instead of passing through:** The wrapper is in `safeBinTrustedDirs`, so OpenClaw auto-approves it. If sends passed through via `exec`, they'd inherit that auto-approval — defeating the purpose. Blocking sends forces the LLM to call `/usr/local/bin/gog` directly for writes, which is NOT in safeBinTrustedDirs and triggers exec-approval.
+**Why the wrapper blocks sends instead of passing through:** If sends passed through via `exec gog-real`, they'd auto-approve because gog-real is in the trusted dir — defeating the purpose. Blocking sends forces the LLM to call `/usr/local/bin/gog` directly for writes, which is NOT in safeBinTrustedDirs and triggers exec-approval.
+
+**The gog-real chain:** `gog` (wrapper, trusted) → `exec gog-real` (symlink in trusted dir → /usr/local/bin/gog) → auto-approved. But `/usr/local/bin/gog` called directly → NOT in trusted dir → triggers approval. This asymmetry is the security model.
 
 ### After reboots / gateway restarts
 

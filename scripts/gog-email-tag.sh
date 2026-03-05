@@ -47,7 +47,7 @@ for pattern in "${ALLOWED_PATTERNS[@]}"; do
 done
 
 if [ "$ALLOWED" = true ]; then
-    exec gog $CMD
+    exec /Users/amberives/.openclaw/workspace/scripts/gog-real $CMD
 else
     echo "ERROR: This wrapper only allows email tagging (thread modify) operations."
     echo "Allowed: gmail thread modify <threadId> --add/--remove <label>"

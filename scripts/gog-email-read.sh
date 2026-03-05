@@ -37,7 +37,7 @@ for pattern in "${ALLOWED_PATTERNS[@]}"; do
 done
 
 if [ "$ALLOWED" = true ]; then
-    exec gog $CMD
+    exec /Users/amberives/.openclaw/workspace/scripts/gog-real $CMD
 else
     echo "ERROR: This wrapper only allows read-only email operations."
     echo "Allowed: gmail messages search, gmail messages get, gmail thread get/list, gmail labels list"
