@@ -10,39 +10,40 @@ Read-only email operations. Search inbox, get messages, read threads, list label
 
 ## Commands
 
-All read commands use `gog` directly. The **gog-guard plugin** automatically rewrites these to use the allowlisted wrapper scripts — no exec approval needed.
+All read commands use the **allowlisted wrapper script** `gog-email-read.sh`. This script is pre-approved — no exec approval needed. **Always use the full path shown below.**
 
 ```bash
 # Search inbox for unread, unhandled emails
-gog gmail messages search 'is:unread -label:Handled' --max 20
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 20
 
 # Search by sender
-gog gmail messages search 'from:someone@example.com' --max 10
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'from:someone@example.com' --max 10
 
 # Search by keyword
-gog gmail messages search 'subject:meeting newer_than:7d' --max 10
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'subject:meeting newer_than:7d' --max 10
 
 # Get a specific message by ID
-gog gmail messages get <messageId>
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages get <messageId>
 
 # Read a full thread
-gog gmail thread get <threadId>
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail thread get <threadId>
 
 # List labels
-gog gmail labels list
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list
 ```
 
 ## Capturing IDs for Replies
 
 When you read an email you might need to reply to, **note the messageId and threadId immediately.** You will need them later:
 - `messageId` → used in `--reply-to-message-id` when sending a reply (preserves threading)
-- `threadId` → used in `gog gmail thread modify` to tag as Handled after processing
+- `threadId` → used in tagging as Handled after processing (see email-send SKILL.md)
 
 Search results return these IDs. **Write them down in your working context** before moving on to the next email. If you lose the messageId and use `--to` instead, the reply shows up as a brand new email instead of appearing in the thread. This confuses recipients.
 
 ## Rules
 
-- Use `gog` for all read commands — the gog-guard plugin routes them to safe wrapper scripts automatically
+- **ALWAYS use the full wrapper script path** for read commands: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`
+- **NEVER use bare `gog`** for reads — it will trigger exec-approval and slow you down
 - This is YOUR inbox (aives@mindfiremail.info), not Dave's
 - Exclude Dave's sent emails: add `-from:daver@mindfireinc.com` when searching for actionable items
 - Run commands ONE AT A TIME, sequentially. Do NOT fire multiple search commands in parallel.
@@ -50,7 +51,7 @@ Search results return these IDs. **Write them down in your working context** bef
 ## Troubleshooting
 
 If reads trigger exec-approval:
-1. Approve it (it's read-only safe)
-2. Tell Dave so the plugin/config can be checked
-3. Verify gog-guard plugin is loaded: `openclaw plugins list`
+1. Check your command — did you use the full wrapper path or bare `gog`?
+2. The wrapper script path must be: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`
+3. Approve the command (it's read-only safe) and fix subsequent commands to use the wrapper
 4. Check allowlist: `cat ~/.openclaw/exec-approvals.json` — wrapper scripts should be listed

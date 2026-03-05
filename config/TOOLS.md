@@ -16,8 +16,8 @@ Environment-specific config. Skills define how tools work; this is your cheat sh
 
 ### Calendar Access -- see `skills/calendar-read/SKILL.md` and `skills/calendar-create/SKILL.md`
 - Dave's calendar ID: `daver@mindfireinc.com` (shared to my account)
-- List events: use calendar-read skill (full path wrapper, no approval needed)
-- Create events: use calendar-create skill (raw gog, approval required)
+- List events: use calendar-read skill (wrapper script `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh`, no approval needed)
+- Create events: use calendar-create skill (raw `gog`, approval required)
 - My calendar (aives@mindfiremail.info) has no primary events; always use Dave's ID
 
 ### Skills (Canonical Patterns)
@@ -41,24 +41,25 @@ Skills define the exact commands and processes for common operations. Always fol
 ### Exec Approvals (Email Safety System) - ACTIVE
 
 **How it works:**
-- The **gog-guard plugin** automatically rewrites read/tag `gog` commands to use allowlisted wrapper scripts. You just use `gog` normally — the plugin handles routing.
-- Write commands (`gog gmail send`, `gog cal create`) are NOT rewritten → they trigger exec-approval via Dave's Telegram.
+- **Read/tag commands** use allowlisted wrapper scripts (full path). These are pre-approved — no exec approval needed.
+- **Write commands** (`gog gmail send`, `gog cal create`) use bare `gog` → they trigger exec-approval via Dave's Telegram.
 - Basic shell tools (grep, cat, ls) are allowlisted. They don't trigger approval.
 - Approval prompts go to Dave's PRIVATE Telegram chat. Amber cannot self-approve.
 
-**Read operations (NO approval needed):**
-- Just use `gog` normally: `gog gmail messages search ...`, `gog gmail labels list`, `gog cal events ...`
-- The gog-guard plugin rewrites these to allowlisted wrapper scripts automatically.
+**Read operations (NO approval needed) — use wrapper scripts:**
+- Email reads: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search ...`
+- Calendar reads: `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal events ...`
+- **NEVER use bare `gog` for reads** — it will trigger unnecessary approval.
 - Run ONE command at a time. No parallel reads.
 
-**Write operations (approval REQUIRED):**
+**Write operations (approval REQUIRED) — use bare `gog`:**
 - Email sends: `gog gmail send ...` (Dave approves via Telegram buttons)
 - Email replies: `gog gmail send --reply-to-message-id ...` (Dave approves)
 - Calendar creates: `gog cal create ...` (Dave approves)
 - ONE command at a time. Wait for approval before next command.
 
-**Thread tagging (NO approval needed):**
-- `gog gmail thread modify <threadId> --add "Handled" ...` — auto-routed by gog-guard plugin.
+**Thread tagging (NO approval needed) — use wrapper script:**
+- `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" ...`
 
 **Self-approval is impossible and forbidden.** Approvals route to Dave's private chat. See AGENTS.md.
 
