@@ -25,11 +25,16 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 3. **Confirm you have the messageId** (for replies). You captured this when you read the email (see email-read SKILL.md). If you lost it, re-read the email NOW before drafting. Do NOT proceed without it.
 4. **Draft the email** with lessons in mind
 5. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
-   - Who it's to (name, not just email)
+   - **Full recipient list** — EVERY person getting this email:
+     - **To:** [names + emails]
+     - **CC:** [names + emails]
+     - If this is a reply, say: "Replying to thread — reply-all will include: [list everyone]"
    - One-line summary
    - **The original email** (quote the key parts so Dave has context for the reply)
    - The full draft text
    - "send it? or changes?"
+
+   **⚠️ 2026-03-05 mistake:** You replied to Alex's thread and only sent to Alex, dropping all CC recipients. Dave couldn't catch it because you didn't show the recipient list. ALWAYS show who will receive the email.
 6. **Wait for Dave's approval** in Telegram
 7. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
 8. **Only then** run the gog send command — for replies, use `--reply-to-message-id`, NEVER `--to`

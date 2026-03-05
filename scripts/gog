@@ -67,28 +67,49 @@ SAFE_PATTERNS=(
 for pattern in "${DANGEROUS_PATTERNS[@]}"; do
     if [[ "$CMD" == *"$pattern"* ]]; then
         # ─── Threading validation for sends ───
-        # Catch the #1 mistake: using --to for a reply instead of --reply-to-message-id
         if [[ "$CMD" == *"gmail send"* ]]; then
+
+            # CHECK 1: Using --to with a RE: subject = BROKEN THREADING
+            # This is the #1 mistake. HARD BLOCK — do NOT show the redirect command.
             if [[ "$CMD" == *"--to"* && "$CMD" != *"--reply-to-message-id"* ]]; then
-                # Check if subject looks like a reply (RE: or Re:)
                 if [[ "$CMD" =~ (--subject[[:space:]]+\"?(RE:|Re:|re:)) ]]; then
                     echo ""
-                    echo "⚠️  THREADING ERROR: Subject starts with 'RE:' but you're using --to."
-                    echo "    This will create a NEW standalone email, NOT a threaded reply."
-                    echo "    The recipient will see it as a separate conversation."
+                    echo "🚫 HARD BLOCK: Subject starts with 'RE:' but you're using --to."
+                    echo "   This will create a NEW standalone email, NOT a threaded reply."
                     echo ""
-                    echo "    FIX: Replace --to with --reply-to-message-id <messageId> --reply-all"
-                    echo "    If you don't have the messageId, re-read the original email first."
+                    echo "   You did this with Bob Niesen (2026-03-05) and Alex (2026-03-05)."
+                    echo "   It breaks threading and loses CC recipients."
                     echo ""
+                    echo "   STOP. Go back and get the messageId from the email you're replying to."
+                    echo "   Then use:"
+                    echo "     /usr/local/bin/gog gmail send --reply-to-message-id <messageId> --reply-all ..."
+                    echo ""
+                    echo "   DO NOT add --to. --reply-all handles all recipients automatically."
+                    echo ""
+                    exit 1
                 fi
             fi
-            # Check for --body without -html
+
+            # CHECK 2: Using --reply-to-message-id WITHOUT --reply-all = DROPPED CCs
+            if [[ "$CMD" == *"--reply-to-message-id"* && "$CMD" != *"--reply-all"* ]]; then
+                echo ""
+                echo "🚫 HARD BLOCK: Using --reply-to-message-id without --reply-all."
+                echo "   This will only reply to the sender, dropping everyone else on the thread."
+                echo ""
+                echo "   FIX: Add --reply-all to include all To and CC recipients."
+                echo "     /usr/local/bin/gog gmail send --reply-to-message-id <messageId> --reply-all ..."
+                echo ""
+                exit 1
+            fi
+
+            # CHECK 3: Using --body without -html = tiny font
             if [[ "$CMD" == *"--body "* && "$CMD" != *"--body-html"* ]]; then
                 echo ""
-                echo "⚠️  FORMAT ERROR: Using --body (plain text) instead of --body-html."
-                echo "    This will send in tiny default font with no formatting."
-                echo "    FIX: Use --body-html with <div style=\"font-size:18px\">...</div>"
+                echo "🚫 HARD BLOCK: Using --body (plain text) instead of --body-html."
+                echo "   This will send in tiny default font with no formatting."
+                echo "   FIX: Use --body-html with <div style=\"font-size:18px\">...</div>"
                 echo ""
+                exit 1
             fi
         fi
         echo "BLOCKED: Write operations must use the full path for approval."
