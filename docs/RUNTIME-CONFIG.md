@@ -45,7 +45,7 @@ The goal: email/calendar READS flow freely, SENDS require Dave's Telegram approv
 
 ### Working Configuration (as of 2026-03-04)
 
-In `~/.openclaw/openclaw.json` under `tools.exec`:
+**`openclaw.json`** sets the exec policy (allowlist mode + on-miss behavior):
 ```json
 {
   "tools": {
@@ -53,17 +53,34 @@ In `~/.openclaw/openclaw.json` under `tools.exec`:
       "host": "gateway",
       "security": "allowlist",
       "ask": "on-miss",
-      "allowlist": [
-        "<RESOLVED_PATH_TO_gog-email-read.sh>",
-        "<RESOLVED_PATH_TO_gog-cal-read.sh>"
-      ]
+      "autoAllowSkills": false,
+      "askFallback": "deny"
     }
   }
 }
 ```
 
-**CRITICAL: Allowlist paths must match the RESOLVED binary path.**
-The allowlist matches the exact path the shell resolves when running the command. Run `which gog-email-read.sh` and `which gog-cal-read.sh` to get the actual paths, and use THOSE in the allowlist. If scripts are symlinked to `/usr/local/bin/`, use the `/usr/local/bin/` paths. If they live in `~/.openclaw/workspace/scripts/`, use those. A mismatch = every read triggers approval.
+**⚠️ The allowlist itself is NOT in `openclaw.json`.** It lives in `~/.openclaw/exec-approvals.json` and is managed via CLI:
+```bash
+openclaw approvals allowlist add /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
+openclaw approvals allowlist add /Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh
+openclaw approvals allowlist list    # verify
+openclaw approvals allowlist remove <path>  # if needed
+```
+
+**Do NOT put `"allowlist": [...]` in `openclaw.json`** — it's an unrecognized key and will crash the gateway.
+
+**Current allowlisted paths:**
+- `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`
+- `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh`
+
+**CRITICAL: Amber must use FULL PATHS when calling wrapper scripts.**
+The scripts are not on PATH. Calling `gog-email-read.sh` by basename triggers approval because the shell can't resolve it. Use the full path:
+```bash
+/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list     # ✅ no approval
+/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh cal events ...           # ✅ no approval
+gog gmail send ...                                                                     # 🔒 triggers approval
+```
 
 **How it works:**
 - Wrapper scripts are allowlisted -- email/calendar reads flow without approval
@@ -111,10 +128,11 @@ The default exec-approval timeout is 120s. The timeout is NOT a global config se
 
 ### If allowlist needs updating
 
-1. Find resolved paths: `realpath ~/.openclaw/workspace/scripts/gog-email-read.sh`
-2. Edit `~/.openclaw/openclaw.json` and update the `allowlist` array
-3. Test: `gog-email-read.sh gmail labels list` should work without approval
-4. Test: `gog gmail send ...` should still trigger approval
+1. `openclaw approvals allowlist list` — see current entries
+2. `openclaw approvals allowlist add <full-path>` — add new entry
+3. `openclaw approvals allowlist remove <full-path>` — remove entry
+4. Test: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list` — should work without approval
+5. Test: `gog gmail send ...` — should still trigger approval
 
 ## 4. Session Pruning & Context Cost Control
 
