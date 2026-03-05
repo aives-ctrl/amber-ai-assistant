@@ -95,10 +95,11 @@ openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/ho
 openclaw config set agents.defaults.contextPruning.mode cache-ttl
 openclaw config set agents.defaults.contextPruning.ttl 5m
 openclaw config set agents.defaults.contextTokens 50000
-openclaw config set model.caching true
 ```
 
 This caps context at 50k tokens (prevents $59 sessions) and trims stale tool output after 5 minutes.
+
+**Note:** Prompt caching (`cacheRetention`) is already configured by default — no action needed.
 
 ---
 
