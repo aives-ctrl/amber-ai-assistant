@@ -84,10 +84,8 @@ Write a session summary to daily notes covering:
 - This is the #1 cause of appearing forgetful. ALWAYS search before saying you don't know.
 
 **Reading email (NO approval needed) -- see `skills/email-read/SKILL.md`:**
-- Use FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`
-- NEVER use basename `gog-email-read.sh` alone. NEVER use raw `gog` for reads.
+- Use `gog` for all read commands (e.g., `gog gmail messages search ...`). The **gog-guard plugin** automatically rewrites reads to use the allowlisted wrapper scripts — no approval triggered.
 - Run commands ONE AT A TIME, sequentially. Do NOT fire multiple reads in parallel.
-- If the wrapper triggers exec-approval: approve it (it's safe), then tell Dave.
 - **INBOX CLARITY:** You read YOUR inbox (aives@mindfiremail.info), not Dave's. Dave cc's you on emails so you can act on them.
 
 **Before sending any email (approval REQUIRED) -- see `skills/email-send/SKILL.md`:**
@@ -138,8 +136,8 @@ Write a session summary to daily notes covering:
 - Double-check: does the date you're about to use fall on the day of week you expect?
 
 **After handling an email thread (NO approval needed):**
-- Tag it: `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
-- NEVER use raw `gog` for thread tagging. Use the wrapper script (full path).
+- Tag it: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+- The **gog-guard plugin** automatically rewrites this to use the allowlisted wrapper script — no approval triggered.
 - Update follow-up tracker if response expected
 - Log to daily notes
 

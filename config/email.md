@@ -56,12 +56,12 @@
 
 ### Inbox Search
 - **This is MY inbox** (aives@mindfiremail.info), not Dave's. Dave cc's me on emails so I can act on them.
-- **For new messages:** `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'is:unread -label:Handled -from:daver@mindfireinc.com' --max 20`
+- **For new messages:** `gog gmail messages search 'is:unread -label:Handled -from:daver@mindfireinc.com' --max 20`
 - **Excludes Dave's sent emails** (don't flag his outbound emails as "needing attention")
 - **Missing something?** Check unread first, then search by name/topic if needed
 
 ### Email Status Tracking
-- **After handling emails (NO approval needed):** Tag thread: `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+- **After handling emails (NO approval needed):** Tag thread: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
 - **When checking inbox:** Use `-label:Handled` to skip already-processed threads
 - **Always cc Dave** on emails I send (daver@mindfireinc.com) unless told otherwise
 

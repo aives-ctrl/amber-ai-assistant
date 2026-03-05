@@ -10,26 +10,26 @@ Read-only email operations. Search inbox, get messages, read threads, list label
 
 ## Commands
 
-All commands use the read-only wrapper script. This is allowlisted and does NOT require exec approval.
+All read commands use `gog` directly. The **gog-guard plugin** automatically rewrites these to use the allowlisted wrapper scripts — no exec approval needed.
 
 ```bash
 # Search inbox for unread, unhandled emails
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'is:unread -label:Handled' --max 20
+gog gmail messages search 'is:unread -label:Handled' --max 20
 
 # Search by sender
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'from:someone@example.com' --max 10
+gog gmail messages search 'from:someone@example.com' --max 10
 
 # Search by keyword
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'subject:meeting newer_than:7d' --max 10
+gog gmail messages search 'subject:meeting newer_than:7d' --max 10
 
 # Get a specific message by ID
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages get <messageId>
+gog gmail messages get <messageId>
 
 # Read a full thread
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail thread get <threadId>
+gog gmail thread get <threadId>
 
 # List labels
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list
+gog gmail labels list
 ```
 
 ## Capturing IDs for Replies
@@ -42,17 +42,15 @@ Search results return these IDs. **Write them down in your working context** bef
 
 ## Rules
 
-- ALWAYS use the FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`
-- NEVER use basename `gog-email-read.sh` (allowlist won't match)
-- NEVER use raw `gog gmail messages search` for reads (triggers approval)
+- Use `gog` for all read commands — the gog-guard plugin routes them to safe wrapper scripts automatically
 - This is YOUR inbox (aives@mindfiremail.info), not Dave's
 - Exclude Dave's sent emails: add `-from:daver@mindfireinc.com` when searching for actionable items
 - Run commands ONE AT A TIME, sequentially. Do NOT fire multiple search commands in parallel.
 
 ## Troubleshooting
 
-If the wrapper triggers exec-approval anyway:
+If reads trigger exec-approval:
 1. Approve it (it's read-only safe)
-2. Tell Dave so the config can be fixed
-3. Check: `cat ~/.openclaw/exec-approvals.json` to see if the path is in the allowlist
-4. Verify the scripts directory is in `safeBinTrustedDirs`: `openclaw config get tools.exec.safeBinTrustedDirs`
+2. Tell Dave so the plugin/config can be checked
+3. Verify gog-guard plugin is loaded: `openclaw plugins list`
+4. Check allowlist: `cat ~/.openclaw/exec-approvals.json` — wrapper scripts should be listed

@@ -115,66 +115,63 @@ Should show:
 | `gog-email-read.sh` | Read-only email ops (search, get, labels) | ✅ Auto-approved |
 | `gog-cal-read.sh` | Read-only calendar ops (events, get, list) | ✅ Auto-approved |
 | `gog-email-tag.sh` | Thread labeling only (add/remove labels) | ✅ Auto-approved |
-| `gog` (via router) | Reads/tags routed to wrappers; sends BLOCKED | ✅ Auto-approved (reads) / 🚫 Blocked (sends) |
 | `/usr/local/bin/gog` | Direct binary — send, reply, create | ❌ Requires approval |
 
 ---
 
-## STEP 2B: Install the gog-router shadow wrapper (STRUCTURAL ENFORCEMENT)
+## STEP 2B: Install the gog-guard plugin (STRUCTURAL ENFORCEMENT)
 
-**⚠️ Why this exists:** Amber's agent sometimes calls raw `gog` instead of the wrapper scripts, despite instructions in 4+ config files. This is a known OpenClaw community issue — prompt-level enforcement is unreliable. The shadow wrapper provides **structural** enforcement: even when she uses raw `gog`, the command gets routed to the correct wrapper automatically.
+**⚠️ Why this exists:** Amber's agent sometimes calls raw `gog` instead of the wrapper scripts, despite instructions in config files. This is a known OpenClaw community issue — prompt-level enforcement is unreliable. The `gog-guard` plugin provides **structural** enforcement using the `before_tool_call` hook: even when she uses raw `gog`, the plugin rewrites read/tag commands to use the allowlisted wrapper scripts before the approval check runs.
 
 ### How it works
-1. A script called `gog-router.sh` lives in the repo at `scripts/gog-router.sh`
-2. It gets installed as `gog` (no `.sh`) at `/Users/amberives/.openclaw/bin-overrides/gog`
-3. OpenClaw's `pathPrepend` config puts that directory first in PATH
-4. When Amber runs `gog gmail messages search ...`, the router intercepts it and delegates to `gog-email-read.sh`
-5. When she runs `gog gmail send ...`, the router passes it through to the real `/usr/local/bin/gog` (still triggers approval)
+1. Plugin lives in the repo at `plugins/gog-guard/` (index.js + openclaw.plugin.json)
+2. It hooks into `before_tool_call` — fires before every tool execution
+3. When Amber runs `gog gmail messages search ...`, the plugin rewrites the command to `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search ...`
+4. The rewritten command uses the wrapper script path → allowlisted → auto-approved
+5. When she runs `gog gmail send ...`, the plugin does NOT rewrite → resolves to `/usr/local/bin/gog` → NOT in allowlist → triggers exec-approval
+
+### Pattern routing
+| Command pattern | Routed to | Approval? |
+|----------------|-----------|-----------|
+| `gog gmail messages search/get/list` | `gog-email-read.sh` | ✅ Auto-approved |
+| `gog gmail threads get/list` | `gog-email-read.sh` | ✅ Auto-approved |
+| `gog gmail labels list/get` | `gog-email-read.sh` | ✅ Auto-approved |
+| `gog gmail threads modify` | `gog-email-tag.sh` | ✅ Auto-approved |
+| `gog cal events/get/list` | `gog-cal-read.sh` | ✅ Auto-approved |
+| `gog gmail send` | Unchanged (hits `/usr/local/bin/gog`) | ❌ Requires approval |
+| `gog cal create` | Unchanged (hits `/usr/local/bin/gog`) | ❌ Requires approval |
 
 ### Install commands
 ```bash
-# 1. Create the bin-overrides directory
-mkdir -p /Users/amberives/.openclaw/bin-overrides
+# 1. Pull latest repo (plugin is at plugins/gog-guard/)
+cd ~/.openclaw/workspace && git pull origin main
 
-# 2. Copy the router script as "gog" (no .sh extension — it shadows the real binary)
-cp ~/.openclaw/workspace/scripts/gog-router.sh /Users/amberives/.openclaw/bin-overrides/gog
-chmod +x /Users/amberives/.openclaw/bin-overrides/gog
+# 2. Register the plugin with OpenClaw
+openclaw plugins link ~/.openclaw/workspace/plugins/gog-guard
 
-# 3. Tell OpenClaw to prepend this directory to PATH for all exec runs
-openclaw config set tools.exec.pathPrepend '["/Users/amberives/.openclaw/bin-overrides"]'
+# 3. Verify plugin is loaded
+openclaw plugins list
+# Should show: gog-guard — "Gog Command Guard"
 ```
 
 ### Verify
 ```bash
-# Should show the shadow wrapper, NOT /usr/local/bin/gog
-which gog
-# Expected: /Users/amberives/.openclaw/bin-overrides/gog
+# After gateway restart (Step 8), test:
+# Read operation — should NOT trigger approval
+gog gmail labels list
 
-# Test: read operation should work without approval
-/Users/amberives/.openclaw/bin-overrides/gog gmail labels list
+# Send operation — SHOULD trigger approval
+gog gmail send --to "test@example.com" --subject "test" --body-html "<p>test</p>"
+# (Cancel after verifying approval fires)
 ```
 
-### Updating the router
-When the repo updates `scripts/gog-router.sh`, re-copy it:
+### Updating the plugin
+The plugin lives in the git repo. After pulling updates:
 ```bash
-cp ~/.openclaw/workspace/scripts/gog-router.sh /Users/amberives/.openclaw/bin-overrides/gog
+cd ~/.openclaw/workspace && git pull origin main
+openclaw gateway restart
 ```
-
----
-
-## STEP 2C: Always use full paths for wrapper scripts
-
-**⚠️ The OpenClaw gateway does NOT source `~/.zshrc` or `~/.zshenv`.** Adding the scripts directory to PATH has no effect — the gateway spawns non-interactive shells that bypass all zsh init files.
-
-**The solution:** All config files (HEARTBEAT.md, SKILL.md, etc.) must use the full path:
-```
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh
-/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh
-```
-
-**NEVER use the basename** (`gog-email-read.sh`) in any command Amber will execute. It will fail with "command not found" even when the allowlist approves it.
-
-The allowlist still has basename entries as a safety net (in case she improvises), but all documented commands must use full paths.
+No re-copy needed — the plugin is linked, not copied.
 
 ---
 
@@ -195,14 +192,13 @@ This means:
 
 ## STEP 4: Configure safe bins (shell tool approvals)
 
-Add trusted directories so basic shell tools, wrapper scripts, AND the gog-router don't trigger approval:
+Add trusted directories so basic shell tools and wrapper scripts don't trigger approval:
 ```bash
-openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin", "/Users/amberives/.openclaw/workspace/scripts", "/Users/amberives/.openclaw/bin-overrides"]'
+openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin", "/Users/amberives/.openclaw/workspace/scripts"]'
 ```
 
-**⚠️ Both directories are critical:**
-- **`/Users/amberives/.openclaw/workspace/scripts`** — trusts the wrapper scripts (`gog-email-read.sh`, etc.)
-- **`/Users/amberives/.openclaw/bin-overrides`** — trusts the gog-router shadow wrapper, which intercepts raw `gog` calls and routes reads to the correct wrappers. Send commands are BLOCKED by the router (not passed through), forcing Amber to use `/usr/local/bin/gog` explicitly — which triggers exec-approval as intended.
+**⚠️ Why this directory matters:**
+- **`/Users/amberives/.openclaw/workspace/scripts`** — trusts the wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`, `gog-email-tag.sh`). The gog-guard plugin rewrites read/tag commands to use these scripts, so they must be trusted for auto-approval to work.
 
 ---
 
@@ -330,11 +326,10 @@ After completing steps 1-8, confirm:
 
 - [ ] `skills/` directory has 5 skill folders
 - [ ] `workflows/` directory has `email-triage.lobster.yaml`
-- [ ] Shadow `gog` router is installed at `/Users/amberives/.openclaw/bin-overrides/gog`
-- [ ] `which gog` returns the shadow wrapper path, not `/usr/local/bin/gog`
-- [ ] Wrapper script reads don't trigger approval
-- [ ] Wrapper script thread tagging doesn't trigger approval
-- [ ] Raw gog sends DO trigger approval (router passes them to real binary)
+- [ ] `gog-guard` plugin is installed and loaded (`openclaw plugins list` shows it)
+- [ ] `gog gmail labels list` does NOT trigger approval (plugin rewrites to wrapper)
+- [ ] `gog gmail threads modify` does NOT trigger approval (plugin rewrites to wrapper)
+- [ ] `gog gmail send` DOES trigger approval (plugin leaves it unchanged)
 - [ ] Approval prompts arrive in Dave's PRIVATE Telegram, not Amber's channel
 - [ ] grep/cat/ls don't trigger approval
 - [ ] `cat ~/.openclaw/exec-approvals.json` shows no raw `gog` entry in **`agents.main.allowlist`**
@@ -342,14 +337,22 @@ After completing steps 1-8, confirm:
 - [ ] `askFallback` is set to `"deny"` in exec-approvals.json
 - [ ] Email backlog is being processed
 
-### Troubleshooting: Allowlist entries not working
+### Troubleshooting: Reads still trigger approval
 
-If wrapper scripts still trigger approval after adding entries:
+If `gog gmail labels list` still triggers approval:
 
-1. **Check which section the entry is in.** `openclaw approvals allowlist add` puts entries in `agents.*.allowlist`. If `agents.main.allowlist` exists, it takes precedence and `agents.*` is ignored. Edit the JSON directly to add entries to `agents.main.allowlist`.
+1. **Check plugin is loaded.** Run `openclaw plugins list` — should show `gog-guard`. If not, re-link: `openclaw plugins link ~/.openclaw/workspace/plugins/gog-guard`
 
-2. **Check `safeBinTrustedDirs`.** Run `openclaw config get tools.exec.safeBinTrustedDirs` — the scripts directory should be listed. This provides a second path for approval bypass.
+2. **Check allowlist section.** `openclaw approvals allowlist add` puts entries in `agents.*.allowlist`. If `agents.main.allowlist` exists, it takes precedence and `agents.*` is ignored. Edit the JSON directly to add entries to `agents.main.allowlist`.
 
-3. **Check PATH.** Run `which gog-email-read.sh` — should resolve to the full path. If "not found", the scripts directory isn't in PATH (see Step 2B).
+3. **Check `safeBinTrustedDirs`.** Run `openclaw config get tools.exec.safeBinTrustedDirs` — the scripts directory (`/Users/amberives/.openclaw/workspace/scripts`) should be listed.
 
-4. **Always restart gateway** after JSON edits: `openclaw gateway restart`
+4. **Always restart gateway** after config/JSON edits: `openclaw gateway restart`
+
+### Troubleshooting: gog commands timing out
+
+If gog commands hang or time out:
+
+1. **Check gog auth.** Run `gog auth status` — may need to re-authenticate: `gog auth login`
+2. **Check network.** Run `curl -s https://gmail.googleapis.com` — should get a response
+3. **Try with explicit timeout.** `timeout 30 gog gmail labels list` — to distinguish between auth hang vs network issue

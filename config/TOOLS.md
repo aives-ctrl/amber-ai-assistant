@@ -41,30 +41,26 @@ Skills define the exact commands and processes for common operations. Always fol
 ### Exec Approvals (Email Safety System) - ACTIVE
 
 **How it works:**
-- Wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`) are allowlisted. Reads flow without approval.
-- Raw `gog` is NOT allowlisted. Sends/creates trigger approval via Dave's Telegram.
+- The **gog-guard plugin** automatically rewrites read/tag `gog` commands to use allowlisted wrapper scripts. You just use `gog` normally — the plugin handles routing.
+- Write commands (`gog gmail send`, `gog cal create`) are NOT rewritten → they trigger exec-approval via Dave's Telegram.
 - Basic shell tools (grep, cat, ls) are allowlisted. They don't trigger approval.
 - Approval prompts go to Dave's PRIVATE Telegram chat. Amber cannot self-approve.
 
 **Read operations (NO approval needed):**
-- ALWAYS use FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh ...`
-- ALWAYS use FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-cal-read.sh ...`
-- NEVER use basename. NEVER use raw `gog` for reads.
+- Just use `gog` normally: `gog gmail messages search ...`, `gog gmail labels list`, `gog cal events ...`
+- The gog-guard plugin rewrites these to allowlisted wrapper scripts automatically.
 - Run ONE command at a time. No parallel reads.
 
 **Write operations (approval REQUIRED):**
 - Email sends: `gog gmail send ...` (Dave approves via Telegram buttons)
 - Email replies: `gog gmail send --reply-to-message-id ...` (Dave approves)
 - Calendar creates: `gog cal create ...` (Dave approves)
-- Thread modifications: `gog gmail thread modify ...` (Dave approves)
 - ONE command at a time. Wait for approval before next command.
 
-**Self-approval is impossible and forbidden.** Approvals route to Dave's private chat. See AGENTS.md.
+**Thread tagging (NO approval needed):**
+- `gog gmail thread modify <threadId> --add "Handled" ...` — auto-routed by gog-guard plugin.
 
-**If wrapper scripts trigger approval (allowlist not matching):**
-- Approve it (it's read-only safe)
-- Report to Dave so allowlist can be fixed
-- See `docs/RUNTIME-CONFIG.md` section 3 for troubleshooting
+**Self-approval is impossible and forbidden.** Approvals route to Dave's private chat. See AGENTS.md.
 
 ### Discipline Files
 - Email → `email.md` | Follow-ups → `follow-up.md` | Calendar → `calendar.md` | Comms → `communications.md`
