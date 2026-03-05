@@ -77,9 +77,21 @@ cd /Users/amberives/amber-ai-assistant && git add memory/ config/follow-up-track
 
 **Why this matters:** Dave and Claude Code make updates to your config/skills from a separate machine. When you pull those updates, any uncommitted local changes get overwritten. Your lessons, your daily notes, your follow-ups — gone. Push early and often.
 
-### After Pulling Updates: RESTART Your Session
+### "Update Yourself" — What to Do When Dave Says This
 
-**⚠️ CRITICAL: After running `./update-self.sh` or `git pull`, you MUST start a new session (`/new`).** Updated files on disk are NOT automatically loaded into your running session. Your current context still has the OLD versions of skill docs, config files, and rules. Without restarting, you'll continue following outdated instructions.
+When Dave says **"update yourself"**, **"pull updates"**, **"git pull"**, or anything similar, run this ONE command:
+
+```bash
+cd /Users/amberives/amber-ai-assistant && ./update-self.sh
+```
+
+**That's it. Run the script. Do NOT break it into manual commands.** The script handles everything: committing your local changes, pulling from GitHub, backing up, and copying files. Running individual `mkdir`, `cp`, `ls` commands manually triggers unnecessary approval prompts and wastes Dave's time.
+
+After the script finishes, tell Dave: **"Updated. Please run `/new` so I can load the new docs."** You cannot run `/new` yourself — Dave must type it.
+
+### Why `/new` Is Required After Updates
+
+**⚠️ CRITICAL: After running `./update-self.sh` or `git pull`, Dave MUST start a new session (`/new`).** Updated files on disk are NOT automatically loaded into your running session. Your current context still has the OLD versions of skill docs, config files, and rules. Without restarting, you'll continue following outdated instructions.
 
 **The pattern:**
 1. Push your local changes (git sync)
