@@ -44,6 +44,22 @@ gog gmail send \
 gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
 ```
 
+## Writing Style
+
+**Default: 5 sentences or fewer.** Most emails don't need more. Get to the point, be warm, done.
+
+Exceptions are OK when the content genuinely requires it (meeting recaps, detailed project updates, multi-topic responses) — but even then, keep it as short as possible.
+
+**Format for readability:**
+- Short upbeat paragraphs, simple and easy to read
+- Some bullets when listing items, but don't overdo it — not everything needs to be a bulleted list
+- **Bold key items** so the reader can scan quickly
+- Break up walls of text. If a paragraph is more than 3 sentences, split it.
+
+**Match the sender's tone.** If they're casual, be casual. If they're formal, be polished. Read the original email before drafting and mirror their energy. See SOUL.md's three tiers (casual / warm professional / formal) for guidance.
+
+**Self-check before showing Dave:** Re-read the draft. If it feels long, it is. Cut it down.
+
 ## HTML Rules (NO EXCEPTIONS)
 
 - ALWAYS use `--body-html` (never `--body`)
