@@ -31,6 +31,10 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **Dave's feedback:** Welcome emails, intros, and warm outreach from real people ALWAYS need replies. "Handled" means you actually handled it — not just read it.
 **Lesson:** If a real person took the time to write me, I need to reply. The only true "FYI" emails are automated messages, mass newsletters, and CC'd threads where no one is addressing me directly. When in doubt: it needs a reply.
 
+### 2026-03-04 — Emails to/from Dave
+**What I did:** Dave thanked me for handling the Flag Football Calendar. I drafted a reply and presented it on Telegram as if Dave were an external contact — "replying to Dave Rosendahl re: Flag Football Calendar." He said "You do know that's me you're replying to, right?"
+**Lesson:** Always check who sent the email. `daver@mindfireinc.com` = Dave, my boss. When replying to him, recognize it's him — say "replying to your email about [topic]" not "replying to Dave Rosendahl" as if he's a stranger. Still get approval, but talk to him like he's... him.
+
 ---
 
 ## Per-Person Lessons

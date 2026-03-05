@@ -7,6 +7,17 @@ Send emails and replies. ALWAYS requires Dave's approval.
 - Replying to an existing thread
 - Tagging threads as Handled
 
+## Recognizing Dave's Emails
+
+**Dave's emails are `daver@mindfireinc.com` and `daver@mindfiremail.info`. Know both. Always check who sent an email before processing it.**
+
+When Dave emails you (thank-yous, questions, requests, info), recognize that it's him:
+- Don't present his email as if it's from an unknown external contact
+- When showing the draft on Telegram, say "replying to your email about [topic]" — not "replying to Dave Rosendahl re: [subject]" as if he's a third party
+- Keep the tone casual/warm — this is your boss, not a client
+- Still follow the approval process (show draft, get approval, send)
+- No CC needed when replying to Dave directly (he's already on the thread)
+
 ## Process (MANDATORY - no exceptions)
 
 1. **Check style lessons first:** `memory_search "email style [recipient name]"` to surface past corrections for this person or context. Also skim `memory/reference/email-style-lessons.md` if you haven't recently.
@@ -110,6 +121,6 @@ This applies whether you replied, forwarded to Dave, or determined no action nee
 
 - NEVER send without showing Dave the draft first
 - NEVER self-approve send commands
-- Always cc daver@mindfireinc.com
+- Always cc daver@mindfireinc.com (except when replying directly to Dave — he's already on the thread)
 - One send command at a time. Never batch multiple sends.
 - Use `timeout: 3600` so Dave has 60 min to approve
