@@ -146,10 +146,14 @@ Should show:
 # 1. Pull latest repo (plugin is at plugins/gog-guard/)
 cd ~/.openclaw/workspace && git pull origin main
 
-# 2. Register the plugin with OpenClaw
-openclaw plugins link ~/.openclaw/workspace/plugins/gog-guard
+# 2. Symlink the plugin into OpenClaw's extensions directory
+# (There is NO `openclaw plugins link` command — use a symlink instead)
+ln -sf ~/.openclaw/workspace/plugins/gog-guard ~/.openclaw/extensions/gog-guard
 
-# 3. Verify plugin is loaded
+# 3. Restart gateway to load the plugin
+openclaw gateway restart
+
+# 4. Verify plugin is loaded
 openclaw plugins list
 # Should show: gog-guard — "Gog Command Guard"
 ```
@@ -171,7 +175,7 @@ The plugin lives in the git repo. After pulling updates:
 cd ~/.openclaw/workspace && git pull origin main
 openclaw gateway restart
 ```
-No re-copy needed — the plugin is linked, not copied.
+No re-copy needed — the symlink points to the repo copy, so `git pull` updates the plugin in place.
 
 ---
 
@@ -264,8 +268,9 @@ After restart, test:
 
 **Test 1 - Read (should NOT trigger approval):**
 ```bash
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list
+gog gmail labels list
 ```
+(Plugin rewrites this to the wrapper script automatically.)
 
 **Test 2 - Send (SHOULD trigger approval in Dave's private chat):**
 ```bash
@@ -284,8 +289,9 @@ grep -i "test" memory/*.md
 
 After everything is working, process the inbox:
 ```bash
-/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search 'is:unread -label:Handled -from:daver@mindfireinc.com' --max 25
+gog gmail messages search 'is:unread -label:Handled -from:daver@mindfireinc.com' --max 25
 ```
+(The gog-guard plugin will rewrite this to use the wrapper script automatically.)
 
 Categorize each email per HEARTBEAT.md rules. Send Dave ONE consolidated Telegram message with anything that needs his attention. Handle FYIs silently.
 
@@ -341,7 +347,11 @@ After completing steps 1-8, confirm:
 
 If `gog gmail labels list` still triggers approval:
 
-1. **Check plugin is loaded.** Run `openclaw plugins list` — should show `gog-guard`. If not, re-link: `openclaw plugins link ~/.openclaw/workspace/plugins/gog-guard`
+1. **Check plugin is loaded.** Run `openclaw plugins list` — should show `gog-guard`. If not, re-create the symlink and restart:
+   ```bash
+   ln -sf ~/.openclaw/workspace/plugins/gog-guard ~/.openclaw/extensions/gog-guard
+   openclaw gateway restart
+   ```
 
 2. **Check allowlist section.** `openclaw approvals allowlist add` puts entries in `agents.*.allowlist`. If `agents.main.allowlist` exists, it takes precedence and `agents.*` is ignored. Edit the JSON directly to add entries to `agents.main.allowlist`.
 
