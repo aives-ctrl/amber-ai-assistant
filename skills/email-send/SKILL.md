@@ -120,25 +120,32 @@ Exceptions are OK when the content genuinely requires it (meeting recaps, detail
 ```
 Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just name and company.
 
-## Threading Rules (CRITICAL)
+## Threading Rules (CRITICAL — THIS IS A RECURRING MISTAKE)
 
-**Replying to an email is NOT the same as sending a new email.** If you use `--to` instead of `--reply-to-message-id`, the reply shows up as a brand new standalone email in the recipient's inbox — NOT in the thread they sent. This is confusing and unprofessional.
+**Replying to an email is NOT the same as sending a new email.** If you use `--to` instead of `--reply-to-message-id`, the reply shows up as a brand new standalone email in the recipient's inbox — NOT in the thread they sent. This is confusing and unprofessional. **You did this with Bob Niesen on 2026-03-05. Don't repeat it.**
 
 - **REPLY** = `--reply-to-message-id <messageId>` + `--reply-all`. No `--to` flag.
 - **NEW EMAIL** = `--to <email>`. No `--reply-to-message-id`.
-- Never mix them. If you're responding to something someone sent, it's a REPLY.
-- After sending a reply, verify thread_id matches the original.
+- **THE TEST:** Did someone send an email that I'm responding to? → It's a REPLY. Always.
+- Never mix `--to` and `--reply-to-message-id`.
+- If your subject starts with "RE:" and your command uses `--to`, **STOP — you're about to break threading.**
 - If you don't have the messageId, go back and read the email again. Do NOT improvise with `--to`.
+- After sending a reply, verify thread_id matches the original.
 
 ## After Processing a Thread (MANDATORY)
 
-**Every thread you handle must be tagged as Handled.** This prevents re-processing on the next heartbeat.
+**⚠️ "Handled" means the action is COMPLETE — not just read.** You tagged Elisha Kasinskas' thread as "Handled" on 2026-03-05 without replying. Her questions fell through the cracks. Don't repeat this.
+
+**Tag as Handled ONLY when ALL of these are true:**
+- If it needed a reply → the reply has been **SENT** (not just drafted)
+- If it needed Dave's input → you've **flagged it to Dave** and he's responded
+- If it's truly FYI (automated/mass email, no human expecting a response) → OK to tag immediately
 
 ```bash
 /Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
 ```
 
-This applies whether you replied, forwarded to Dave, or determined no action needed. If you touched it, tag it.
+**The Handled tag is ALWAYS the LAST step.** Never tag first, never tag "to come back to later." If the action isn't done, the tag doesn't go on.
 
 ## Rules
 

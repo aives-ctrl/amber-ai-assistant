@@ -66,6 +66,31 @@ SAFE_PATTERNS=(
 # === STEP 1: Block dangerous patterns ===
 for pattern in "${DANGEROUS_PATTERNS[@]}"; do
     if [[ "$CMD" == *"$pattern"* ]]; then
+        # ─── Threading validation for sends ───
+        # Catch the #1 mistake: using --to for a reply instead of --reply-to-message-id
+        if [[ "$CMD" == *"gmail send"* ]]; then
+            if [[ "$CMD" == *"--to"* && "$CMD" != *"--reply-to-message-id"* ]]; then
+                # Check if subject looks like a reply (RE: or Re:)
+                if [[ "$CMD" =~ (--subject[[:space:]]+\"?(RE:|Re:|re:)) ]]; then
+                    echo ""
+                    echo "⚠️  THREADING ERROR: Subject starts with 'RE:' but you're using --to."
+                    echo "    This will create a NEW standalone email, NOT a threaded reply."
+                    echo "    The recipient will see it as a separate conversation."
+                    echo ""
+                    echo "    FIX: Replace --to with --reply-to-message-id <messageId> --reply-all"
+                    echo "    If you don't have the messageId, re-read the original email first."
+                    echo ""
+                fi
+            fi
+            # Check for --body without -html
+            if [[ "$CMD" == *"--body "* && "$CMD" != *"--body-html"* ]]; then
+                echo ""
+                echo "⚠️  FORMAT ERROR: Using --body (plain text) instead of --body-html."
+                echo "    This will send in tiny default font with no formatting."
+                echo "    FIX: Use --body-html with <div style=\"font-size:18px\">...</div>"
+                echo ""
+            fi
+        fi
         echo "BLOCKED: Write operations must use the full path for approval."
         echo "Run this instead:"
         echo "  /usr/local/bin/gog $CMD"

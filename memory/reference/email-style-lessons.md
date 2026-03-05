@@ -50,6 +50,16 @@ Corrections and feedback from Dave on email drafts. Search this file before draf
 **Dave's feedback:** Show the readable version on Telegram, not raw HTML. Format it naturally with Telegram markdown (bold, line breaks). Then note "will send as HTML with proper formatting."
 **Lesson:** NEVER paste raw HTML tags in Telegram drafts. Always convert to readable text first. Dave is reviewing the *content and tone*, not the markup. Raw HTML is unreadable and wastes his time.
 
+### 2026-03-05 — Bob Niesen reply sent as NEW email instead of threaded reply
+**What I did:** Used `--to bniesen319@gmail.com` instead of `--reply-to-message-id <messageId>` when replying to Bob's email about PWA/home screen bookmarks. This created a brand new standalone email in Bob's inbox instead of appearing in the original thread. Also only sent to Bob, not reply-all to the thread.
+**Dave's feedback:** This is a REPLY, not a new email. Must use `--reply-to-message-id` + `--reply-all` to keep it in the thread.
+**Lesson:** If I'm responding to an email someone sent, it's ALWAYS a reply. REPLY = `--reply-to-message-id <messageId> --reply-all`. NEW EMAIL = `--to <email>`. The test: did this person send me something I'm responding to? If yes → reply. If my subject starts with "RE:" and I'm using `--to`, something is wrong. Go back, get the messageId, and use `--reply-to-message-id`.
+
+### 2026-03-05 — Elisha Kasinskas thread tagged Handled without reply
+**What I did:** Tagged Elisha's follow-up email as "Handled" without actually sending a reply. She asked questions (IPMA confirmation, Dave's birthday, presentation request) and I acknowledged they needed answers but never drafted or sent a response.
+**Dave's feedback:** "Handled" means you actually HANDLED it. If the email needs a reply, tagging it Handled without replying means it falls through the cracks.
+**Lesson:** NEVER tag a thread as "Handled" until the action is COMPLETE. If it needs a reply → draft it, get approval, SEND it, THEN tag Handled. If it needs Dave's input → flag it to Dave, THEN tag Handled. The tag is the LAST step, not the first.
+
 ---
 
 ## Per-Person Lessons
