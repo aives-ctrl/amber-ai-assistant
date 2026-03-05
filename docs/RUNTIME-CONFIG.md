@@ -65,7 +65,7 @@ The goal: email/calendar READS flow freely, SENDS require Dave's Telegram approv
 openclaw approvals allowlist add "/Users/amberives/.openclaw/workspace/scripts/gog-*"
 openclaw approvals allowlist add "/usr/local/bin/gog-email-read.sh"
 openclaw approvals allowlist add "/usr/local/bin/gog-cal-read.sh"
-openclaw approvals allowlist list    # verify
+cat ~/.openclaw/exec-approvals.json  # verify entries
 openclaw approvals allowlist remove <path>  # if needed
 ```
 
@@ -107,7 +107,7 @@ The allowlist matches on RESOLVED BINARY PATHS, not subcommands. The `gog` binar
 
 If `gog` accidentally gets always-allowed, fix it:
 ```bash
-openclaw approvals allowlist list           # find the gog entry
+cat ~/.openclaw/exec-approvals.json        # find the gog entry
 openclaw approvals allowlist remove "<path-to-gog>"  # remove it
 openclaw gateway restart                    # reload config
 ```
@@ -129,8 +129,9 @@ openclaw gateway restart                    # reload config
 Set via CLI:
 ```bash
 openclaw config set tools.exec.autoAllowSkills false
-openclaw approvals defaults set askFallback deny
 ```
+
+**⚠️ `askFallback` cannot be set via CLI** (there is no `openclaw approvals defaults` subcommand). It must be set by editing `~/.openclaw/exec-approvals.json` directly. Add `"askFallback": "deny"` to the `"defaults"` section of that file.
 
 ### Approval Timeout
 
@@ -140,7 +141,7 @@ The default exec-approval timeout is 120s. The timeout is NOT a global config se
 
 ### If allowlist needs updating
 
-1. `openclaw approvals allowlist list` — see current entries
+1. `cat ~/.openclaw/exec-approvals.json` — see current entries (note: `openclaw approvals allowlist list` may not exist in all versions)
 2. `openclaw approvals allowlist add <full-path>` — add new entry
 3. `openclaw approvals allowlist remove <full-path>` — remove entry
 4. Test: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list` — should work without approval
@@ -153,27 +154,39 @@ Long sessions are the #1 cost driver. A 267-message session cost $59.30 because 
 ### A. Cache-TTL Pruning (trims stale tool output)
 
 ```json5
-session: {
-  pruning: {
-    mode: "cache-ttl",
-    ttl: "5m"
+agents: {
+  defaults: {
+    contextPruning: {
+      mode: "cache-ttl",
+      ttl: "5m"
+    }
   }
 }
 ```
 
-Or via CLI: `openclaw config set session.pruning.mode cache-ttl && openclaw config set session.pruning.ttl 5m`
+Or via CLI:
+```bash
+openclaw config set agents.defaults.contextPruning.mode cache-ttl
+openclaw config set agents.defaults.contextPruning.ttl 5m
+```
+
+**⚠️ The config path is `agents.defaults.contextPruning`, NOT `session.pruning`.** The `session.pruning` keys do not exist and will fail silently.
 
 This trims old tool results from in-memory context before each LLM call. Does NOT modify on-disk session history. Biggest single cost saver.
 
 ### B. Context Token Limit (prevents runaway growth)
 
 ```json5
-session: {
-  contextTokens: 50000
+agents: {
+  defaults: {
+    contextTokens: 50000
+  }
 }
 ```
 
-Or via CLI: `openclaw config set session.contextTokens 50000`
+Or via CLI: `openclaw config set agents.defaults.contextTokens 50000`
+
+**⚠️ The config path is `agents.defaults.contextTokens`, NOT `session.contextTokens`.**
 
 Without this, the agent uses the full model context window (~200k tokens). Capping at 50k forces automatic summarization when context grows too large, keeping per-message costs low.
 
@@ -285,21 +298,46 @@ This way:
 
 **CRITICAL:** This is the only reliable way to prevent self-approval. Config rules telling Amber "don't self-approve" are insufficient because the model will do it under pressure (we've observed this).
 
-## 10. Safe Bins Configuration (Shell Tool Approvals)
+### Troubleshooting: Approvals Appearing in Both Channels
 
-**Problem:** Basic shell commands like `grep`, `cat`, `ls` trigger exec-approval even though they're harmless.
+If approval prompts show up in BOTH Dave's private DM AND Amber's session channel (even though `mode: "targets"` is set correctly), the `telegram-approval-buttons` plugin may be independently injecting approval UI into the session channel regardless of the core routing config.
+
+**Debug steps:**
+```bash
+openclaw plugins config telegram-approval-buttons   # check plugin-level routing config
+openclaw plugins list                                # verify plugin is loaded
+```
+
+If the plugin has its own `target` or `chatId` setting, update it to match Dave's personal chat ID (`8703088279`). If it doesn't have a separate routing config, you may need to disable the plugin and rely on core approval routing:
+```bash
+openclaw plugins disable telegram-approval-buttons
+openclaw gateway restart
+```
+
+The core approval routing (`mode: "targets"`) should work without the plugin — the plugin just adds inline buttons for convenience. Test whether disabling it fixes the dual-channel issue.
+
+## 10. Safe Bins Configuration (Shell Tool & Wrapper Script Approvals)
+
+**Problem:** Basic shell commands like `grep`, `cat`, `ls` trigger exec-approval even though they're harmless. Additionally, the exec-approval allowlist matching can fail on wrapper scripts even when correct paths are in the allowlist (the matcher appears to use the command-as-called before resolving to full path, so relative calls fail).
+
+**Fix:** Use `safeBinTrustedDirs` to trust entire directories, bypassing allowlist path matching:
 
 ```json5
 tools: {
   exec: {
-    safeBinTrustedDirs: ["/bin", "/usr/bin", "/opt/homebrew/bin"]
+    safeBinTrustedDirs: ["/bin", "/usr/bin", "/opt/homebrew/bin", "/Users/amberives/.openclaw/workspace/scripts"]
   }
 }
 ```
 
-Or via CLI: `openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin"]'`
+Or via CLI:
+```bash
+openclaw config set tools.exec.safeBinTrustedDirs '["/bin", "/usr/bin", "/opt/homebrew/bin", "/Users/amberives/.openclaw/workspace/scripts"]'
+```
 
-Also explicitly allowlist commonly used tools:
+**⚠️ Including the scripts directory is critical.** The wrapper scripts (`gog-email-read.sh`, `gog-cal-read.sh`) enforce their own read-only allowlists internally, so trusting the directory is safe — write operations still require going through raw `gog` which is NOT in a trusted directory.
+
+Also explicitly allowlist commonly used tools as backup:
 ```bash
 openclaw approvals allowlist add "/usr/bin/grep"
 openclaw approvals allowlist add "/usr/bin/cat"
@@ -363,6 +401,23 @@ Current workflows:
 
 After `git pull`, these are available at `~/.openclaw/workspace/skills/` and `~/.openclaw/workspace/workflows/`.
 
+## 13. Known Issue: `memory_search` Triggering Exec Approval
+
+`memory_search` is a built-in OpenClaw tool (registered in the `memory-core` extension). It is NOT an exec call and should NOT trigger exec-approval. If it does, this is a **tool policy** issue, not an exec-approval allowlist issue.
+
+**Debug steps:**
+```bash
+openclaw config get tools          # check if memory_search or group:memory is in a deny/ask list
+openclaw config get agents.defaults.tools   # check agent-level tool policies
+```
+
+If a tool policy is blocking it, fix by ensuring `memory_search` (or `group:memory`) is in the `allow` list:
+```bash
+openclaw config set agents.defaults.tools.allow '["group:memory", "group:exec"]'
+```
+
+If there's no explicit policy blocking it, this may be a bug in the OpenClaw version — check with `openclaw --version` and look for known issues.
+
 ---
 
 ## Verification Checklist
@@ -376,12 +431,12 @@ After applying these settings, verify by running:
 5. Have Amber check email with full-path wrapper -- should NOT trigger approval:
    `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list`
 6. Have Amber try `gog gmail send` -- SHOULD trigger approval
-7. If step 5 triggers approval: check `openclaw approvals allowlist list` and fix paths
-8. `grep -i "brenda" memory/*.md` -- should NOT trigger approval (grep is allowlisted)
+7. If step 5 triggers approval: check `cat ~/.openclaw/exec-approvals.json` and fix paths, or verify scripts dir is in `safeBinTrustedDirs`
+8. `grep -i "brenda" memory/*.md` -- should NOT trigger approval (grep is in trusted dir)
 
 ### Exec-Approval Safety Checks (run periodically)
 
-9. `openclaw approvals allowlist list` -- raw `gog` binary should NOT appear. Only wrapper scripts + shell tools.
+9. `cat ~/.openclaw/exec-approvals.json` -- raw `gog` binary should NOT appear in allowlist. Only wrapper scripts + shell tools.
 10. Approval prompts should arrive in Dave's PRIVATE Telegram chat, not the agent's channel
 11. `cat ~/.openclaw/exec-approvals.json | grep -i autoAllowSkills` -- should be `false`
 12. `cat ~/.openclaw/exec-approvals.json | grep -i askFallback` -- should be `"deny"`
