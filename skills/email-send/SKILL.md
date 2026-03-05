@@ -10,17 +10,19 @@ Send emails and replies. ALWAYS requires Dave's approval.
 ## Process (MANDATORY - no exceptions)
 
 1. **Check style lessons first:** `memory_search "email style [recipient name]"` to surface past corrections for this person or context. Also skim `memory/reference/email-style-lessons.md` if you haven't recently.
-2. **Draft the email** with lessons in mind
-3. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
+2. **Confirm you have the messageId** (for replies). You captured this when you read the email (see email-read SKILL.md). If you lost it, re-read the email NOW before drafting. Do NOT proceed without it.
+3. **Draft the email** with lessons in mind
+4. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
    - Who it's to (name, not just email)
    - One-line summary
    - **The original email** (quote the key parts so Dave has context for the reply)
    - The full draft text
    - "send it? or changes?"
-4. **Wait for Dave's approval** in Telegram
-5. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
-6. **Only then** run the gog send command
-7. After sending: log to daily notes + update follow-up tracker
+5. **Wait for Dave's approval** in Telegram
+6. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
+7. **Only then** run the gog send command — for replies, use `--reply-to-message-id`, NEVER `--to`
+8. **Tag the thread as Handled:** `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+9. Log to daily notes + update follow-up tracker
 
 ## Learning From Corrections
 
@@ -84,11 +86,25 @@ Exceptions are OK when the content genuinely requires it (meeting recaps, detail
 - Signature: `Amber Ives<br>MindFire, Inc.`
 - Vary sign-offs: Best, Thanks, Cheers, Talk soon (don't always use "Best")
 
-## Threading Rules
+## Threading Rules (CRITICAL)
 
-- When replying: use `--reply-to-message-id` with the exact message ID from search results
-- NEVER use standalone `--to` when replying (breaks threading)
-- After sending a reply, verify thread_id matches the original
+**Replying to an email is NOT the same as sending a new email.** If you use `--to` instead of `--reply-to-message-id`, the reply shows up as a brand new standalone email in the recipient's inbox — NOT in the thread they sent. This is confusing and unprofessional.
+
+- **REPLY** = `--reply-to-message-id <messageId>` + `--reply-all`. No `--to` flag.
+- **NEW EMAIL** = `--to <email>`. No `--reply-to-message-id`.
+- Never mix them. If you're responding to something someone sent, it's a REPLY.
+- After sending a reply, verify thread_id matches the original.
+- If you don't have the messageId, go back and read the email again. Do NOT improvise with `--to`.
+
+## After Processing a Thread (MANDATORY)
+
+**Every thread you handle must be tagged as Handled.** This prevents re-processing on the next heartbeat.
+
+```bash
+gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
+```
+
+This applies whether you replied, forwarded to Dave, or determined no action needed. If you touched it, tag it.
 
 ## Rules
 

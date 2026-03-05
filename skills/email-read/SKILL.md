@@ -32,6 +32,14 @@ All commands use the read-only wrapper script. This is allowlisted and does NOT 
 /Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list
 ```
 
+## Capturing IDs for Replies
+
+When you read an email you might need to reply to, **note the messageId and threadId immediately.** You will need them later:
+- `messageId` → used in `--reply-to-message-id` when sending a reply (preserves threading)
+- `threadId` → used in `gog gmail thread modify` to tag as Handled after processing
+
+Search results return these IDs. **Write them down in your working context** before moving on to the next email. If you lose the messageId and use `--to` instead, the reply shows up as a brand new email instead of appearing in the thread. This confuses recipients.
+
 ## Rules
 
 - ALWAYS use the FULL PATH: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh`
