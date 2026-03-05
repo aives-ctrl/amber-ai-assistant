@@ -10,10 +10,11 @@
 
 CMD="$*"
 
-# Allowlist of read-only subcommands (both singular and plural forms)
+# Allowlist of read-only subcommands (all known forms — gog CLI accepts multiple variations)
 ALLOWED_PATTERNS=(
     "gmail messages search"
     "gmail message search"
+    "gmail search"
     "gmail messages get"
     "gmail message get"
     "gmail messages list"

@@ -21,23 +21,24 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 ## Process (MANDATORY - no exceptions)
 
 1. **Check style lessons first:** `memory_search "email style [recipient name]"` to surface past corrections for this person or context. Also skim `memory/reference/email-style-lessons.md` if you haven't recently.
-2. **Confirm you have the messageId** (for replies). You captured this when you read the email (see email-read SKILL.md). If you lost it, re-read the email NOW before drafting. Do NOT proceed without it.
-3. **Draft the email** with lessons in mind
-4. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
+2. **Check if already replied** (for replies): Search sent mail to see if you already responded to this thread. If you did, skip it — tag as Handled and move on. See email-read SKILL.md "Check If Already Replied" section.
+3. **Confirm you have the messageId** (for replies). You captured this when you read the email (see email-read SKILL.md). If you lost it, re-read the email NOW before drafting. Do NOT proceed without it.
+4. **Draft the email** with lessons in mind
+5. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
    - Who it's to (name, not just email)
    - One-line summary
    - **The original email** (quote the key parts so Dave has context for the reply)
    - The full draft text
    - "send it? or changes?"
-5. **Wait for Dave's approval** in Telegram
-6. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
-7. **Only then** run the gog send command — for replies, use `--reply-to-message-id`, NEVER `--to`
+6. **Wait for Dave's approval** in Telegram
+7. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
+8. **Only then** run the gog send command — for replies, use `--reply-to-message-id`, NEVER `--to`
    **⚠️ PRE-SEND CHECKLIST — verify before executing:**
    - Does the command use `--body-html`? (If it says `--body` without `-html`, STOP and fix it)
    - Is the body wrapped in `<div style="font-size:18px">...</div>`?
    - Is the signature exactly `Amber Ives<br>MindFire, Inc.`? (Nothing else — no title, no email address)
-8. **Tag the thread as Handled:** `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
-9. Log to daily notes + update follow-up tracker
+9. **Tag the thread as Handled:** `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+10. Log to daily notes + update follow-up tracker
 
 ## Learning From Corrections
 
@@ -49,6 +50,11 @@ Append to `memory/reference/email-style-lessons.md`:
 **What I wrote:** [the part Dave changed]
 **Dave's feedback:** [what he said]
 **Lesson:** [the takeaway — be specific enough to apply next time]
+```
+
+**After logging a lesson, commit and push so the lesson doesn't get lost:**
+```bash
+cd /Users/amberives/amber-ai-assistant && git add memory/reference/email-style-lessons.md && git commit -m "Amber: log email style lesson" && git push origin main
 ```
 
 This builds your style memory over time. The more lessons you log, the fewer corrections you'll need.

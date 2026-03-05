@@ -63,6 +63,12 @@ Skills define the exact commands and processes for common operations. Always fol
 
 **Self-approval is impossible and forbidden.** Approvals route to Dave's private chat. See AGENTS.md.
 
+### Git Sync (Preserving Your Memory)
+- **You MUST commit and push after editing memory files.** See AGENTS.md "Git Sync" section.
+- `update-self.sh` auto-syncs before pulling, but don't rely on that alone — push after significant edits.
+- Sync command: `cd /Users/amberives/amber-ai-assistant && git add memory/ config/follow-up-tracker.md && git commit -m "Amber: sync local changes" && git push origin main`
+- **If you skip this, your changes WILL be overwritten on the next pull.**
+
 ### Discipline Files
 - Email → `email.md` | Follow-ups → `follow-up.md` | Calendar → `calendar.md` | Comms → `communications.md`
 

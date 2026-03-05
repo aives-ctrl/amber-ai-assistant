@@ -13,7 +13,28 @@ echo "🔄 Updating Amber from GitHub..."
 # Navigate to repo directory
 cd "$REPO_DIR"
 
-# Pull latest changes
+# ── STEP 0: Push Amber's local changes BEFORE pulling ──
+# Amber edits files at runtime (lessons, daily notes, follow-up tracker).
+# If we pull without committing first, those changes get overwritten.
+echo "📤 Checking for local changes to push first..."
+if [ -n "$(git status --porcelain)" ]; then
+    echo "  Found uncommitted local changes. Committing and pushing..."
+    git add memory/ config/follow-up-tracker.md
+    # Only commit if there are staged changes (the add above may find nothing new)
+    if ! git diff --cached --quiet; then
+        git commit -m "Amber: auto-sync local changes (lessons, memory, follow-ups)
+
+Files Amber edits at runtime that must be preserved."
+        git push origin main
+        echo "  ✅ Local changes pushed to GitHub."
+    else
+        echo "  No tracked files changed. Skipping commit."
+    fi
+else
+    echo "  No local changes to push."
+fi
+
+# Pull latest changes (now safe — Amber's edits are already pushed)
 echo "📥 Pulling latest changes from GitHub..."
 git pull origin main
 

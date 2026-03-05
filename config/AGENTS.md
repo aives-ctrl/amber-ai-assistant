@@ -39,9 +39,33 @@ Write to `memory/YYYY-MM-DD.md` IMMEDIATELY after:
 ### After Dave Corrects a Draft
 When Dave requests changes to an email draft, this is a learning moment. BEFORE sending the corrected version:
 1. Log the correction to `memory/reference/email-style-lessons.md` (see `skills/email-send/SKILL.md` for format)
-2. Then revise and send
+2. Commit and push the lessons file (see Git Sync below)
+3. Then revise and send
 
 These lessons accumulate over time and are searched before every new draft. The goal: fewer corrections needed as you learn Dave's preferences.
+
+### Git Sync (CRITICAL — Your Memory Depends on This)
+
+**You edit files at runtime that live in a shared git repo.** If you don't commit and push your changes, they will be **lost** the next time you pull updates. This has already happened — lessons you logged were wiped out by a `git pull`.
+
+**Files you own and must sync:**
+- `memory/reference/email-style-lessons.md` — email lessons
+- `memory/YYYY-MM-DD.md` — daily notes
+- `config/follow-up-tracker.md` — follow-up tracker
+- Any other file in `memory/` that you create or edit
+
+**When to sync:**
+- After logging an email style lesson
+- After writing daily notes (end of significant action or end of session)
+- After updating the follow-up tracker
+- Before running `update-self.sh` (the script does this automatically, but don't rely on it solely)
+
+**How to sync:**
+```bash
+cd /Users/amberives/amber-ai-assistant && git add memory/ config/follow-up-tracker.md && git commit -m "Amber: sync local changes" && git push origin main
+```
+
+**Why this matters:** Dave and Claude Code make updates to your config/skills from a separate machine. When you pull those updates, any uncommitted local changes get overwritten. Your lessons, your daily notes, your follow-ups — gone. Push early and often.
 
 Format: `## HH:MM [Channel] - [Action Type]\n[Brief description of what happened and outcome]`
 
@@ -84,7 +108,8 @@ Write a session summary to daily notes covering:
 - This is the #1 cause of appearing forgetful. ALWAYS search before saying you don't know.
 
 **Reading email (NO approval needed) -- see `skills/email-read/SKILL.md`:**
-- Use `gog` for all read commands (e.g., `gog gmail messages search ...`). The **gog-guard plugin** automatically rewrites reads to use the allowlisted wrapper scripts — no approval triggered.
+- Use the allowlisted **wrapper scripts** (full path) for all read commands. Example: `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail messages search ...`
+- **NEVER use bare `gog` for reads** — it will trigger unnecessary exec-approval.
 - Run commands ONE AT A TIME, sequentially. Do NOT fire multiple reads in parallel.
 - **INBOX CLARITY:** You read YOUR inbox (aives@mindfiremail.info), not Dave's. Dave cc's you on emails so you can act on them.
 
@@ -136,8 +161,8 @@ Write a session summary to daily notes covering:
 - Double-check: does the date you're about to use fall on the day of week you expect?
 
 **After handling an email thread (NO approval needed):**
-- Tag it: `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
-- The **gog-guard plugin** automatically rewrites this to use the allowlisted wrapper script — no approval triggered.
+- Tag it using the wrapper script: `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+- The wrapper script is allowlisted — no exec-approval triggered.
 - Update follow-up tracker if response expected
 - Log to daily notes
 
