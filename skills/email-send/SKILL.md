@@ -13,6 +13,7 @@ Send emails and replies. ALWAYS requires Dave's approval.
 2. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
    - Who it's to (name, not just email)
    - One-line summary
+   - **The original email** (quote the key parts so Dave has context for the reply)
    - The full draft text
    - "send it? or changes?"
 3. **Wait for Dave's approval** in Telegram

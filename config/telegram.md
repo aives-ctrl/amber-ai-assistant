@@ -20,8 +20,11 @@ Telegram is the PRIMARY channel for:
 When showing Dave an email draft for approval, include:
 - **Who** it's to (name, not just email address)
 - **One-line summary** of what the email says
+- **The original email** they're replying to (quote the key parts so Dave has context)
 - **The full draft** as readable text (in a quoted block or clearly separated)
 - **Quick prompt:** "send it? or changes?"
+
+**ALWAYS show the original email before your draft.** Dave needs to see what he's replying to. He doesn't have the email open — you do. Show him the relevant parts so he can evaluate your reply in context.
 
 **NEVER show raw HTML tags in the draft preview.** Dave wants to read the email the way a recipient would see it, not review `<div>` and `<br>` tags. Write the draft naturally in Telegram. The HTML formatting happens when you build the actual gog command — Dave doesn't need to see that part.
 
@@ -29,6 +32,10 @@ Example:
 ```
 reply to Vinny re: meeting coordination
 
+ORIGINAL FROM VINNY:
+"Hey Dave, would love to connect this week about the project. Do you have any availability Wednesday or Thursday? Happy to do Zoom or phone."
+
+DRAFT REPLY:
 "Hey Vinny, how about Wednesday at 10am PT? I checked Dave's calendar and it's open. We could do Zoom or phone, whatever works best for you."
 
 send it? or changes?
