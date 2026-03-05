@@ -36,7 +36,7 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
    - Does the command use `--body-html`? (If it says `--body` without `-html`, STOP and fix it)
    - Is the body wrapped in `<div style="font-size:18px">...</div>`?
    - Is the signature exactly `Amber Ives<br>MindFire, Inc.`? (Nothing else — no title, no email address)
-8. **Tag the thread as Handled:** `gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
+8. **Tag the thread as Handled:** `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
 9. Log to daily notes + update follow-up tracker
 
 ## Learning From Corrections
@@ -55,7 +55,7 @@ This builds your style memory over time. The more lessons you log, the fewer cor
 
 ## Commands
 
-Send commands use `gog` and WILL trigger exec-approval (Dave approves via Telegram). Read and tag commands are automatically routed to allowlisted wrapper scripts by the gog-guard plugin — no approval needed.
+Send commands use `gog` and WILL trigger exec-approval (Dave approves via Telegram). Tag commands use the allowlisted wrapper script `gog-email-tag.sh` — no approval needed.
 
 ```bash
 # Send new email (ALWAYS --body-html, ALWAYS font-size div, ALWAYS exact signature)
@@ -73,8 +73,8 @@ gog gmail send \
   --subject "RE: Original Subject" \
   --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
 
-# Tag thread as Handled after processing (auto-routed to wrapper, no approval needed)
-gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
+# Tag thread as Handled after processing (wrapper script, no approval needed)
+/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
 ```
 
 ## Writing Style
@@ -121,7 +121,7 @@ Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just na
 **Every thread you handle must be tagged as Handled.** This prevents re-processing on the next heartbeat.
 
 ```bash
-gog gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
+/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
 ```
 
 This applies whether you replied, forwarded to Dave, or determined no action needed. If you touched it, tag it.
