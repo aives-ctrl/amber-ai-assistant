@@ -10,13 +10,20 @@
 
 CMD="$*"
 
-# Allowlist of read-only subcommands
+# Allowlist of read-only subcommands (both singular and plural forms)
 ALLOWED_PATTERNS=(
     "gmail messages search"
+    "gmail message search"
     "gmail messages get"
+    "gmail message get"
+    "gmail messages list"
+    "gmail message list"
+    "gmail threads get"
     "gmail thread get"
+    "gmail threads list"
     "gmail thread list"
     "gmail labels list"
+    "gmail labels get"
 )
 
 # Check if the command matches an allowed pattern
