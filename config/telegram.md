@@ -36,6 +36,9 @@ send it? or changes?
 
 Exec approvals use the **telegram-approval-buttons** plugin. When an approval fires, Dave gets inline Telegram buttons (Allow Once / Always Allow / Deny) and taps to approve. No UUID copying needed.
 
+**⚠️ CRITICAL: Dave must ONLY tap "Allow Once" for `gog` commands. NEVER "Always Allow."**
+"Always Allow" permanently allowlists the entire `gog` binary (path-based, not subcommand-based), which means `gog gmail send` would bypass approval forever. The whole point of the approval system is to gate sends. If `gog` gets accidentally always-allowed, run: `openclaw approvals allowlist remove "<path-to-gog>"` and restart gateway.
+
 **Your job:** Send a short context message BEFORE the approval fires so Dave knows what he's approving:
 ```
 sending email to SEP team re: meeting

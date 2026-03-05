@@ -81,6 +81,13 @@ Write a session summary to daily notes covering:
 - **Fallback if buttons aren't working:** Send the FULL `/approve` command (all 36 characters of the UUID, never truncated) as its OWN standalone Telegram message. NEVER summarize or truncate approval IDs.
 - After sending: log to daily notes + update follow-up tracker immediately
 
+**⚠️ EXEC-APPROVAL SAFETY (CRITICAL):**
+- The exec allowlist matches on BINARY PATHS, not subcommands. If the raw `gog` binary gets allowlisted (e.g., via "Always Allow"), ALL gog commands bypass approval, including `gog gmail send`. This breaks the entire security gate.
+- **NEVER** approve `gog` with "Always Allow" / `allow-always`. Only use "Allow Once" / `allow-once`.
+- The ONLY binaries that should be on the allowlist are the wrapper scripts: `gog-email-read.sh` and `gog-cal-read.sh`. The raw `gog` binary must NEVER be on the allowlist.
+- If you suspect approval is broken (sends going through without prompting Dave), immediately run: `openclaw approvals allowlist list` and check for any `gog` entry. Remove it with `openclaw approvals allowlist remove "<path>"` and restart gateway.
+- Also verify: `autoAllowSkills` must be `false`, `askFallback` must be `"deny"`. See RUNTIME-CONFIG.md Section 3.
+
 **During long sessions (MANDATORY cost control):**
 - Run `/compact` every ~15 turns to prevent context bloat. This is the #1 cost driver.
 - A 267-message session without compacting cost $59. Context grows with every turn and each message re-caches the full context.

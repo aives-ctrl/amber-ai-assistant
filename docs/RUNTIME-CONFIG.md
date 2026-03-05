@@ -70,6 +70,39 @@ The allowlist matches the exact path the shell resolves when running the command
 - Raw `gog` (`/usr/local/bin/gog`) is NOT on the allowlist -- sends trigger approval via Telegram
 - `on-miss` = "ask" -- any unlisted command prompts Dave for approval rather than being blocked
 
+**⚠️ DANGER: "Always Allow" Breaks the Security Gate**
+
+The allowlist matches on RESOLVED BINARY PATHS, not subcommands. The `gog` binary is a single executable with multiple subcommands (`gmail search`, `gmail send`, `calendar events`, etc.). If the `gog` binary path gets added to the allowlist (via "Always Allow" button tap or `allow-always` command), ALL gog subcommands bypass approval, including `gog gmail send`.
+
+**Rule: Only use "Allow Once" for `gog` commands. NEVER "Always Allow."**
+
+If `gog` accidentally gets always-allowed, fix it:
+```bash
+openclaw approvals allowlist list           # find the gog entry
+openclaw approvals allowlist remove "<path-to-gog>"  # remove it
+openclaw gateway restart                    # reload config
+```
+
+**Additional safety settings (REQUIRED):**
+```json
+{
+  "tools": {
+    "exec": {
+      "autoAllowSkills": false,
+      "askFallback": "deny"
+    }
+  }
+}
+```
+- `autoAllowSkills: false` -- Prevents `gog` from being implicitly allowlisted as a registered OpenClaw skill
+- `askFallback: "deny"` -- If approval UI is unavailable (e.g., during gateway restart), commands are DENIED, not auto-approved
+
+Set via CLI:
+```bash
+openclaw config set tools.exec.autoAllowSkills false
+openclaw approvals defaults set askFallback deny
+```
+
 ### Approval Timeout
 
 The default exec-approval timeout is 120s. The timeout is NOT a global config setting -- it's passed per-command by Amber when she invokes exec calls. AGENTS.md and TOOLS.md instruct her to use `timeout: 3600` in her exec calls so Dave has 60 min to respond on his phone.
@@ -208,3 +241,11 @@ After applying these settings, verify by running:
 5. Have Amber check email with `gog-email-read.sh gmail labels list` -- should NOT trigger approval
 6. Have Amber try `gog gmail send` -- SHOULD trigger approval
 7. If step 5 triggers approval, run the troubleshooting commands in section 3 above and report output to Dave
+
+### Exec-Approval Safety Checks (run periodically)
+
+8. `openclaw approvals allowlist list` -- the raw `gog` binary should NOT appear. Only wrapper scripts should be listed.
+9. `cat ~/.openclaw/exec-approvals.json | grep -i gog` -- check for accidental `gog` entries in any allowlist
+10. `cat ~/.openclaw/exec-approvals.json | grep -i autoAllowSkills` -- should be `false`
+11. `cat ~/.openclaw/exec-approvals.json | grep -i askFallback` -- should be `"deny"`
+12. If `gog gmail send` does NOT trigger approval, the gate is broken. Run the fix commands in Section 3 ("DANGER: Always Allow" subsection).
