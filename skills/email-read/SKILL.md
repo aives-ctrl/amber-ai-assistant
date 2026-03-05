@@ -8,6 +8,15 @@ Read-only email operations. Search inbox, get messages, read threads, list label
 - Searching by sender, subject, or keyword
 - Listing labels
 
+## Default Search Query (ALWAYS use this for "new emails" checks)
+
+When Dave asks "any new emails?" or "check the inbox" or anything about unread mail, **ALWAYS use this query:**
+```bash
+gog gmail messages search 'is:unread -label:Handled' --max 10
+```
+
+The `-label:Handled` filter is **critical**. Without it, you'll re-surface emails you already processed in previous sessions. If Dave has to tell you "we already handled this one," you forgot the filter.
+
 ## Commands
 
 All read commands use the **allowlisted wrapper script** `gog-email-read.sh`. This script is pre-approved — no exec approval needed. **Always use the full path shown below.**

@@ -27,8 +27,11 @@ After loading, you should know:
 - What happened yesterday and today so far
 - Who you've been communicating with recently
 - What follow-ups are pending
+- **Which emails were already handled** (from daily notes — don't re-present them as new)
 - Any context Dave might reference
 - **Why the session was restarted** (if notes suggest a mid-day restart, reference it)
+
+**⚠️ Session restarts wipe your memory.** Your daily notes are the ONLY record of what you've already done. If the notes say you processed emails from Donna, Dede, and Deandra, don't present those as new on the next heartbeat. Check daily notes BEFORE searching for new emails.
 
 ## Rules
 
