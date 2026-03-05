@@ -214,7 +214,7 @@ session: {
 
 Replace the placeholder values with Dave's actual IDs. This maps all of Dave's channel identities to a single shared session so context persists across Telegram, SMS, and RC Team Chat.
 
-To find Dave's Telegram ID: check `openclaw sessions list` for his existing Telegram session key.
+To find Dave's Telegram ID: run `openclaw sessions` (no subcommand) for his existing Telegram session key.
 To find Dave's RC identifiers: check the RC plugin config or session keys.
 
 ## 6. Heartbeat Configuration
@@ -269,13 +269,13 @@ approvals: {
   exec: {
     enabled: true,
     targets: [
-      { channel: "telegram", to: "<DAVE_PERSONAL_CHAT_ID>" }
+      { channel: "telegram", to: "8703088279" }
     ]
   }
 }
 ```
 
-To find Dave's personal chat ID: check `openclaw sessions list` or look at the Telegram bot's message history with Dave's personal account.
+Dave's Telegram user ID is `8703088279`. To verify: run `openclaw sessions` (no subcommand) or DM `@userinfobot` on Telegram.
 
 This way:
 - Amber converses in her regular Telegram channel
@@ -341,7 +341,7 @@ hooks: {
 - Eliminates 80% of exec calls that currently cause approval friction
 
 **Prerequisites:**
-- Google Calendar API must be enabled (Dave's action item)
+- ~~Google Calendar API must be enabled~~ ✅ Enabled (2026-03-04)
 - GCP Pub/Sub topic must be created
 - `OPENCLAW_HOOK_TOKEN` must be set in environment
 
@@ -372,7 +372,7 @@ After applying these settings, verify by running:
 1. `openclaw config get compaction.memoryFlush.enabled` -- should be `true`
 2. `openclaw config get memorySearch.enabled` -- should be `true`
 3. `openclaw config get model.caching` -- should be `true`
-4. `openclaw sessions list` -- check that Dave's sessions share an identity key
+4. `openclaw sessions` -- check that Dave's sessions share an identity key
 5. Have Amber check email with full-path wrapper -- should NOT trigger approval:
    `/Users/amberives/.openclaw/workspace/scripts/gog-email-read.sh gmail labels list`
 6. Have Amber try `gog gmail send` -- SHOULD trigger approval

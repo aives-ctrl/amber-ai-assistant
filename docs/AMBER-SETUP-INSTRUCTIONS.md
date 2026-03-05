@@ -61,19 +61,11 @@ Should show wrapper script globs + shell tools. Should NOT show raw `/usr/local/
 
 ## STEP 3: Configure approval channel separation (PREVENTS SELF-APPROVAL)
 
-Find Dave's personal Telegram chat ID:
+Route exec approvals to Dave's PRIVATE Telegram DM (chat ID `8703088279`):
 ```bash
-openclaw sessions list
+openclaw config set approvals.exec.enabled true
+openclaw config set approvals.exec.targets '[{"channel": "telegram", "to": "8703088279"}]'
 ```
-
-Look for Dave's Telegram session key. It will contain his chat ID.
-
-Then set approvals to route to Dave's PRIVATE chat:
-```bash
-openclaw config set approvals.exec.targets '[{"channel": "telegram", "to": "<DAVE_PERSONAL_CHAT_ID>"}]'
-```
-
-Replace `<DAVE_PERSONAL_CHAT_ID>` with the actual numeric ID.
 
 This means:
 - Amber converses in her regular channel
@@ -154,7 +146,7 @@ Categorize each email per HEARTBEAT.md rules. Send Dave ONE consolidated Telegra
 
 ## STEP 9 (FUTURE): Gmail PubSub setup
 
-This requires Dave to enable the Google Calendar API first. Once enabled:
+Google Calendar API is now enabled (2026-03-04). Remaining setup:
 
 ```bash
 gog gmail watch serve \
