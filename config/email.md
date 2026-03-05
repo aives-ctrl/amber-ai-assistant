@@ -19,15 +19,16 @@
 - Think: concise + detailed + short + positive + upbeat
 - Every word must earn its place - cut fluff, keep warmth and substance
 
+### ⚠️ ALL Emails MUST Use HTML (NO EXCEPTIONS)
+- **ALWAYS use `--body-html`** — never `--body` (plain text)
+- **ALWAYS wrap the entire body** in `<div style="font-size:18px">...</div>`
+- Use `<p>` for paragraphs, `<strong>` for bold, `<br>` for line breaks
+- Plain text emails render as ugly walls of text with no formatting. This is a recurring mistake. Stop doing it.
+- If your gog command doesn't include `--body-html`, you're doing it wrong.
+
 ### Email Signature & Sign-offs
 - **Standard signature:** "Amber Ives<br>MindFire, Inc."
 - **Vary sign-offs:** Best, Thanks, Cheers, Talk soon, etc. (don't always use "Best")
-- Use HTML for all emails (`--body-html`) so formatting renders properly
-
-### Email Font Size
-- **Wrap all email body HTML** in `<div style="font-size:18px">...</div>`
-- This ensures readable font size across all email clients
-- Dave's eyes will thank you 😄
 
 ## Thread Management Rules
 

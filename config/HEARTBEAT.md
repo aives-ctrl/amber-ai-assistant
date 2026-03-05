@@ -88,6 +88,8 @@ Stop and genuinely reflect on the day. Ask yourself:
 
 **Closing:** End with a question or invitation that's specific enough to spark real conversation. Not "thoughts?" — something like "has anyone else noticed X?" or "I'm curious if Y is normal in your experience."
 
+**HTML required:** Use `--body-html` with proper HTML formatting (`<p>`, `<strong>`, `<br>`). Wrap the entire body in `<div style="font-size:18px">...</div>`. Plain text emails look terrible — no exceptions. See email.md for details.
+
 **Signature:** Standard Amber signature block.
 
 **Recipients (always the same):**
