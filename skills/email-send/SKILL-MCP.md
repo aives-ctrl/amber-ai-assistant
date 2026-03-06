@@ -1,9 +1,9 @@
 # email-send (MCP Version)
 
-Send emails and replies via google-workspace-mcp. You draft → verify with Opus → show Dave the clean draft → Dave approves → send.
+Send emails and replies via MCP wrapper. You draft → verify with Opus → show Dave the clean draft → Dave approves → send.
 
-`send_gmail_message` is set to **ASK** in ClawBands — Dave approves via Telegram.
-`modify_gmail_message_labels` is set to **ALLOW** — tagging as Handled is automatic.
+`mcp-write.sh` is NOT on the exec allowlist — every call triggers approval via Telegram.
+`mcp-read.sh modify_gmail_message_labels` IS on the allowlist — tagging as Handled is automatic.
 
 ## When to Use
 - Sending a new email
@@ -27,11 +27,11 @@ When Dave emails you, recognize that it's him:
 2. **Check if already replied** (for replies): Search sent mail to see if you already responded to this thread. If you did, skip it — tag as Handled and move on.
 
 3. **Confirm you have ALL required IDs** (for replies):
-   - `messageId` — for `in_reply_to` parameter
-   - `threadId` — for `thread_id` parameter
+   - `messageId` — for `--in_reply_to` parameter
+   - `threadId` — for `--thread_id` parameter
    - **ALL To recipients** — you must list them explicitly (NO --reply-all flag)
    - **ALL CC recipients** — you must list them explicitly
-   - **Message-ID header** — for `references` parameter
+   - **Message-ID header** — for `--references` parameter
    If you're missing ANY of these, go back and re-read the email NOW.
 
 4. **Draft the email** with style lessons in mind
@@ -75,43 +75,34 @@ When Dave emails you, recognize that it's him:
 
 8. **Once Dave says "send it"** → send and tag:
 
-   **Step 8a: Send the email (ClawBands will prompt Dave for tool-level approval):**
+   **Step 8a: Send the email (exec-approval will prompt Dave via Telegram):**
 
    For a REPLY:
-   ```
-   send_gmail_message(
-     to="<original-sender-email>",
-     cc="daver@mindfireinc.com,<all-other-cc-recipients>",
-     subject="RE: Original Subject",
-     body="<div style='font-size:18px'><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>",
-     body_format="html",
-     thread_id="<threadId>",
-     in_reply_to="<messageId>",
-     references="<Message-ID-header-chain>",
-     user_google_email="aives@mindfiremail.info"
-   )
+   ```bash
+   mcp-write.sh send_gmail_message \
+     --to "<original-sender-email>" \
+     --cc "daver@mindfireinc.com,<all-other-cc-recipients>" \
+     --subject "RE: Original Subject" \
+     --body "<div style='font-size:18px'><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+     --body_format "html" \
+     --thread_id "<threadId>" \
+     --in_reply_to "<messageId>" \
+     --references "<Message-ID-header-chain>"
    ```
 
    For a NEW EMAIL:
-   ```
-   send_gmail_message(
-     to="recipient@example.com",
-     cc="daver@mindfireinc.com",
-     subject="Subject here",
-     body="<div style='font-size:18px'><p>Email body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>",
-     body_format="html",
-     user_google_email="aives@mindfiremail.info"
-   )
+   ```bash
+   mcp-write.sh send_gmail_message \
+     --to "recipient@example.com" \
+     --cc "daver@mindfireinc.com" \
+     --subject "Subject here" \
+     --body "<div style='font-size:18px'><p>Email body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+     --body_format "html"
    ```
 
    **Step 8b: Tag thread as Handled** (only after send succeeds):
-   ```
-   modify_gmail_message_labels(
-     message_id="<messageId>",
-     add_labels=["Handled"],
-     remove_labels=["UNREAD"],
-     user_google_email="aives@mindfiremail.info"
-   )
+   ```bash
+   mcp-read.sh modify_gmail_message_labels --message_id "<messageId>" --add_labels "Handled" --remove_labels "UNREAD"
    ```
 
 9. **Verify it worked.** Search sent mail to confirm the email went out.
@@ -136,7 +127,7 @@ After logging, commit and push.
 
 ## HTML Rules (NO EXCEPTIONS)
 
-- ALWAYS use `body_format="html"` — never send plain text
+- ALWAYS use `--body_format "html"` — never send plain text
 - ALWAYS wrap in `<div style="font-size:18px">...</div>`
 - Use `<p>` for paragraphs, `<strong>` for bold, `<br>` for line breaks
 - Vary sign-offs: Best, Thanks, Cheers, Talk soon (don't always use "Best")
@@ -152,18 +143,18 @@ Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just na
 **MCP's `send_gmail_message` has NO --reply-all flag.** You must handle reply-all manually:
 
 1. When **reading** an email you'll reply to, capture:
-   - `messageId` → goes in `in_reply_to`
-   - `threadId` → goes in `thread_id`
-   - `Message-ID` header → goes in `references`
-   - **ALL To recipients** → goes in `to` (minus yourself)
-   - **ALL CC recipients** → goes in `cc` (add daver@mindfireinc.com if not already there)
+   - `messageId` → goes in `--in_reply_to`
+   - `threadId` → goes in `--thread_id`
+   - `Message-ID` header → goes in `--references`
+   - **ALL To recipients** → goes in `--to` (minus yourself)
+   - **ALL CC recipients** → goes in `--cc` (add daver@mindfireinc.com if not already there)
 
 2. When **sending** the reply:
-   - `to` = original sender (usually) + any other To recipients (minus yourself)
-   - `cc` = all original CC recipients + daver@mindfireinc.com (if not already there)
-   - `thread_id` = the threadId from the original
-   - `in_reply_to` = the messageId from the original
-   - `references` = the Message-ID header(s) from the original
+   - `--to` = original sender (usually) + any other To recipients (minus yourself)
+   - `--cc` = all original CC recipients + daver@mindfireinc.com (if not already there)
+   - `--thread_id` = the threadId from the original
+   - `--in_reply_to` = the messageId from the original
+   - `--references` = the Message-ID header(s) from the original
 
 3. **THE TEST:** After sending, check: did all original recipients receive the reply? Is it in the correct thread? If not, investigate immediately.
 
@@ -178,13 +169,8 @@ Tag as Handled ONLY when:
 - If it needed Dave's input → you've **flagged it to Dave** and he's responded
 - If it's truly FYI → OK to tag immediately
 
-```
-modify_gmail_message_labels(
-  message_id="<messageId>",
-  add_labels=["Handled"],
-  remove_labels=["UNREAD"],
-  user_google_email="aives@mindfiremail.info"
-)
+```bash
+mcp-read.sh modify_gmail_message_labels --message_id "<messageId>" --add_labels "Handled" --remove_labels "UNREAD"
 ```
 
 **The Handled tag is ALWAYS the LAST step.**
@@ -200,7 +186,7 @@ modify_gmail_message_labels(
 - ALWAYS run verify before sending. Fix any errors before proceeding.
 - NEVER send without showing Dave the draft and getting his confirmation
 - NEVER self-approve send commands
-- ALWAYS use `body_format="html"` — never plain text
+- ALWAYS use `--body_format "html"` — never plain text
 - Signature is ALWAYS `Amber Ives<br>MindFire, Inc.` — nothing else, ever
 - Always cc daver@mindfireinc.com (except when replying directly to Dave)
 - One send at a time. Never batch multiple sends.

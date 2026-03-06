@@ -1,14 +1,15 @@
 #!/bin/bash
 # =============================================================================
-# Phase 1: MCP Migration Setup Script
-# Run on Amber's machine. Installs google-workspace-mcp + ClawBands,
-# configures OpenClaw, and verifies everything works.
+# Phase 1: MCP Migration Setup Script (v2 — wrapper approach)
+# Run on Amber's machine. Installs google-workspace-mcp, sets up wrapper
+# scripts, updates exec-approvals, and verifies everything works.
 #
 # Usage:
-#   ./mcp-migrate-phase1.sh setup   — Install everything + configure
-#   ./mcp-migrate-phase1.sh test    — Run verification tests only
-#   ./mcp-migrate-phase1.sh status  — Check what's installed
-#   ./mcp-migrate-phase1.sh rollback — Disable MCP, restore gog workflow
+#   ./mcp-migrate-phase1.sh setup    — Install everything + configure
+#   ./mcp-migrate-phase1.sh test     — Run verification tests only
+#   ./mcp-migrate-phase1.sh switch   — Switch SKILL.md files from gog to MCP
+#   ./mcp-migrate-phase1.sh status   — Check what's installed
+#   ./mcp-migrate-phase1.sh rollback — Restore gog workflow
 #
 # Prerequisites:
 #   - OAuth credentials: set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET
@@ -18,8 +19,10 @@
 #   - If gog already has OAuth configured, check: gog auth status
 #     The same Client ID/Secret may work.
 #
-# The ONE thing that needs a human: the OAuth consent screen in the browser
-# (first run only). The script will open it automatically — just click Authorize.
+# Architecture:
+#   mcp-read.sh  → allowlisted (auto-approved) → calls uvx workspace-mcp for reads
+#   mcp-write.sh → NOT allowlisted (needs Telegram approval) → calls uvx workspace-mcp for sends
+#   No config changes to openclaw.json. No ClawBands. Same exec-approvals pattern as gog.
 # =============================================================================
 
 set -euo pipefail
@@ -28,10 +31,8 @@ set -euo pipefail
 AMBER_HOME="/Users/amberives"
 WORKSPACE="${AMBER_HOME}/.openclaw/workspace"
 OPENCLAW_DIR="${AMBER_HOME}/.openclaw"
-OPENCLAW_JSON="${OPENCLAW_DIR}/openclaw.json"
-CLAWBANDS_DIR="${OPENCLAW_DIR}/clawbands"
-POLICY_SOURCE="${WORKSPACE}/config/clawbands-policy.json"
-MCP_CONFIG_SOURCE="${WORKSPACE}/config/mcp-servers.json"
+SCRIPTS_DIR="${WORKSPACE}/scripts"
+SKILLS_DIR="${WORKSPACE}/skills"
 USER_EMAIL="aives@mindfiremail.info"
 SHELL_PROFILE="${AMBER_HOME}/.zshrc"
 
@@ -54,21 +55,6 @@ check_prereqs() {
 
     local missing=0
 
-    # Node.js
-    if command -v node &>/dev/null; then
-        local node_ver=$(node -v | sed 's/v//')
-        local node_major=$(echo "$node_ver" | cut -d. -f1)
-        if [ "$node_major" -ge 18 ]; then
-            log_ok "Node.js $node_ver"
-        else
-            log_error "Node.js >= 18 required (found $node_ver)"
-            missing=1
-        fi
-    else
-        log_error "Node.js not found — install from https://nodejs.org"
-        missing=1
-    fi
-
     # Python 3
     if command -v python3 &>/dev/null; then
         local py_ver=$(python3 --version | cut -d' ' -f2)
@@ -85,14 +71,6 @@ check_prereqs() {
         log_warn "uv not found — will install"
     fi
 
-    # npm
-    if command -v npm &>/dev/null; then
-        log_ok "npm $(npm -v)"
-    else
-        log_error "npm not found"
-        missing=1
-    fi
-
     # OpenClaw
     if command -v openclaw &>/dev/null; then
         log_ok "openclaw CLI"
@@ -105,27 +83,17 @@ check_prereqs() {
     if [ -n "${GOOGLE_OAUTH_CLIENT_ID:-}" ] && [ -n "${GOOGLE_OAUTH_CLIENT_SECRET:-}" ]; then
         log_ok "OAuth credentials found in environment"
     else
-        log_warn "OAuth credentials not set. Checking if gog has them..."
-        if command -v gog &>/dev/null; then
-            log_info "Run 'gog auth status' to check existing OAuth config."
-            log_info "If gog has OAuth configured, you can reuse those credentials."
-        fi
+        log_warn "OAuth credentials not set."
+        log_info "Check if gog has them: gog auth status"
         log_error "Set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET before running setup."
         missing=1
     fi
 
-    # Config files exist in repo
-    if [ -f "$POLICY_SOURCE" ]; then
-        log_ok "ClawBands policy template found"
+    # Wrapper scripts exist
+    if [ -f "${SCRIPTS_DIR}/mcp-read.sh" ] && [ -f "${SCRIPTS_DIR}/mcp-write.sh" ]; then
+        log_ok "MCP wrapper scripts found"
     else
-        log_error "Missing: $POLICY_SOURCE"
-        missing=1
-    fi
-
-    if [ -f "$MCP_CONFIG_SOURCE" ]; then
-        log_ok "MCP server config template found"
-    else
-        log_error "Missing: $MCP_CONFIG_SOURCE"
+        log_error "Missing mcp-read.sh or mcp-write.sh in ${SCRIPTS_DIR}"
         missing=1
     fi
 
@@ -161,9 +129,6 @@ install_mcp_server() {
 setup_env_vars() {
     log_step "Setting up environment variables"
 
-    local vars_added=0
-
-    # Check if already in shell profile
     if grep -q "GOOGLE_OAUTH_CLIENT_ID" "$SHELL_PROFILE" 2>/dev/null; then
         log_warn "OAuth env vars already in $SHELL_PROFILE — skipping"
     else
@@ -175,18 +140,13 @@ export GOOGLE_OAUTH_CLIENT_ID="${GOOGLE_OAUTH_CLIENT_ID}"
 export GOOGLE_OAUTH_CLIENT_SECRET="${GOOGLE_OAUTH_CLIENT_SECRET}"
 export USER_GOOGLE_EMAIL="${USER_EMAIL}"
 EOF
-        vars_added=1
         log_ok "Environment variables added to $SHELL_PROFILE"
     fi
 
-    # Export for current session too
+    # Export for current session
     export GOOGLE_OAUTH_CLIENT_ID="${GOOGLE_OAUTH_CLIENT_ID}"
     export GOOGLE_OAUTH_CLIENT_SECRET="${GOOGLE_OAUTH_CLIENT_SECRET}"
     export USER_GOOGLE_EMAIL="${USER_EMAIL}"
-
-    if [ $vars_added -eq 1 ]; then
-        log_info "Variables exported for current session. Will persist after shell restart."
-    fi
 }
 
 # --- Run OAuth Flow ---
@@ -201,152 +161,64 @@ run_oauth_flow() {
     echo ""
     read -p "Press Enter when ready to open the browser..." _
 
-    # Run the MCP server briefly to trigger OAuth
     timeout 60 uvx workspace-mcp --tools gmail calendar 2>&1 || true
 
     log_info "If authorization succeeded, a token was cached locally."
-    log_info "If the browser didn't open, try running manually:"
-    log_info "  uvx workspace-mcp --tools gmail calendar"
+    log_info "If the browser didn't open, try: uvx workspace-mcp --tools gmail calendar"
 }
 
-# --- Register MCP Server in OpenClaw ---
-register_mcp_server() {
-    log_step "Registering MCP server in OpenClaw"
+# --- Make wrapper scripts executable ---
+setup_wrappers() {
+    log_step "Setting up MCP wrapper scripts"
 
-    # Back up existing config
-    if [ -f "$OPENCLAW_JSON" ]; then
-        cp "$OPENCLAW_JSON" "${OPENCLAW_JSON}.pre-mcp-backup"
-        log_ok "Backed up openclaw.json to openclaw.json.pre-mcp-backup"
-    fi
+    chmod +x "${SCRIPTS_DIR}/mcp-read.sh"
+    chmod +x "${SCRIPTS_DIR}/mcp-write.sh"
+    log_ok "mcp-read.sh and mcp-write.sh are executable"
 
-    # Use Python to merge MCP server config into openclaw.json
-    python3 << 'PYEOF'
-import json
-import os
-
-openclaw_json = os.path.expanduser("~/.openclaw/openclaw.json")
-mcp_config = os.path.join(os.environ.get("WORKSPACE", ""), "config", "mcp-servers.json")
-
-# Read existing openclaw.json
-with open(openclaw_json, 'r') as f:
-    config = json.load(f)
-
-# Read MCP server template
-with open(mcp_config, 'r') as f:
-    mcp = json.load(f)
-
-# Remove documentation keys
-mcp_entry = {k: v for k, v in mcp.get("google-workspace", {}).items() if not k.startswith("_")}
-
-# Substitute actual credentials
-client_id = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "")
-client_secret = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "")
-
-if mcp_entry.get("env"):
-    if client_id:
-        mcp_entry["env"]["GOOGLE_OAUTH_CLIENT_ID"] = client_id
-    if client_secret:
-        mcp_entry["env"]["GOOGLE_OAUTH_CLIENT_SECRET"] = client_secret
-
-# Merge into openclaw.json
-if "mcpServers" not in config:
-    config["mcpServers"] = {}
-
-config["mcpServers"]["google-workspace"] = mcp_entry
-
-with open(openclaw_json, 'w') as f:
-    json.dump(config, f, indent=2)
-
-print("MCP server registered in openclaw.json")
-PYEOF
-
-    if [ $? -eq 0 ]; then
-        log_ok "google-workspace MCP server registered in openclaw.json"
+    # Ensure scripts dir is on PATH
+    if grep -q 'openclaw/workspace/scripts' "$SHELL_PROFILE" 2>/dev/null; then
+        log_ok "Scripts directory already on PATH"
     else
-        log_error "Failed to update openclaw.json"
+        echo 'export PATH="/Users/amberives/.openclaw/workspace/scripts:$PATH"' >> "$SHELL_PROFILE"
+        log_ok "Added scripts directory to PATH"
+    fi
+}
+
+# --- Update exec-approvals ---
+update_exec_approvals() {
+    log_step "Updating exec-approvals (mcp-read.sh → auto-approved)"
+
+    if [ -f "${SCRIPTS_DIR}/update-exec-approvals-mcp.sh" ]; then
+        bash "${SCRIPTS_DIR}/update-exec-approvals-mcp.sh"
+        log_ok "exec-approvals updated"
+    else
+        log_error "update-exec-approvals-mcp.sh not found"
         exit 1
     fi
-}
-
-# --- Install ClawBands ---
-install_clawbands() {
-    log_step "Installing ClawBands"
-
-    if command -v clawbands &>/dev/null; then
-        log_ok "ClawBands already installed"
-    else
-        log_info "Installing ClawBands via npm..."
-        npm install -g clawbands
-
-        if command -v clawbands &>/dev/null; then
-            log_ok "ClawBands installed successfully"
-        else
-            log_error "ClawBands installation failed"
-            exit 1
-        fi
-    fi
-
-    # Initialize if not already done
-    if [ ! -d "$CLAWBANDS_DIR" ]; then
-        log_info "Initializing ClawBands..."
-        clawbands init --yes 2>/dev/null || clawbands init
-    fi
-
-    # Apply policy
-    log_info "Applying ClawBands policy..."
-    mkdir -p "$CLAWBANDS_DIR"
-    cp "$POLICY_SOURCE" "${CLAWBANDS_DIR}/policy.json"
-    log_ok "Policy applied: ${CLAWBANDS_DIR}/policy.json"
-}
-
-# --- Restart Gateway ---
-restart_gateway() {
-    log_step "Restarting OpenClaw gateway"
-
-    openclaw gateway restart 2>&1 || {
-        log_warn "Gateway restart command returned non-zero. Trying stop + start..."
-        openclaw gateway stop 2>/dev/null || true
-        sleep 2
-        openclaw gateway start
-    }
-
-    sleep 3
-    log_ok "Gateway restarted"
 }
 
 # --- Verify Installation ---
 verify_installation() {
     log_step "Verifying installation"
 
-    local all_good=1
+    # Test a simple MCP read call
+    log_info "Testing mcp-read.sh list_gmail_labels..."
+    local output
+    output=$(${SCRIPTS_DIR}/mcp-read.sh list_gmail_labels 2>&1) || true
 
-    # Check MCP tools are registered
-    log_info "Checking MCP tools..."
-    local tools_output
-    tools_output=$(openclaw tools list 2>&1) || true
-
-    for tool in search_gmail_messages get_gmail_message_content send_gmail_message get_events create_event; do
-        if echo "$tools_output" | grep -q "$tool"; then
-            log_ok "Tool available: $tool"
-        else
-            log_warn "Tool not found: $tool (may need gateway restart)"
-            all_good=0
-        fi
-    done
-
-    # Check ClawBands status
-    log_info "Checking ClawBands..."
-    if clawbands status 2>&1 | grep -qi "active"; then
-        log_ok "ClawBands is active"
+    if [ -z "$output" ]; then
+        log_warn "No output from MCP call — OAuth may need to be completed"
+    elif echo "$output" | grep -qi "error\|traceback"; then
+        log_warn "MCP call returned an error — check OAuth setup"
+        echo "$output" | head -5
     else
-        log_warn "ClawBands may not be active — check 'clawbands status'"
-        all_good=0
+        log_ok "MCP read test successful"
     fi
 
-    if [ $all_good -eq 1 ]; then
-        log_ok "All verification checks passed!"
-    else
-        log_warn "Some checks need attention — see warnings above"
+    # Verify mcp-write.sh exists but is NOT auto-approved
+    log_info "Verifying mcp-write.sh requires approval..."
+    if [ -f "${SCRIPTS_DIR}/mcp-write.sh" ]; then
+        log_ok "mcp-write.sh exists (requires exec-approval for sends)"
     fi
 }
 
@@ -355,36 +227,63 @@ run_tests() {
     log_step "Running Phase 1 tests"
 
     echo ""
-    log_info "TEST 1: Search unread emails (should auto-approve, no Telegram prompt)"
-    echo '{"method": "tools/call", "params": {"name": "search_gmail_messages", "arguments": {"query": "is:unread -label:Handled", "max_results": 3, "user_google_email": "aives@mindfiremail.info"}}}' | uvx workspace-mcp --tools gmail 2>&1 | head -20
+    log_info "TEST 1: Search unread emails"
+    ${SCRIPTS_DIR}/mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --max_results 3 2>&1 | head -20
     echo ""
 
-    log_info "TEST 2: List Gmail labels (should auto-approve)"
-    echo '{"method": "tools/call", "params": {"name": "list_gmail_labels", "arguments": {"user_google_email": "aives@mindfiremail.info"}}}' | uvx workspace-mcp --tools gmail 2>&1 | head -20
+    log_info "TEST 2: List Gmail labels"
+    ${SCRIPTS_DIR}/mcp-read.sh list_gmail_labels 2>&1 | head -20
     echo ""
 
-    log_info "TEST 3: List calendars (should auto-approve)"
-    echo '{"method": "tools/call", "params": {"name": "list_calendars", "arguments": {}}}' | uvx workspace-mcp --tools calendar 2>&1 | head -20
+    log_info "TEST 3: List calendars"
+    ${SCRIPTS_DIR}/mcp-read.sh list_calendars 2>&1 | head -20
     echo ""
 
-    log_info "TEST 4: Get today's events (should auto-approve)"
+    log_info "TEST 4: Get today's events"
     local today=$(date +%Y-%m-%d)
-    echo "{\"method\": \"tools/call\", \"params\": {\"name\": \"get_events\", \"arguments\": {\"calendar_id\": \"daver@mindfireinc.com\", \"time_min\": \"${today}T00:00:00\", \"time_max\": \"${today}T23:59:59\"}}}" | uvx workspace-mcp --tools calendar 2>&1 | head -20
+    ${SCRIPTS_DIR}/mcp-read.sh get_events --calendar_id "daver@mindfireinc.com" --time_min "${today}T00:00:00" --time_max "${today}T23:59:59" 2>&1 | head -20
     echo ""
 
-    log_ok "Read tests complete. Check output above for results."
+    log_ok "Read tests complete."
     echo ""
     log_warn "MANUAL TESTS STILL NEEDED (require Telegram approval):"
-    log_warn "  1. Send a test email (send_gmail_message → Dave approves via Telegram)"
-    log_warn "  2. Test reply threading (most critical — see MCP-MIGRATION-GUIDE.md Part D3)"
-    log_warn "  3. Create a test calendar event (create_event → Dave approves via Telegram)"
+    log_warn "  1. mcp-write.sh send_gmail_message --to daver@mindfireinc.com --subject 'MCP Test' --body '<div>Test</div>' --body_format html"
+    log_warn "  2. Reply threading test (see AMBER-MCP-INSTRUCTIONS.md)"
+    log_warn "  3. mcp-write.sh create_event --calendar_id daver@mindfireinc.com --summary 'Test' --start 2026-03-07T15:00:00 --end 2026-03-07T15:30:00"
+}
+
+# --- Switch Skill Files ---
+switch_skills() {
+    log_step "Switching SKILL.md files from gog to MCP"
+
+    for skill in email-read email-send calendar-read calendar-create; do
+        local skill_dir="${SKILLS_DIR}/${skill}"
+        local current="${skill_dir}/SKILL.md"
+        local mcp="${skill_dir}/SKILL-MCP.md"
+        local backup="${skill_dir}/SKILL-gog-backup.md"
+
+        if [ ! -f "$mcp" ]; then
+            log_warn "No SKILL-MCP.md for ${skill} — skipping"
+            continue
+        fi
+
+        if [ -f "$current" ] && [ ! -f "$backup" ]; then
+            cp "$current" "$backup"
+            log_ok "Backed up ${skill}/SKILL.md → SKILL-gog-backup.md"
+        fi
+
+        cp "$mcp" "$current"
+        log_ok "Switched ${skill}/SKILL.md to MCP version"
+    done
+
+    log_ok "All skill files switched. Restart your session to load the new instructions."
 }
 
 # --- Check Status ---
 check_status() {
     log_step "MCP Migration Status"
 
-    # google-workspace-mcp
+    # uvx workspace-mcp
     if command -v uvx &>/dev/null && uvx workspace-mcp --help &>/dev/null 2>&1; then
         log_ok "google-workspace-mcp: installed"
     else
@@ -398,75 +297,41 @@ check_status() {
         log_warn "OAuth Client ID: not set"
     fi
 
-    # ClawBands
-    if command -v clawbands &>/dev/null; then
-        log_ok "ClawBands: installed"
+    # Wrapper scripts
+    if [ -x "${SCRIPTS_DIR}/mcp-read.sh" ] && [ -x "${SCRIPTS_DIR}/mcp-write.sh" ]; then
+        log_ok "Wrapper scripts: executable"
     else
-        log_warn "ClawBands: not installed"
-    fi
-
-    # Policy file
-    if [ -f "${CLAWBANDS_DIR}/policy.json" ]; then
-        log_ok "ClawBands policy: applied"
-    else
-        log_warn "ClawBands policy: not applied"
-    fi
-
-    # MCP in openclaw.json
-    if [ -f "$OPENCLAW_JSON" ] && python3 -c "
-import json
-with open('$OPENCLAW_JSON') as f:
-    c = json.load(f)
-assert 'google-workspace' in c.get('mcpServers', {})
-" 2>/dev/null; then
-        log_ok "MCP server: registered in openclaw.json"
-    else
-        log_warn "MCP server: not registered in openclaw.json"
+        log_warn "Wrapper scripts: missing or not executable"
     fi
 
     # Skill files
-    if [ -f "${WORKSPACE}/skills/email-read/SKILL-MCP.md" ]; then
-        log_ok "SKILL-MCP.md files: present (not yet active)"
-    else
-        log_warn "SKILL-MCP.md files: not found"
-    fi
+    for skill in email-read email-send calendar-read calendar-create; do
+        if [ -f "${SKILLS_DIR}/${skill}/SKILL-MCP.md" ]; then
+            if grep -q "mcp-read.sh\|mcp-write.sh" "${SKILLS_DIR}/${skill}/SKILL.md" 2>/dev/null; then
+                log_ok "skills/${skill}: using MCP version"
+            else
+                log_info "skills/${skill}: SKILL-MCP.md ready (not yet active)"
+            fi
+        fi
+    done
 }
 
 # --- Rollback ---
 rollback() {
     log_step "Rolling back MCP migration"
 
-    # Disable MCP server in openclaw.json
-    if [ -f "$OPENCLAW_JSON" ]; then
-        python3 << 'PYEOF'
-import json
-with open("$OPENCLAW_JSON", 'r') as f:
-    config = json.load(f)
-if "mcpServers" in config and "google-workspace" in config["mcpServers"]:
-    config["mcpServers"]["google-workspace"]["disabled"] = True
-    with open("$OPENCLAW_JSON", 'w') as f:
-        json.dump(config, f, indent=2)
-    print("Disabled google-workspace MCP server")
-else:
-    print("No MCP server config found — nothing to disable")
-PYEOF
-    fi
-
-    # Restore skill files if backups exist
     for skill in email-read email-send calendar-read calendar-create; do
-        local backup="${WORKSPACE}/skills/${skill}/SKILL-gog-backup.md"
-        local active="${WORKSPACE}/skills/${skill}/SKILL.md"
+        local backup="${SKILLS_DIR}/${skill}/SKILL-gog-backup.md"
+        local active="${SKILLS_DIR}/${skill}/SKILL.md"
         if [ -f "$backup" ]; then
             cp "$backup" "$active"
-            log_ok "Restored: skills/${skill}/SKILL.md from backup"
+            log_ok "Restored: skills/${skill}/SKILL.md from gog backup"
         fi
     done
 
-    # Restart gateway
-    openclaw gateway restart 2>&1 || true
-
     log_ok "Rollback complete. gog CLI workflow restored."
-    log_info "The baseline tag 'baseline-email-working-2026-03-06' marks the known-good state."
+    log_info "Baseline tag: baseline-email-working-2026-03-06"
+    log_info "Restart your session to load the restored skill files."
 }
 
 # --- Main ---
@@ -474,25 +339,28 @@ case "${1:-help}" in
     setup)
         echo ""
         echo "============================================"
-        echo "  Phase 1: MCP Migration Setup"
-        echo "  Target: Amber's machine"
+        echo "  Phase 1: MCP Migration Setup (v2)"
+        echo "  Wrapper approach — no config changes"
         echo "============================================"
         echo ""
         check_prereqs
         install_mcp_server
         setup_env_vars
         run_oauth_flow
-        register_mcp_server
-        install_clawbands
-        restart_gateway
+        setup_wrappers
+        update_exec_approvals
         verify_installation
         echo ""
         log_step "Setup complete!"
-        log_info "Next: run './mcp-migrate-phase1.sh test' to verify read operations."
-        log_info "Then: test send + reply threading manually (see MCP-MIGRATION-GUIDE.md Part D)."
+        log_info "Next: run './mcp-migrate-phase1.sh test' to verify reads."
+        log_info "Then: test sends manually (needs Telegram approval)."
+        log_info "Finally: run './mcp-migrate-phase1.sh switch' to activate MCP skills."
         ;;
     test)
         run_tests
+        ;;
+    switch)
+        switch_skills
         ;;
     status)
         check_status
@@ -501,18 +369,16 @@ case "${1:-help}" in
         rollback
         ;;
     help|*)
-        echo "Usage: $0 {setup|test|status|rollback}"
+        echo "Usage: $0 {setup|test|switch|status|rollback}"
         echo ""
-        echo "  setup    — Full installation: MCP server, ClawBands, config, OAuth flow"
+        echo "  setup    — Install MCP server, configure wrappers, update exec-approvals"
         echo "  test     — Run read-only verification tests"
+        echo "  switch   — Switch SKILL.md files from gog to MCP (backup originals first)"
         echo "  status   — Check what's installed and configured"
-        echo "  rollback — Disable MCP, restore gog workflow"
+        echo "  rollback — Restore gog skill files"
         echo ""
         echo "Before 'setup', set these environment variables:"
         echo "  export GOOGLE_OAUTH_CLIENT_ID='your-client-id'"
         echo "  export GOOGLE_OAUTH_CLIENT_SECRET='your-client-secret'"
-        echo ""
-        echo "If gog already has OAuth, you may be able to reuse its credentials."
-        echo "Check: gog auth status"
         ;;
 esac

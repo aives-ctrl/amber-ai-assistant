@@ -1,8 +1,8 @@
 # email-read (MCP Version)
 
-Read-only email operations via google-workspace-mcp. Search inbox, get messages, read threads, list labels.
+Read-only email operations via MCP wrapper. Search inbox, get messages, read threads, list labels.
 
-All read tools are set to **ALLOW** in ClawBands — no approval needed, no wrapper scripts, no PATH issues.
+`mcp-read.sh` is on the exec allowlist — no approval needed, no Telegram prompts.
 
 ## When to Use
 - Checking for new/unread emails
@@ -14,67 +14,41 @@ All read tools are set to **ALLOW** in ClawBands — no approval needed, no wrap
 
 When Dave asks "any new emails?" or "check the inbox" or anything about unread mail, **ALWAYS use this query:**
 
-```
-search_gmail_messages(
-  query="is:unread -label:Handled",
-  max_results=10,
-  user_google_email="aives@mindfiremail.info"
-)
+```bash
+mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --max_results 10
 ```
 
 The `-label:Handled` filter is **critical**. Without it, you'll re-surface emails you already processed in previous sessions.
 
-## MCP Tool Reference
+## Command Reference
 
-```
+```bash
 # Search inbox for unread, unhandled emails
-search_gmail_messages(
-  query="is:unread -label:Handled",
-  max_results=20,
-  user_google_email="aives@mindfiremail.info"
-)
+mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --max_results 20
 
 # Search by sender
-search_gmail_messages(
-  query="from:someone@example.com",
-  max_results=10,
-  user_google_email="aives@mindfiremail.info"
-)
+mcp-read.sh search_gmail_messages --query "from:someone@example.com" --max_results 10
 
 # Search by keyword
-search_gmail_messages(
-  query="subject:meeting newer_than:7d",
-  max_results=10,
-  user_google_email="aives@mindfiremail.info"
-)
+mcp-read.sh search_gmail_messages --query "subject:meeting newer_than:7d" --max_results 10
 
 # Get a specific message by ID
-get_gmail_message_content(
-  message_id="<messageId>",
-  user_google_email="aives@mindfiremail.info"
-)
+mcp-read.sh get_gmail_message_content --message_id "<messageId>"
 
 # Read a full thread
-get_gmail_thread_content(
-  thread_id="<threadId>",
-  user_google_email="aives@mindfiremail.info"
-)
+mcp-read.sh get_gmail_thread_content --thread_id "<threadId>"
 
 # List labels
-list_gmail_labels(
-  user_google_email="aives@mindfiremail.info"
-)
+mcp-read.sh list_gmail_labels
 ```
+
+Note: `user_google_email` is automatically set to `aives@mindfiremail.info` by the script — you never need to pass it.
 
 ## Check If Already Replied (BEFORE Drafting)
 
 Before drafting a reply to any email, check if you've already sent a response:
-```
-search_gmail_messages(
-  query="in:sent to:<sender-email> subject:<subject-keyword>",
-  max_results=3,
-  user_google_email="aives@mindfiremail.info"
-)
+```bash
+mcp-read.sh search_gmail_messages --query "in:sent to:<sender-email> subject:<subject-keyword>" --max_results 3
 ```
 
 If you find a sent message in the same thread, **do NOT draft another reply.** Tag the thread as Handled and move on.
@@ -95,20 +69,20 @@ When you read an email, **check EVERY header field** — not just From and To:
 
 If CC is empty, say "CC: none." If there are CC'd people, **name them.**
 
-## Capturing IDs for Replies (EVEN MORE CRITICAL WITH MCP)
+## Capturing IDs for Replies (CRITICAL — NO --reply-all IN MCP)
 
 When you read an email you might need to reply to, **note ALL of these immediately:**
-- `messageId` — used in `in_reply_to` when sending a reply
-- `threadId` — used in `thread_id` for threading AND for tagging as Handled
+- `messageId` — used in `--in_reply_to` when sending a reply
+- `threadId` — used in `--thread_id` for threading AND for tagging as Handled
 - **ALL To recipients** — you need these for reply-all (MCP has no --reply-all flag)
 - **ALL CC recipients** — you need these for reply-all
-- **Message-ID header** — used in `references` for proper threading in non-Gmail clients
+- **Message-ID header** — used in `--references` for proper threading in non-Gmail clients
 
-**Why this is even more important with MCP:** The old `gog --reply-all` flag automatically included all recipients. With MCP's `send_gmail_message`, YOU must explicitly list every recipient. If you don't capture them during the read step, the reply will silently drop people from the thread.
+**Why this is critical:** The old `gog --reply-all` flag automatically included all recipients. With MCP's `mcp-write.sh send_gmail_message`, YOU must explicitly list every recipient. If you don't capture them during the read step, the reply will silently drop people from the thread.
 
 ## Rules
 
-- All read tools are ALLOW in ClawBands — no approval needed
+- `mcp-read.sh` is auto-approved — no Telegram prompt needed
 - This is YOUR inbox (aives@mindfiremail.info), not Dave's
 - Exclude Dave's sent emails: add `-from:daver@mindfireinc.com` when searching for actionable items
 - Run commands ONE AT A TIME, sequentially
