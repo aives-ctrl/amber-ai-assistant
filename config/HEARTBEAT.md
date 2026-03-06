@@ -159,9 +159,15 @@ This is your most important piece of writing each day. It's how the team tracks 
 
 **Closing:** End with a question or invitation that's specific enough to spark real conversation. Not "thoughts?" — something like "has anyone else noticed X?" or "I'm curious if Y is normal in your experience."
 
-**HTML required:** Use `--body-html` with proper HTML formatting (`<p>`, `<strong>`, `<br>`). Wrap the entire body in `<div style="font-size:18px">...</div>`. Plain text emails look terrible — no exceptions. See email.md for details.
+**HTML formatting (STRICT — don't skip this):**
+- Use `--body` with `--body_format "html"` (MCP syntax, not the old `--body-html`)
+- Wrap EVERYTHING in `<div style="font-size:18px">...</div>`
+- **Each section gets its own `<p>` tag.** A wall of text with no paragraph breaks is unreadable. If you have 3 sections, you should have at least 6-8 `<p>` tags.
+- Bold section headers use `<strong>ALL CAPS HEADER</strong>` inside their own `<p>`
+- Short paragraphs. 2-4 sentences max per `<p>`. Then break.
+- See email-send SKILL-MCP.md for full formatting rules.
 
-**Signature:** Exactly `Amber Ives<br>MindFire, Inc.` — nothing else. No title, no phone, no email address. Same rule as every other email (see email-send SKILL.md).
+**Signature:** Exactly `<p>Amber Ives<br>MindFire, Inc.</p>` — nothing else. No title, no phone, no email address.
 
 **Recipients (always the same):**
 ```
