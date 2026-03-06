@@ -286,9 +286,27 @@ The wrapper lives in the git repo at `scripts/gog`. After `git pull`, it's updat
 
 ---
 
-## STEP 2D: Allowlist the Lobster workflow runner
+## STEP 2D: Install and allowlist the Lobster workflow runner
 
 **⚠️ Why this exists:** The `lobster run email-send` workflow is the REQUIRED method for sending emails (see `skills/email-send/SKILL.md`). Lobster orchestrates: Opus verification → gog send (exec-approval) → tag Handled. Without allowlisting, `lobster run` itself triggers exec-approval — creating a **double-approval problem** where Dave has to approve lobster AND the internal gog send.
+
+### Install Lobster
+
+Lobster is a separate npm package from OpenClaw. It must be installed globally:
+
+```bash
+npm install -g @clawdbot/lobster
+```
+
+Verify installation:
+```bash
+which lobster
+lobster --version
+```
+
+`which lobster` should return a path (e.g., `/usr/local/bin/lobster`). If it returns nothing, the install failed — check Node.js version (requires Node ≥22) and npm permissions.
+
+### Allowlist Lobster in exec-approvals.json
 
 **⚠️ CRITICAL: The `openclaw config set` and `openclaw approvals allowlist add` CLI commands do NOT work for this.** They add entries to `agents.*.allowlist` or `openclaw.json` — neither of which is consulted for the main agent. Amber's main agent uses `agents.main.allowlist` in `exec-approvals.json`. You MUST edit the file directly.
 
