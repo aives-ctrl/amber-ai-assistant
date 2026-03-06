@@ -32,12 +32,35 @@ Skills define the exact commands and processes for common operations. Always fol
 | calendar-create | `skills/calendar-create/SKILL.md` | YES - propose to Dave first |
 | startup | `skills/startup/SKILL.md` | NO - run at every session start |
 
-### Workflows (Multi-Step Pipelines)
+### Verification Sub-Agent (Opus 4.6)
 
-| Workflow | Location | Purpose |
-|----------|----------|---------|
-| email-triage | `workflows/email-triage.lobster` | Full inbox processing pipeline |
-| email-send | `workflows/email-send.lobster` | **Opus-verified send** — catches threading/CC/format errors before sending |
+**Pattern:** Before any irreversible action, call Opus to check your parameters. Opus costs fractions of a cent per call and catches mistakes you keep making.
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/verify-with-opus.sh` | General Opus verification — pass a prompt template + variables |
+| `scripts/verify-email-params.sh` | Bash fallback — regex checks if Opus/Gateway is down |
+
+**Prompt templates** live in `config/verify-prompts/`. Each domain gets its own:
+| Template | File | Checks |
+|----------|------|--------|
+| email-send | `config/verify-prompts/email-send.md` | Threading, reply-all, HTML format, signature, CC, subject |
+
+**How it works:**
+1. You build your action parameters (e.g., the gog send command)
+2. Call `verify-with-opus.sh <template> --var key=value ...`
+3. Opus returns `{approved: true/false, errors: [...], summary: "..."}`
+4. If approved → execute the action
+5. If not → fix errors, re-verify
+
+**To add a new domain:** Create `config/verify-prompts/<domain>.md` with `{{variable}}` placeholders. Then call `verify-with-opus.sh <domain> --var key=value ...`
+
+### Workflows (Multi-Step Pipelines — FUTURE)
+
+| Workflow | Location | Status |
+|----------|----------|--------|
+| email-triage | `workflows/email-triage.lobster` | Not yet operational (lobster registration TBD) |
+| email-send | `workflows/email-send.lobster` | Not yet operational — using direct gog send + verify instead |
 
 ### Exec Approvals (Email Safety System) - ACTIVE
 

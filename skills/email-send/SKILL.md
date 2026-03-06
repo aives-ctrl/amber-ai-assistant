@@ -105,10 +105,30 @@ This builds your style memory over time. The more lessons you log, the fewer cor
 
 ## Commands — Send (with verification)
 
-**ALWAYS run the verify script before sending.** It catches threading, CC, and format errors.
+**ALWAYS verify before sending.** Two verification options — use Opus (preferred) with bash fallback.
+
+### Opus Verification (preferred — smarter, catches more)
 
 ```bash
-# STEP 1: Verify parameters
+# STEP 1: Verify with Opus (calls Opus 4.6 via llm-task to check your parameters)
+/Users/amberives/.openclaw/workspace/scripts/verify-with-opus.sh email-send \
+  --var original_from="Sender Name <sender@example.com>" \
+  --var original_to="Recipient <recipient@example.com>" \
+  --var original_cc="CC Person <cc@example.com>" \
+  --var is_reply="true" \
+  --var message_id="<messageId>" \
+  --var subject="RE: Original Subject" \
+  --var has_reply_all="true" \
+  --var cc_line="daver@mindfireinc.com" \
+  --var body_html_preview="<div style=\"font-size:18px\"><p>Reply body here...</p>"
+```
+Check the JSON output: if `"approved": true` → proceed to send. If `"approved": false` → read the errors, fix, re-run.
+
+If `verify-with-opus.sh` fails (gateway down, openclaw.invoke not found), use the bash fallback:
+
+### Bash Verification (fallback — regex checks, no Opus needed)
+
+```bash
 /Users/amberives/.openclaw/workspace/scripts/verify-email-params.sh \
   --is-reply "true" \
   --message-id "<messageId>" \
