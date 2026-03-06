@@ -100,6 +100,20 @@ When Dave emails you, recognize that it's him:
      --body_format "html"
    ```
 
+   **Alternative: --body-file (PREFERRED for longer emails or content with $ signs):**
+   Write the HTML body to a temp file first, then reference it. This avoids ALL shell escaping issues.
+   ```bash
+   cat > /tmp/email-body.html << 'EMAILBODY'
+   <div style='font-size:18px'><p>Email body here with $dollar signs and "quotes" safe.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>
+   EMAILBODY
+   mcp-write.sh send_gmail_message \
+     --to "recipient@example.com" \
+     --cc "daver@mindfireinc.com" \
+     --subject "Subject here" \
+     --body-file /tmp/email-body.html \
+     --body_format "html"
+   ```
+
    **Step 8b: Tag thread as Handled** (only after send succeeds):
    ```bash
    mcp-read.sh modify_gmail_message_labels --message_id "<messageId>" --add_label_ids '["Handled"]' --remove_label_ids '["UNREAD"]'

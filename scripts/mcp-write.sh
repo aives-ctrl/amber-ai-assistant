@@ -6,15 +6,22 @@
 #
 # Uses `uvx workspace-mcp --cli --args` for direct tool invocation (no JSON-RPC handshake).
 #
-# Usage: mcp-write.sh <tool_name> [--param value ...] [--json-body <raw_json>]
+# Usage: mcp-write.sh <tool_name> [--param value ...] [--body-file <path>] [--json-body <raw_json>]
 #
 # Examples:
-#   # Send a new email
+#   # Send a new email (inline body — use single quotes in HTML attributes!)
 #   mcp-write.sh send_gmail_message \
 #     --to "recipient@example.com" \
 #     --cc "daver@mindfireinc.com" \
 #     --subject "Subject here" \
 #     --body "<div style='font-size:18px'><p>Body here.</p></div>" \
+#     --body_format "html"
+#
+#   # Send with body from file (PREFERRED — avoids $dollar sign and quote escaping issues)
+#   mcp-write.sh send_gmail_message \
+#     --to "recipient@example.com" \
+#     --subject "Subject here" \
+#     --body-file /tmp/email-body.html \
 #     --body_format "html"
 #
 #   # Send a reply (with threading)
@@ -97,13 +104,17 @@ if [ "$ALLOWED" != "true" ]; then
     exit 1
 fi
 
-# --- Check for --json-body mode ---
+# --- Check for --json-body and --body-file modes ---
 JSON_BODY=""
+BODY_FILE=""
 REMAINING_ARGS=()
 
 while [ $# -gt 0 ]; do
     if [ "$1" = "--json-body" ]; then
         JSON_BODY="$2"
+        shift 2
+    elif [ "$1" = "--body-file" ]; then
+        BODY_FILE="$2"
         shift 2
     else
         REMAINING_ARGS+=("$1")
@@ -113,6 +124,18 @@ done
 
 # Restore remaining args for --param value parsing
 set -- "${REMAINING_ARGS[@]}"
+
+# --- Handle --body-file: read file content and inject as --body parameter ---
+# This avoids ALL shell escaping issues (dollar signs, backticks, quotes, etc.)
+# because the file content is read by the script, not parsed by bash.
+if [ -n "$BODY_FILE" ]; then
+    if [ ! -f "$BODY_FILE" ]; then
+        echo "ERROR: Body file not found: $BODY_FILE"
+        exit 1
+    fi
+    # Read file content — will be added to PARAMS after the loop below
+    BODY_FROM_FILE=$(cat "$BODY_FILE")
+fi
 
 if [ -n "$JSON_BODY" ]; then
     # Inject user_google_email if not already present
@@ -149,6 +172,11 @@ else
                 ;;
         esac
     done
+
+    # Inject body from file if --body-file was used
+    if [ -n "$BODY_FILE" ]; then
+        PARAMS+=("body" "$BODY_FROM_FILE")
+    fi
 
     # Build JSON safely using python3
     # Handles: strings, ints, JSON arrays (values starting with [), JSON objects (values starting with {)
@@ -229,8 +257,19 @@ if [ $EXIT_CODE -ne 0 ]; then
     echo "ERROR: MCP call failed with exit code $EXIT_CODE"
     echo "Tool: $TOOL_NAME"
     echo "Args: $ARGS_JSON"
-    # Retry with stderr visible for debugging
-    echo "--- Debug output ---"
+
+    # SAFETY: Do NOT auto-retry send operations — the first attempt may have sent.
+    # Retrying causes duplicate emails (#20). Report the error and let the user decide.
+    if [ "$TOOL_NAME" = "send_gmail_message" ]; then
+        echo "---"
+        echo "⚠️  This was a SEND operation. The email MAY have been sent despite the error."
+        echo "CHECK SENT MAIL before retrying to avoid sending duplicates."
+        echo "Run: mcp-read.sh search_gmail_messages --query \"in:sent newer_than:1h\" --page_size 3"
+        exit $EXIT_CODE
+    fi
+
+    # For non-send operations, retry with stderr visible for debugging
+    echo "--- Retrying with debug output ---"
     uvx workspace-mcp --tools $MCP_TOOLS --cli "$TOOL_NAME" --args "$ARGS_JSON"
     exit $EXIT_CODE
 fi
