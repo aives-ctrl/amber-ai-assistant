@@ -666,4 +666,67 @@ Don't replace your fast model with a smarter one for everything — that's expen
 
 ---
 
+## 12. CLI Allowlist Commands Don't Work for Agent-Specific Allowlists
+
+**Date:** 2026-03-05
+**Severity:** Critical — causes double-approval for workflow orchestrators
+**Time to resolve:** ~2 hours across sessions
+
+### The Problem
+
+After building the Lobster email-send workflow, `lobster run email-send` triggered exec-approval for the `lobster` binary itself — AND the internal `/usr/local/bin/gog gmail send` triggered a second approval. Dave had to approve twice, and the second often expired before he could act on it.
+
+We ran `openclaw config set exec.allow '["lobster"]' --merge` on Amber's machine. Amber reported "Already allowlisted." But `lobster run` still triggered exec-approval.
+
+### Root Cause
+
+OpenClaw has **three** places where allowlist entries can live:
+
+1. **`agents.main.allowlist`** in `exec-approvals.json` — the ONLY one consulted for the main agent
+2. **`agents.*.allowlist`** in `exec-approvals.json` — wildcard fallback, never consulted when `agents.main` exists
+3. **`exec.allow`** in `openclaw.json` — unknown/different mechanism
+
+The CLI commands (`openclaw config set exec.allow`, `openclaw approvals allowlist add`) add to options 2 or 3. They report "Already allowlisted" because lobster IS in one of those locations — it's just not in the one that matters (`agents.main.allowlist`).
+
+This is the SAME lesson as the gog wrapper scripts (Lesson #10 / AMBER-SETUP-INSTRUCTIONS Step 2). We knew CLI commands don't work for `agents.main.allowlist`. But we forgot to apply this knowledge when allowlisting a new binary (lobster).
+
+### The Fix
+
+Edit `exec-approvals.json` directly to add lobster to `agents.main.allowlist`:
+
+```bash
+python3 -c "
+import json, subprocess
+with open('/Users/amberives/.openclaw/exec-approvals.json', 'r') as f:
+    data = json.load(f)
+main_list = data['agents']['main']['allowlist']
+result = subprocess.run(['which', 'lobster'], capture_output=True, text=True)
+lobster_path = result.stdout.strip()
+entries = [{'id': 'lobster-basename', 'pattern': 'lobster'}]
+if lobster_path:
+    entries.append({'id': 'lobster-full-path', 'pattern': lobster_path})
+existing = {e.get('pattern') for e in main_list}
+for e in entries:
+    if e['pattern'] not in existing:
+        main_list.append(e)
+        print(f'Added: {e[\"pattern\"]}')
+data['agents']['main']['allowlist'] = main_list
+with open('/Users/amberives/.openclaw/exec-approvals.json', 'w') as f:
+    json.dump(data, f, indent=2)
+print('Done.')
+" && pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+```
+
+### Takeaway
+
+**Every time you need to allowlist a new binary for the main agent, edit `exec-approvals.json` directly.** The CLI commands are unreliable for this. Make this a hard rule:
+
+- New gog wrapper script → edit `exec-approvals.json` → add to `agents.main.allowlist`
+- New orchestrator (lobster, etc.) → edit `exec-approvals.json` → add to `agents.main.allowlist`
+- Never trust `openclaw config set exec.allow` or `openclaw approvals allowlist add` for the main agent
+
+The CLI may show "Already allowlisted" because it found the entry somewhere — but "somewhere" isn't `agents.main.allowlist`, so the main agent never sees it.
+
+---
+
 *Add new lessons below as you encounter them. Include the date, what went wrong, what you tried, and what fixed it.*

@@ -286,6 +286,97 @@ The wrapper lives in the git repo at `scripts/gog`. After `git pull`, it's updat
 
 ---
 
+## STEP 2D: Allowlist the Lobster workflow runner
+
+**⚠️ Why this exists:** The `lobster run email-send` workflow is the REQUIRED method for sending emails (see `skills/email-send/SKILL.md`). Lobster orchestrates: Opus verification → gog send (exec-approval) → tag Handled. Without allowlisting, `lobster run` itself triggers exec-approval — creating a **double-approval problem** where Dave has to approve lobster AND the internal gog send.
+
+**⚠️ CRITICAL: The `openclaw config set` and `openclaw approvals allowlist add` CLI commands do NOT work for this.** They add entries to `agents.*.allowlist` or `openclaw.json` — neither of which is consulted for the main agent. Amber's main agent uses `agents.main.allowlist` in `exec-approvals.json`. You MUST edit the file directly.
+
+### Add lobster to agents.main.allowlist
+
+```bash
+python3 -c "
+import json, subprocess
+
+with open('/Users/amberives/.openclaw/exec-approvals.json', 'r') as f:
+    data = json.load(f)
+
+main_list = data.get('agents', {}).get('main', {}).get('allowlist', [])
+
+# Find lobster binary path
+result = subprocess.run(['which', 'lobster'], capture_output=True, text=True)
+lobster_path = result.stdout.strip()
+
+entries_to_add = []
+if lobster_path:
+    entries_to_add.append({'id': 'lobster-full-path', 'pattern': lobster_path})
+    print(f'Lobster binary at: {lobster_path}')
+# Also add basename as fallback
+entries_to_add.append({'id': 'lobster-basename', 'pattern': 'lobster'})
+
+existing_patterns = {e.get('pattern') for e in main_list}
+for entry in entries_to_add:
+    if entry['pattern'] not in existing_patterns:
+        main_list.append(entry)
+        print(f'Added: {entry[\"pattern\"]}')
+    else:
+        print(f'Already exists: {entry[\"pattern\"]}')
+
+data['agents']['main']['allowlist'] = main_list
+
+with open('/Users/amberives/.openclaw/exec-approvals.json', 'w') as f:
+    json.dump(data, f, indent=2)
+print('Done.')
+"
+```
+
+### Verify
+
+```bash
+cat ~/.openclaw/exec-approvals.json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+main_list = data.get('agents', {}).get('main', {}).get('allowlist', [])
+print('=== lobster entries in agents.main.allowlist ===')
+for e in main_list:
+    if 'lobster' in e.get('pattern', '').lower() or 'lobster' in e.get('id', '').lower():
+        print(f'  {e}')
+if not any('lobster' in e.get('pattern','').lower() or 'lobster' in e.get('id','').lower() for e in main_list):
+    print('  NONE FOUND (BAD!)')
+"
+```
+
+### Hard-restart gateway (REQUIRED after allowlist changes)
+
+```bash
+pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
+```
+
+### Test
+
+```bash
+# lobster run should NOT trigger exec-approval (it's allowlisted)
+# But the internal /usr/local/bin/gog gmail send SHOULD still trigger approval
+lobster run email-send \
+  --arg original_from="" \
+  --arg original_to="test@example.com" \
+  --arg original_cc="" \
+  --arg message_id="" \
+  --arg thread_id="" \
+  --arg subject="Test" \
+  --arg body_html="<div style=\"font-size:18px\"><p>test</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+  --arg is_reply="false"
+# Cancel after verifying: ONE approval (for gog send), NOT two
+```
+
+**The desired behavior:**
+| Command | Triggers approval? |
+|---------|-------------------|
+| `lobster run email-send` | ❌ No (allowlisted) |
+| Internal `/usr/local/bin/gog gmail send` | ✅ Yes (Dave's single approval gate) |
+
+---
+
 ## STEP 3: Configure approval channel separation (PREVENTS SELF-APPROVAL)
 
 Route exec approvals to Dave's PRIVATE Telegram DM (chat ID `8703088279`):
