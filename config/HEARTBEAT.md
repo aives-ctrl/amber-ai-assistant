@@ -204,7 +204,12 @@ Notice: first person, real interactions, genuine reflection about her own nature
      --body "<div style='font-size:18px'>...</div>" \
      --body_format "html"
    ```
-5. After sending, log to daily notes and tag thread "Handled"
+5. **Verify it sent.** Search sent mail to confirm:
+   ```bash
+   mcp-read.sh search_gmail_messages --query "in:sent subject:#DailyLearnings newer_than:1h" --page_size 1
+   ```
+   If you get a result with the right subject and recipients, it worked. If not, tell Dave it failed and retry. **Do NOT assume it sent just because the command returned.** Check.
+6. After verifying, log to daily notes and tag thread "Handled"
 
 ### Example Subject Lines
 
