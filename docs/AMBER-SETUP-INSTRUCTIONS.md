@@ -286,31 +286,39 @@ The wrapper lives in the git repo at `scripts/gog`. After `git pull`, it's updat
 
 ---
 
-## STEP 2D: Install and allowlist the Lobster workflow runner
+## STEP 2D: Install Lobster workflow runner and verify script
 
-**⚠️ Why this exists:** The `lobster run email-send` workflow is the REQUIRED method for sending emails (see `skills/email-send/SKILL.md`). Lobster orchestrates: Opus verification → gog send (exec-approval) → tag Handled. Without allowlisting, `lobster run` itself triggers exec-approval — creating a **double-approval problem** where Dave has to approve lobster AND the internal gog send.
+**⚠️ Why this exists:** The `lobster run email-send` workflow is the REQUIRED method for sending emails (see `skills/email-send/SKILL.md`). Lobster orchestrates: Opus verification → send via gog-real → tag Handled.
+
+**Architecture (2026-03-05 rewrite — see Lesson #13):** Lobster child processes run in `/bin/sh` and bypass OpenClaw's exec-approval pipeline. The workflow uses `gog-real` (hard copy in trusted scripts dir) for the send step, so no exec-approval fires for the actual send. Dave's approval is the draft review in Telegram (SKILL.md step 6). The lobster binary itself may still trigger exec-approval (Dave approves once to start the workflow), then everything inside runs automatically.
 
 ### Install Lobster
-
-Lobster is a separate npm package from OpenClaw. It must be installed globally:
 
 ```bash
 npm install -g @clawdbot/lobster
 ```
 
-Verify installation:
+Verify:
 ```bash
-which lobster
-lobster --version
+which lobster        # Should return a path (e.g., /usr/local/bin/lobster)
+lobster --version    # Should show version
 ```
 
-`which lobster` should return a path (e.g., `/usr/local/bin/lobster`). If it returns nothing, the install failed — check Node.js version (requires Node ≥22) and npm permissions.
+### Install verify script dependencies
 
-### Allowlist Lobster in exec-approvals.json
+The workflow uses a standalone verify script that calls Opus via `openclaw.invoke`. Ensure `jq` is installed:
+```bash
+which jq || brew install jq
+```
 
-**⚠️ CRITICAL: The `openclaw config set` and `openclaw approvals allowlist add` CLI commands do NOT work for this.** They add entries to `agents.*.allowlist` or `openclaw.json` — neither of which is consulted for the main agent. Amber's main agent uses `agents.main.allowlist` in `exec-approvals.json`. You MUST edit the file directly.
+Make the verify script executable:
+```bash
+chmod +x ~/.openclaw/workspace/scripts/verify-email-send.sh
+```
 
-### Add lobster to agents.main.allowlist
+### Allowlist Lobster (optional — reduces to zero approvals)
+
+If you want lobster itself to auto-approve (so the workflow runs with zero human gates beyond the draft review), add it to `agents.main.allowlist`:
 
 ```bash
 python3 -c "
@@ -321,15 +329,12 @@ with open('/Users/amberives/.openclaw/exec-approvals.json', 'r') as f:
 
 main_list = data.get('agents', {}).get('main', {}).get('allowlist', [])
 
-# Find lobster binary path
 result = subprocess.run(['which', 'lobster'], capture_output=True, text=True)
 lobster_path = result.stdout.strip()
 
 entries_to_add = []
 if lobster_path:
     entries_to_add.append({'id': 'lobster-full-path', 'pattern': lobster_path})
-    print(f'Lobster binary at: {lobster_path}')
-# Also add basename as fallback
 entries_to_add.append({'id': 'lobster-basename', 'pattern': 'lobster'})
 
 existing_patterns = {e.get('pattern') for e in main_list}
@@ -348,23 +353,9 @@ print('Done.')
 "
 ```
 
-### Verify
+**Note:** Even if lobster is NOT in the allowlist, the workflow still works — Dave just gets one exec-approval popup for the `lobster run` command. The internal steps (Opus verify, gog-real send, tag) all run automatically without additional approvals.
 
-```bash
-cat ~/.openclaw/exec-approvals.json | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-main_list = data.get('agents', {}).get('main', {}).get('allowlist', [])
-print('=== lobster entries in agents.main.allowlist ===')
-for e in main_list:
-    if 'lobster' in e.get('pattern', '').lower() or 'lobster' in e.get('id', '').lower():
-        print(f'  {e}')
-if not any('lobster' in e.get('pattern','').lower() or 'lobster' in e.get('id','').lower() for e in main_list):
-    print('  NONE FOUND (BAD!)')
-"
-```
-
-### Hard-restart gateway (REQUIRED after allowlist changes)
+### Hard-restart gateway
 
 ```bash
 pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
@@ -373,25 +364,24 @@ pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
 ### Test
 
 ```bash
-# lobster run should NOT trigger exec-approval (it's allowlisted)
-# But the internal /usr/local/bin/gog gmail send SHOULD still trigger approval
 lobster run email-send \
-  --arg original_from="" \
-  --arg original_to="test@example.com" \
+  --arg original_from="Test <test@test.com>" \
+  --arg original_to="Dave <daver@mindfireinc.com>" \
   --arg original_cc="" \
-  --arg message_id="" \
-  --arg thread_id="" \
-  --arg subject="Test" \
-  --arg body_html="<div style=\"font-size:18px\"><p>test</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
-  --arg is_reply="false"
-# Cancel after verifying: ONE approval (for gog send), NOT two
+  --arg message_id="test123" \
+  --arg thread_id="test456" \
+  --arg subject="RE: Test" \
+  --arg body_html='<div style="font-size:18px"><p>Test email.</p><p>Amber Ives<br>MindFire, Inc.</p></div>' \
+  --arg is_reply="true"
 ```
 
-**The desired behavior:**
-| Command | Triggers approval? |
-|---------|-------------------|
-| `lobster run email-send` | ❌ No (allowlisted) |
-| Internal `/usr/local/bin/gog gmail send` | ✅ Yes (Dave's single approval gate) |
+**Expected behavior:**
+| Step | What happens |
+|------|-------------|
+| `lobster run email-send` | May trigger exec-approval (if not allowlisted) — approve once |
+| Opus verify (openclaw.invoke → llm-task) | Runs automatically via Gateway RPC |
+| gog-real gmail send | Runs automatically (trusted scripts dir, no approval) |
+| gog-email-tag.sh | Runs automatically (trusted scripts dir, no approval) |
 
 ---
 

@@ -729,4 +729,94 @@ The CLI may show "Already allowlisted" because it found the entry somewhere — 
 
 ---
 
+## 13. Lobster Child Processes Bypass Exec-Approval — Design Workflows Accordingly
+
+**Date:** 2026-03-05
+**Severity:** Critical — workflow silently fails, no email sent
+**Time to resolve:** ~4 hours across sessions + documentation research
+
+### The Problem
+
+The email-send Lobster workflow ran without errors, but no email was sent. The workflow completed (session disappeared), no approval requests were pending, and the sent folder was empty. It failed silently.
+
+### Root Causes (Three of Them)
+
+#### 1. `openclaw.invoke` needs `OPENCLAW_URL` env var
+
+The verify step used `openclaw.invoke --tool llm-task` to call Opus. `openclaw.invoke` is a real CLI command (shim installed by npm) that communicates with the OpenClaw Gateway over WebSocket RPC. It requires the `OPENCLAW_URL` environment variable to connect.
+
+When lobster spawns child processes (via `/bin/sh`), these env vars are NOT automatically set. The `openclaw.invoke` call silently failed because it couldn't reach the Gateway. Since the verify step produced no valid JSON output, `$verify.json.approved` was never `true`, so the send step was skipped.
+
+**Fix:** Add `env: { OPENCLAW_URL: "http://localhost:18789" }` to any workflow step that uses `openclaw.invoke`.
+
+#### 2. Lobster child processes bypass exec-approval
+
+This is the architectural misunderstanding. Lobster runs commands via `/bin/sh` as direct subprocesses. These child processes do NOT go through OpenClaw's exec-approval pipeline. OpenClaw's exec-approval only applies to commands the AGENT runs via the exec tool — not to grandchild processes spawned by an already-approved command.
+
+So `/usr/local/bin/gog gmail send` inside a lobster step would either:
+- Execute without any approval (security hole), or
+- Fail because it lacks the OpenClaw exec context
+
+The old workflow relied on exec-approval as the send gate — but that gate doesn't exist inside lobster.
+
+**Fix:** Use `gog-real` (hard copy in the trusted scripts dir) for the send step, and rely on:
+- Dave's draft approval (SKILL.md step 6) as the content gate
+- Opus verification (workflow step 1) as the technical gate
+
+Lobster's own `approval: required` mechanism is also available for workflows that need explicit pause-and-approve gates.
+
+#### 3. Raw `${arg}` substitution breaks on HTML content
+
+The old workflow used `${body_html}` directly in YAML command strings. HTML content contains quotes, angle brackets, and special characters that break shell command construction. YAML Issue #29491 documents this limitation.
+
+**Fix:** Use `$LOBSTER_ARG_<NAME>` env vars in step `env:` blocks, then reference with proper shell quoting (`"$VAR"`). For complex JSON construction, use `jq -n --arg` for safe escaping. For the verify step, we extracted the logic into a standalone script (`scripts/verify-email-send.sh`) that reads from LOBSTER_ARG env vars.
+
+### What We Tried That Failed
+
+1. **Adding lobster to `agents.main.allowlist`** — Both basename and full path entries were added. They were confirmed present (194 entries, both found, path matched). But lobster still triggered exec-approval. This was a red herring — the allowlist approach works for the lobster binary itself, but the real problem was inside the workflow.
+
+2. **Adding `/usr/local/bin` to `safeBinTrustedDirs`** — Rejected because raw `gog` lives there. Adding it would auto-approve ALL gog commands, bypassing the send gate entirely.
+
+3. **Copying lobster to the scripts directory** — Unlike gog (a standalone binary), lobster is an npm package with module dependencies. A simple `cp` doesn't work.
+
+### The Working Architecture
+
+```
+Dave says "send it" in Telegram (content approval)
+  → Amber runs: lobster run email-send --arg ...
+    → lobster triggers exec-approval for itself (Dave approves once)
+    → Step 1: verify-email-send.sh
+      → sets OPENCLAW_URL env var
+      → builds JSON safely via jq
+      → calls openclaw.invoke --tool llm-task (Opus 4.6)
+      → returns {approved: true/false, errors: [...]}
+    → Step 2: report-failure (conditional, if verify failed)
+    → Step 3: gog-real gmail send (conditional, if verify passed)
+      → uses $LOBSTER_ARG_* env vars for safe quoting
+      → gog-real is in trusted scripts dir → no approval
+      → email sends directly
+    → Step 4: gog-email-tag.sh (conditional, if send succeeded)
+      → tags thread as Handled
+```
+
+The approval flow is now: **Draft review (human judgment) → Opus verify (automated check) → Direct send (no second approval)**. The exec-approval for the lobster binary itself still fires, but that's just confirming the workflow run.
+
+### Key Files
+
+```
+scripts/verify-email-send.sh        # Opus verify via openclaw.invoke (reads LOBSTER_ARG_* env vars)
+workflows/email-send.lobster.yaml   # Rewritten: env vars, gog-real, OPENCLAW_URL
+skills/email-send/SKILL.md          # Updated: no exec-approval for sends, workflow handles everything
+```
+
+### Takeaways
+
+1. **Lobster child processes bypass exec-approval.** Design workflows knowing this. Use lobster's `approval: required` gates for side-effect control, not exec-approval.
+2. **`openclaw.invoke` needs `OPENCLAW_URL`** (and optionally `OPENCLAW_TOKEN`). Set these in step `env:` blocks.
+3. **Never use raw `${arg}` substitution for user content in YAML commands.** Use `$LOBSTER_ARG_<NAME>` env vars with proper shell quoting instead.
+4. **Silent failures are the norm in lobster.** If a step's command fails, the step output is empty/error, and conditional steps that check the output just skip. Add explicit error handling or use `set -euo pipefail` in scripts.
+5. **Read the actual docs before building.** We built the original workflow from first principles and got the exec-approval architecture wrong. The lobster README and community examples clearly show the `approval: required` pattern as the correct approach.
+
+---
+
 *Add new lessons below as you encounter them. Include the date, what went wrong, what you tried, and what fixed it.*

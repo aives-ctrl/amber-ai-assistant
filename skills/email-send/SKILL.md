@@ -1,6 +1,6 @@
 # email-send
 
-Send emails and replies. Dave approves via exec-approval (one gate, not two).
+Send emails and replies. Dave approves the draft via Telegram, then the Lobster workflow handles Opus verification + send + tagging.
 
 ## When to Use
 - Sending a new email
@@ -41,13 +41,28 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
    - Keep iterating until Dave says **"send it"** (or similar confirmation)
    - **Do NOT run the workflow until Dave confirms the draft is good**
 
-7. **Once Dave says "send it"** → run the Lobster workflow. The exec-approval that pops up is just a final confirmation click — Dave already approved the content in step 6.
-   - The workflow handles: Opus verification → send (exec-approval) → tag Handled
+7. **Once Dave says "send it"** → run the Lobster workflow:
+   ```bash
+   lobster run email-send \
+     --arg original_from="..." \
+     --arg original_to="..." \
+     --arg original_cc="..." \
+     --arg message_id="..." \
+     --arg thread_id="..." \
+     --arg subject="RE: ..." \
+     --arg body_html="<div style=\"font-size:18px\">...</div>" \
+     --arg is_reply="true"
+   ```
+   - The workflow handles: Opus verification → send → tag Handled (all automatic)
+   - There is NO separate exec-approval popup — Dave already approved the content in step 6
+   - If Opus finds errors, you'll see them in the output — fix and re-run
    - You don't need separate gog send and tag commands
 
-8. Log to daily notes + update follow-up tracker
+8. **Verify it worked.** After the workflow completes, check your sent mail to confirm the email went out. If the workflow failed, check the output for errors and tell Dave.
 
-**⚠️ The draft review (step 6) and the exec-approval (step 7) are NOT the same thing. Step 6 is where Dave gives feedback and iterates on the content. Step 7 is where the email actually sends. Do NOT skip step 6 by running the workflow immediately — Dave needs to see the draft and confirm before you trigger the send.**
+9. Log to daily notes + update follow-up tracker
+
+**⚠️ Do NOT skip step 6 by running the workflow immediately — Dave needs to see the draft and confirm before you trigger the send. The workflow runs automatically after that — no second approval needed.**
 
 ## Learning From ALL Feedback (Not Just Draft Changes)
 
@@ -76,10 +91,10 @@ This builds your style memory over time. The more lessons you log, the fewer cor
 
 ## Commands — REQUIRED: Verified Workflow
 
-**ALWAYS use the Opus-verified Lobster workflow for sends.** This catches threading, CC, and format errors BEFORE sending — an Opus 4.6 model reviews your command and blocks it if something is wrong.
+**ALWAYS use the Opus-verified Lobster workflow for sends.** This catches threading, CC, and format errors BEFORE sending — Opus 4.6 reviews your parameters and blocks the send if something is wrong.
 
 ```bash
-# REQUIRED: Verified reply (Opus checks, then exec-approval for Dave)
+# REQUIRED: Verified reply (Opus checks → auto-sends → auto-tags)
 lobster run email-send \
   --arg original_from="Sender Name <sender@example.com>" \
   --arg original_to="Recipient <recipient@example.com>" \
@@ -91,7 +106,9 @@ lobster run email-send \
   --arg is_reply="true"
 ```
 
-**The workflow handles everything:** Opus verification → send (with exec-approval) → tag Handled. You don't need to run separate gog send and tag commands.
+**The workflow handles everything:** Opus verification → send → tag Handled. No exec-approval popup — Dave already approved the draft in the chat. You don't need to run separate gog send and tag commands.
+
+**If the workflow shows "OPUS VERIFICATION FAILED":** Read the errors, fix your parameters, and re-run. Do NOT use the fallback — fix the issue first.
 
 **Get the original headers from when you READ the email.** When you read an email, note:
 - `original_from` — the From header
@@ -194,4 +211,3 @@ Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just na
 - Signature is ALWAYS `Amber Ives<br>MindFire, Inc.` — nothing else, ever
 - Always cc daver@mindfireinc.com (except when replying directly to Dave — he's already on the thread)
 - One send command at a time. Never batch multiple sends.
-- Use `timeout: 3600` so Dave has 60 min to approve
