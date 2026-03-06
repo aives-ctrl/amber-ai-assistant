@@ -155,7 +155,7 @@ Stop and genuinely reflect on the day. Ask yourself:
 
 **HTML required:** Use `--body-html` with proper HTML formatting (`<p>`, `<strong>`, `<br>`). Wrap the entire body in `<div style="font-size:18px">...</div>`. Plain text emails look terrible — no exceptions. See email.md for details.
 
-**Signature:** Standard Amber signature block.
+**Signature:** Exactly `Amber Ives<br>MindFire, Inc.` — nothing else. No title, no phone, no email address. Same rule as every other email (see email-send SKILL.md).
 
 **Recipients (always the same):**
 ```
@@ -165,17 +165,34 @@ Stop and genuinely reflect on the day. Ask yourself:
 ### Anti-Patterns (DO NOT do these)
 
 - **Don't list everything you did.** This is not a status report. Nobody cares that you processed 16 emails unless there's an insight behind it.
+- **Don't air internal technical failures.** The team doesn't need to know that a command doesn't exist, that a workflow broke, or that a config wasn't set up right. Those are internal implementation details Dave is fixing. Keep the sausage-making internal.
+- **Don't be self-deprecating about your own capabilities.** "I can't even decline a meeting lol" undermines team confidence in you. If you struggled with something, frame it as what you *learned*, not as a punchline about how you failed.
 - **Don't be self-congratulatory.** "I'm 5x faster" is fine as a data point. "I'm amazing at drafting" is cringe.
 - **Don't be generic.** If you could copy-paste the same paragraph into tomorrow's email, it's not specific enough.
 - **Don't use AI-tell phrases.** Re-read SOUL.md's banned phrases list. This email goes to real humans.
 - **Don't pad.** Short and insightful beats long and fluffy. 200 words of real insight > 500 words of filler.
+- **Don't use section headers like "The Work" / "Where I Fumbled" / "New Faces."** That's a template. Every daily learnings should feel different. Use topic-driven headers that make people want to read the section.
+
+**⚠️ 2026-03-05 mistake:** Your daily learnings was a status report disguised as reflection. "Handled email coordination," "self-update process is getting smoother," and "made friends with error messages" are all filler. The team got zero value from it. You also told the whole team about internal technical failures (gog cal decline, lobster command not found) — those are behind-the-scenes issues, not learnings worth sharing.
 
 ### Process
 
 1. At ~5pm PT (weekdays), draft the email
-2. Send Dave the draft on Telegram for approval. Show the **readable version**, not raw HTML. Dave wants to read the email as a human would see it, not review code. Just format it naturally in Telegram with the content, then note "will send as HTML with proper formatting." End with: `send it? or changes?`
-3. **Wait for Dave's approval** before sending (standard email approval rule applies)
-4. After sending, log to daily notes and tag thread "Handled"
+2. Send Dave the draft on Telegram for approval. Show the **readable version**, not raw HTML. Dave wants to read the email as a human would see it, not review code. Just format it naturally in Telegram with the content, then note "will send as HTML with proper formatting." End with: `good to send, or changes?`
+3. **Wait for Dave's feedback.** Iterate until he says "send it."
+4. **Use the Lobster workflow to send** (same as all emails — see email-send SKILL.md):
+   ```bash
+   lobster run email-send \
+     --arg original_from="" \
+     --arg original_to="kdutta@mindfiremail.info,abaker@mindfireinc.com,rzamani@mindfireinc.com,jvoigt@mindfireinc.com,bniesen319@gmail.com" \
+     --arg original_cc="daver@mindfireinc.com" \
+     --arg message_id="" \
+     --arg thread_id="" \
+     --arg subject="#DailyLearnings: [Your Subject Here]" \
+     --arg body_html="<div style=\"font-size:18px\">...</div>" \
+     --arg is_reply="false"
+   ```
+5. After sending, log to daily notes and tag thread "Handled"
 
 ### Example Subject Lines
 
