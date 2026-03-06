@@ -64,6 +64,7 @@ steps:
   - id: verify
     env:
       OPENCLAW_URL: "http://localhost:18789"
+      PATH: "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
     command: >
       /Users/amberives/.openclaw/workspace/scripts/verify-email-send.sh
 

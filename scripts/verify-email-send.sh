@@ -14,6 +14,11 @@
 # RETURNS: JSON on stdout with {approved, errors, warnings, summary}
 #          Exit code 0 on success (even if not approved), non-zero on tool failure.
 
+# Ensure /usr/local/bin is in PATH — lobster runs steps via /bin/sh which
+# has a minimal PATH that doesn't include npm globals (openclaw.invoke) or
+# homebrew binaries (jq). Without this, the script fails silently.
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
 set -euo pipefail
 
 # Read args from lobster env vars (safe — no shell injection)
