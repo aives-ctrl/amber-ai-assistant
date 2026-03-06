@@ -4,6 +4,8 @@
 # This script is NOT on the exec allowlist — every call triggers approval via Telegram.
 # Read operations should use mcp-read.sh instead (auto-approved).
 #
+# Uses `uvx workspace-mcp --cli --args` for direct tool invocation (no JSON-RPC handshake).
+#
 # Usage: mcp-write.sh <tool_name> [--param value ...] [--json-body <raw_json>]
 #
 # Examples:
@@ -109,16 +111,26 @@ done
 set -- "${REMAINING_ARGS[@]}"
 
 if [ -n "$JSON_BODY" ]; then
-    ARGS_JSON="$JSON_BODY"
+    # For --json-body mode, inject user_google_email if needed and not already present
+    if [[ "$TOOL_NAME" == *"gmail"* ]] || [[ "$TOOL_NAME" == *"label"* ]]; then
+        ARGS_JSON=$(python3 -c "
+import json, sys
+d = json.loads(sys.argv[1])
+if 'user_google_email' not in d:
+    d['user_google_email'] = sys.argv[2]
+print(json.dumps(d))
+" "$JSON_BODY" "$USER_EMAIL")
+    else
+        ARGS_JSON="$JSON_BODY"
+    fi
 else
     # --- Build JSON arguments from --param value pairs ---
-    ARGS_JSON="{"
-    FIRST=true
+    # Use python3 for reliable JSON construction (no shell escaping bugs)
+    PARAMS=()
 
-    # Add user_google_email automatically for gmail tools
+    # Add user_google_email automatically for gmail/label tools
     if [[ "$TOOL_NAME" == *"gmail"* ]] || [[ "$TOOL_NAME" == *"label"* ]]; then
-        ARGS_JSON="{\"user_google_email\": \"${USER_EMAIL}\""
-        FIRST=false
+        PARAMS+=("user_google_email" "$USER_EMAIL")
     fi
 
     while [ $# -gt 0 ]; do
@@ -130,21 +142,7 @@ else
                     echo "ERROR: Missing value for parameter $1"
                     exit 1
                 fi
-
-                if [ "$FIRST" = true ]; then
-                    FIRST=false
-                else
-                    ARGS_JSON="${ARGS_JSON}, "
-                fi
-
-                # Handle numeric values
-                if [[ "$PARAM_VALUE" =~ ^[0-9]+$ ]]; then
-                    ARGS_JSON="${ARGS_JSON}\"${PARAM_NAME}\": ${PARAM_VALUE}"
-                else
-                    # Escape quotes in value
-                    ESCAPED_VALUE=$(echo "$PARAM_VALUE" | sed 's/"/\\"/g')
-                    ARGS_JSON="${ARGS_JSON}\"${PARAM_NAME}\": \"${ESCAPED_VALUE}\""
-                fi
+                PARAMS+=("$PARAM_NAME" "$PARAM_VALUE")
                 shift 2
                 ;;
             *)
@@ -154,7 +152,27 @@ else
         esac
     done
 
-    ARGS_JSON="${ARGS_JSON}}"
+    # Build JSON safely using python3
+    ARGS_JSON=$(python3 -c "
+import json, sys
+params = sys.argv[1:]
+d = {}
+for i in range(0, len(params), 2):
+    key = params[i]
+    val = params[i+1]
+    # Try to parse as int
+    try:
+        val = int(val)
+    except ValueError:
+        pass
+    d[key] = val
+print(json.dumps(d))
+" "${PARAMS[@]}")
+
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to build JSON arguments"
+        exit 1
+    fi
 fi
 
 # --- Determine which MCP tools to load ---
@@ -166,20 +184,23 @@ else
     MCP_TOOLS="gmail calendar"
 fi
 
-# --- Build and execute MCP call ---
-MCP_REQUEST="{\"method\": \"tools/call\", \"params\": {\"name\": \"${TOOL_NAME}\", \"arguments\": ${ARGS_JSON}}}"
-
-# Show what we're about to do (for approval visibility)
+# --- Show what we're about to do (for approval visibility) ---
 echo "MCP WRITE: $TOOL_NAME"
-echo "Request: $MCP_REQUEST"
+echo "Args: $ARGS_JSON"
 echo "---"
 
-# Execute
-echo "$MCP_REQUEST" | uvx workspace-mcp --tools $MCP_TOOLS 2>/dev/null
+# --- Execute via CLI mode ---
+# --cli mode does direct tool invocation (no MCP protocol handshake needed)
+# --args passes the JSON arguments to the tool
+uvx workspace-mcp --tools $MCP_TOOLS --cli "$TOOL_NAME" --args "$ARGS_JSON" 2>/dev/null
 
 EXIT_CODE=$?
 if [ $EXIT_CODE -ne 0 ]; then
     echo "ERROR: MCP call failed with exit code $EXIT_CODE"
     echo "Tool: $TOOL_NAME"
+    echo "Args: $ARGS_JSON"
+    # Retry with stderr visible for debugging
+    echo "--- Debug output ---"
+    uvx workspace-mcp --tools $MCP_TOOLS --cli "$TOOL_NAME" --args "$ARGS_JSON"
     exit $EXIT_CODE
 fi
