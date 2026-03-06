@@ -27,18 +27,20 @@ The MCP tool is `manage_event` with an `action` parameter: `create`, `update`, o
 
 ## Command Reference
 
+**IMPORTANT: All timestamps MUST include timezone offset (e.g., `-08:00` for Pacific).** Without it, the Google Calendar API rejects the request.
+
 ```bash
 # Create event
 mcp-write.sh manage_event \
   --action "create" \
   --calendar_id "daver@mindfireinc.com" \
   --summary "Meeting Name" \
-  --start_time "2026-03-05T10:00:00" \
-  --end_time "2026-03-05T11:00:00" \
+  --start_time "2026-03-05T10:00:00-08:00" \
+  --end_time "2026-03-05T11:00:00-08:00" \
   --description "Meeting description"
 
 # Create event with attendees (use --json-body for arrays)
-mcp-write.sh manage_event --json-body '{"action":"create","calendar_id":"daver@mindfireinc.com","summary":"Meeting Name","start_time":"2026-03-05T10:00:00","end_time":"2026-03-05T11:00:00","description":"Meeting description","attendees":["person@example.com","other@example.com"]}'
+mcp-write.sh manage_event --json-body '{"action":"create","calendar_id":"daver@mindfireinc.com","summary":"Meeting Name","start_time":"2026-03-05T10:00:00-08:00","end_time":"2026-03-05T11:00:00-08:00","description":"Meeting description","attendees":["person@example.com","other@example.com"]}'
 
 # Update existing event
 mcp-write.sh manage_event \
@@ -46,11 +48,11 @@ mcp-write.sh manage_event \
   --calendar_id "daver@mindfireinc.com" \
   --event_id "<eventId>" \
   --summary "Updated Meeting Name" \
-  --start_time "2026-03-05T10:30:00" \
-  --end_time "2026-03-05T11:30:00"
+  --start_time "2026-03-05T10:30:00-08:00" \
+  --end_time "2026-03-05T11:30:00-08:00"
 ```
 
-Note: `user_google_email` is automatically set by the script — you never need to pass it.
+Note: `user_google_email` is automatically set by the script — you never need to pass it. Dave is in Pacific time — use `-08:00` (PST) or `-07:00` (PDT).
 
 ## Rules
 

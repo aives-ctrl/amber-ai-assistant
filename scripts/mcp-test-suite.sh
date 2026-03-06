@@ -298,8 +298,8 @@ test_create_event() {
         --action "create" \
         --calendar_id "${DAVE_CALENDAR}" \
         --summary "MCP Test Event — DELETE ME" \
-        --start_time "${tomorrow}T15:00:00" \
-        --end_time "${tomorrow}T15:30:00" \
+        --start_time "${tomorrow}T15:00:00-08:00" \
+        --end_time "${tomorrow}T15:30:00-08:00" \
         --description "Automated test from mcp-test-suite.sh. Safe to delete." 2>&1)
 
     if echo "$output" | grep -qi "error\|denied\|rejected"; then

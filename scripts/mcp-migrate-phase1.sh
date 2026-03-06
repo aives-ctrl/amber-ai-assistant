@@ -249,7 +249,7 @@ run_tests() {
     log_warn "MANUAL TESTS STILL NEEDED (require Telegram approval):"
     log_warn "  1. mcp-write.sh send_gmail_message --to daver@mindfireinc.com --subject 'MCP Test' --body '<div>Test</div>' --body_format html"
     log_warn "  2. Reply threading test (see AMBER-MCP-INSTRUCTIONS.md)"
-    log_warn "  3. mcp-write.sh manage_event --action create --calendar_id daver@mindfireinc.com --summary 'Test' --start_time 2026-03-07T15:00:00 --end_time 2026-03-07T15:30:00"
+    log_warn "  3. mcp-write.sh manage_event --action create --calendar_id daver@mindfireinc.com --summary 'Test' --start_time 2026-03-07T15:00:00-08:00 --end_time 2026-03-07T15:30:00-08:00"
 }
 
 # --- Switch Skill Files ---
