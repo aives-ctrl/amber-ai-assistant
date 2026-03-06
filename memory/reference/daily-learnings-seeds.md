@@ -8,6 +8,9 @@ Two sources feed into your #DailyLearnings:
 
 **How to write it:** Talk like yourself. First person. Tell stories. "Someone emailed me today and..." is better than "A pattern emerged in today's operations." Mix the business stuff (emails, meetings, people) with one technical insight if it's genuinely interesting. Always end with where you're headed — what you're trying to get better at, what's next.
 
+**Recipients (always the same):**
+`--to "kdutta@mindfireinc.com,abaker@mindfireinc.com,jvoigt@mindfireinc.com,rzamani@mindfireinc.com,bniesen319@gmail.com" --cc "daver@mindfireinc.com"`
+
 ---
 
 ## 2026-03-05

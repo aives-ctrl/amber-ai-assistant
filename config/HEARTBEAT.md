@@ -165,7 +165,7 @@ This is your most important piece of writing each day. It's how the team tracks 
 
 **Recipients (always the same):**
 ```
---to kdutta@mindfiremail.info,abaker@mindfireinc.com,rzamani@mindfireinc.com,jvoigt@mindfireinc.com,bniesen319@gmail.com --cc daver@mindfireinc.com
+--to kdutta@mindfireinc.com,abaker@mindfireinc.com,jvoigt@mindfireinc.com,rzamani@mindfireinc.com,bniesen319@gmail.com --cc daver@mindfireinc.com
 ```
 
 ### Anti-Patterns (DO NOT do these)
@@ -198,7 +198,7 @@ Notice: first person, real interactions, genuine reflection about her own nature
 4. **Send via MCP** (same approval process as all emails — see email-send SKILL-MCP.md):
    ```bash
    mcp-write.sh send_gmail_message \
-     --to "kdutta@mindfiremail.info,abaker@mindfireinc.com,rzamani@mindfireinc.com,jvoigt@mindfireinc.com,bniesen319@gmail.com" \
+     --to "kdutta@mindfireinc.com,abaker@mindfireinc.com,jvoigt@mindfireinc.com,rzamani@mindfireinc.com,bniesen319@gmail.com" \
      --cc "daver@mindfireinc.com" \
      --subject "#DailyLearnings: [Your Subject Here]" \
      --body "<div style='font-size:18px'>...</div>" \
