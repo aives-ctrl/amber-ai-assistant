@@ -19,9 +19,14 @@ mcp-read.sh get_events --calendar_id "daver@mindfireinc.com" --time_min "2026-03
 # Next 4 hours (for heartbeat)
 mcp-read.sh get_events --calendar_id "daver@mindfireinc.com" --time_min "<now-ISO-timestamp>" --time_max "<4-hours-from-now-ISO-timestamp>"
 
+# Get a specific event by ID
+mcp-read.sh get_events --calendar_id "daver@mindfireinc.com" --event_id "<eventId>"
+
 # List all calendars
 mcp-read.sh list_calendars
 ```
+
+Note: `user_google_email` is automatically set to `aives@mindfiremail.info` by the script — you never need to pass it.
 
 ## Rules
 

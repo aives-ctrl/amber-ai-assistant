@@ -28,34 +28,46 @@
 #     --in_reply_to "18abc123def" \
 #     --references "<message-id-header>"
 #
-#   # Create a calendar event
-#   mcp-write.sh create_event \
+#   # Create a calendar event (uses manage_event with action=create)
+#   mcp-write.sh manage_event \
+#     --action "create" \
 #     --calendar_id "daver@mindfireinc.com" \
 #     --summary "Meeting Name" \
-#     --start "2026-03-07T10:00:00" \
-#     --end "2026-03-07T11:00:00" \
+#     --start_time "2026-03-07T10:00:00" \
+#     --end_time "2026-03-07T11:00:00" \
 #     --description "Meeting description"
 #
 #   # For complex arguments (attendees arrays, etc.), use --json-body:
-#   mcp-write.sh create_event --json-body '{"calendar_id":"daver@mindfireinc.com","summary":"Team Meeting","start":"2026-03-07T10:00:00","end":"2026-03-07T11:00:00","attendees":["a@example.com","b@example.com"]}'
+#   mcp-write.sh manage_event --json-body '{"action":"create","calendar_id":"daver@mindfireinc.com","summary":"Team Meeting","start_time":"2026-03-07T10:00:00","end_time":"2026-03-07T11:00:00","attendees":["a@example.com","b@example.com"]}'
 
 # --- Configuration ---
 USER_EMAIL="aives@mindfiremail.info"
 
+# --- Load OAuth credentials ---
+# Non-interactive shells (like OpenClaw agents) don't source .zshrc.
+# Source from ~/.mcp-env if env vars aren't already set.
+if [ -z "${GOOGLE_OAUTH_CLIENT_ID:-}" ] || [ -z "${GOOGLE_OAUTH_CLIENT_SECRET:-}" ]; then
+    if [ -f "$HOME/.mcp-env" ]; then
+        source "$HOME/.mcp-env"
+    elif [ -f "/Users/amberives/.mcp-env" ]; then
+        source "/Users/amberives/.mcp-env"
+    fi
+fi
+
+if [ -z "${GOOGLE_OAUTH_CLIENT_ID:-}" ] || [ -z "${GOOGLE_OAUTH_CLIENT_SECRET:-}" ]; then
+    echo "ERROR: OAuth credentials not found."
+    echo "Create ~/.mcp-env with:"
+    echo '  export GOOGLE_OAUTH_CLIENT_ID="your-client-id"'
+    echo '  export GOOGLE_OAUTH_CLIENT_SECRET="your-client-secret"'
+    exit 1
+fi
+
 # --- Allowed write tools (anything not here is blocked) ---
 ALLOWED_TOOLS=(
     "send_gmail_message"
-    "create_event"
-    "modify_event"
+    "manage_event"
     "manage_gmail_label"
     "batch_modify_gmail_message_labels"
-)
-
-# --- Explicitly blocked tools (never allow, even if added to ALLOWED_TOOLS by mistake) ---
-BLOCKED_TOOLS=(
-    "delete_event"
-    "delete_gmail_message"
-    "trash_gmail_message"
 )
 
 # --- Parse arguments ---
@@ -68,14 +80,6 @@ if [ -z "$TOOL_NAME" ]; then
     echo "Allowed tools: ${ALLOWED_TOOLS[*]}"
     exit 1
 fi
-
-# --- Check blocklist first (safety) ---
-for tool in "${BLOCKED_TOOLS[@]}"; do
-    if [ "$TOOL_NAME" = "$tool" ]; then
-        echo "ERROR: Tool '$TOOL_NAME' is BLOCKED. Dave must do this manually."
-        exit 1
-    fi
-done
 
 # --- Check allowlist ---
 ALLOWED=false
@@ -111,27 +115,21 @@ done
 set -- "${REMAINING_ARGS[@]}"
 
 if [ -n "$JSON_BODY" ]; then
-    # For --json-body mode, inject user_google_email if needed and not already present
-    if [[ "$TOOL_NAME" == *"gmail"* ]] || [[ "$TOOL_NAME" == *"label"* ]]; then
-        ARGS_JSON=$(python3 -c "
+    # Inject user_google_email if not already present
+    ARGS_JSON=$(python3 -c "
 import json, sys
 d = json.loads(sys.argv[1])
 if 'user_google_email' not in d:
     d['user_google_email'] = sys.argv[2]
 print(json.dumps(d))
 " "$JSON_BODY" "$USER_EMAIL")
-    else
-        ARGS_JSON="$JSON_BODY"
-    fi
 else
     # --- Build JSON arguments from --param value pairs ---
     # Use python3 for reliable JSON construction (no shell escaping bugs)
     PARAMS=()
 
-    # Add user_google_email automatically for gmail/label tools
-    if [[ "$TOOL_NAME" == *"gmail"* ]] || [[ "$TOOL_NAME" == *"label"* ]]; then
-        PARAMS+=("user_google_email" "$USER_EMAIL")
-    fi
+    # Add user_google_email automatically for ALL tools
+    PARAMS+=("user_google_email" "$USER_EMAIL")
 
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -153,6 +151,7 @@ else
     done
 
     # Build JSON safely using python3
+    # Handles: strings, ints, JSON arrays (values starting with [), JSON objects (values starting with {)
     ARGS_JSON=$(python3 -c "
 import json, sys
 params = sys.argv[1:]
@@ -160,17 +159,40 @@ d = {}
 for i in range(0, len(params), 2):
     key = params[i]
     val = params[i+1]
-    # Try to parse as int
-    try:
-        val = int(val)
-    except ValueError:
-        pass
+    # Try to parse as JSON (handles arrays like '[\"Handled\"]' and objects)
+    if val.startswith('[') or val.startswith('{'):
+        try:
+            val = json.loads(val)
+        except json.JSONDecodeError:
+            pass  # Keep as string if not valid JSON
+    else:
+        # Try to parse as int
+        try:
+            val = int(val)
+        except ValueError:
+            pass
     d[key] = val
 print(json.dumps(d))
 " "${PARAMS[@]}")
 
     if [ $? -ne 0 ]; then
         echo "ERROR: Failed to build JSON arguments"
+        exit 1
+    fi
+fi
+
+# --- SAFETY: Block delete actions on manage_event ---
+if [ "$TOOL_NAME" = "manage_event" ]; then
+    if echo "$ARGS_JSON" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+if d.get('action', '').lower() == 'delete':
+    print('BLOCKED')
+    sys.exit(1)
+" 2>/dev/null; then
+        : # not blocked, continue
+    else
+        echo "ERROR: manage_event with action='delete' is BLOCKED. Dave must delete events manually."
         exit 1
     fi
 fi

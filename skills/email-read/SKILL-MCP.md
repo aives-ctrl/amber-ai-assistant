@@ -15,7 +15,7 @@ Read-only email operations via MCP wrapper. Search inbox, get messages, read thr
 When Dave asks "any new emails?" or "check the inbox" or anything about unread mail, **ALWAYS use this query:**
 
 ```bash
-mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --max_results 10
+mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --page_size 10
 ```
 
 The `-label:Handled` filter is **critical**. Without it, you'll re-surface emails you already processed in previous sessions.
@@ -24,13 +24,13 @@ The `-label:Handled` filter is **critical**. Without it, you'll re-surface email
 
 ```bash
 # Search inbox for unread, unhandled emails
-mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --max_results 20
+mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --page_size 20
 
 # Search by sender
-mcp-read.sh search_gmail_messages --query "from:someone@example.com" --max_results 10
+mcp-read.sh search_gmail_messages --query "from:someone@example.com" --page_size 10
 
 # Search by keyword
-mcp-read.sh search_gmail_messages --query "subject:meeting newer_than:7d" --max_results 10
+mcp-read.sh search_gmail_messages --query "subject:meeting newer_than:7d" --page_size 10
 
 # Get a specific message by ID
 mcp-read.sh get_gmail_message_content --message_id "<messageId>"
@@ -48,7 +48,7 @@ Note: `user_google_email` is automatically set to `aives@mindfiremail.info` by t
 
 Before drafting a reply to any email, check if you've already sent a response:
 ```bash
-mcp-read.sh search_gmail_messages --query "in:sent to:<sender-email> subject:<subject-keyword>" --max_results 3
+mcp-read.sh search_gmail_messages --query "in:sent to:<sender-email> subject:<subject-keyword>" --page_size 3
 ```
 
 If you find a sent message in the same thread, **do NOT draft another reply.** Tag the thread as Handled and move on.

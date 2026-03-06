@@ -102,7 +102,7 @@ When Dave emails you, recognize that it's him:
 
    **Step 8b: Tag thread as Handled** (only after send succeeds):
    ```bash
-   mcp-read.sh modify_gmail_message_labels --message_id "<messageId>" --add_labels "Handled" --remove_labels "UNREAD"
+   mcp-read.sh modify_gmail_message_labels --message_id "<messageId>" --add_label_ids '["Handled"]' --remove_label_ids '["UNREAD"]'
    ```
 
 9. **Verify it worked.** Search sent mail to confirm the email went out.
@@ -170,7 +170,7 @@ Tag as Handled ONLY when:
 - If it's truly FYI → OK to tag immediately
 
 ```bash
-mcp-read.sh modify_gmail_message_labels --message_id "<messageId>" --add_labels "Handled" --remove_labels "UNREAD"
+mcp-read.sh modify_gmail_message_labels --message_id "<messageId>" --add_label_ids '["Handled"]' --remove_label_ids '["UNREAD"]'
 ```
 
 **The Handled tag is ALWAYS the LAST step.**

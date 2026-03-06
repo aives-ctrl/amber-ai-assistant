@@ -42,17 +42,7 @@ log_fail()   { echo -e "${RED}[FAIL]${NC}  $1"; FAIL=$((FAIL+1)); RESULTS+=("FAI
 log_skip()   { echo -e "${YELLOW}[SKIP]${NC}  $1"; SKIP=$((SKIP+1)); RESULTS+=("SKIP: $1"); }
 log_info()   { echo -e "${BLUE}[INFO]${NC}  $1"; }
 
-# Helper: call an MCP tool and capture output
-mcp_call() {
-    local tool_name="$1"
-    local args_json="$2"
-    local tools_flag="${3:-gmail}"
-
-    local result
-    result=$(echo "{\"method\": \"tools/call\", \"params\": {\"name\": \"${tool_name}\", \"arguments\": ${args_json}}}" \
-        | timeout 30 uvx workspace-mcp --tools "$tools_flag" 2>&1) || true
-    echo "$result"
-}
+# (mcp_call helper removed — all tests use mcp-read.sh/mcp-write.sh wrappers directly)
 
 # Helper: check if output contains expected content
 assert_contains() {
@@ -92,7 +82,7 @@ test_search_inbox() {
     log_test "Search inbox: unread emails (mcp-read.sh)"
     local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --max_results 3 2>&1)
+    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --page_size 3 2>&1)
 
     if [ -z "$output" ]; then
         log_fail "Search inbox — no output"
@@ -108,7 +98,7 @@ test_search_by_sender() {
     log_test "Search by sender (mcp-read.sh)"
     local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "from:${DAVE_EMAIL}" --max_results 3 2>&1)
+    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "from:${DAVE_EMAIL}" --page_size 3 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "Search by sender — error response"
@@ -121,7 +111,7 @@ test_search_sent() {
     log_test "Search sent mail (mcp-read.sh)"
     local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:sent" --max_results 3 2>&1)
+    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:sent" --page_size 3 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "Search sent mail — error response"
@@ -152,7 +142,7 @@ test_get_message() {
     # First, search for a recent message to get an ID
     log_info "Finding a recent message ID..."
     local search_output
-    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "is:unread OR in:inbox" --max_results 1 2>&1)
+    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "is:unread OR in:inbox" --page_size 1 2>&1)
 
     local msg_id
     msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
@@ -180,7 +170,7 @@ test_get_thread() {
     local scripts_dir="${HOME}/.openclaw/workspace/scripts"
 
     local search_output
-    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:inbox" --max_results 1 2>&1)
+    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:inbox" --page_size 1 2>&1)
 
     local thread_id
     thread_id=$(echo "$search_output" | grep -oE '"threadId"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
@@ -304,11 +294,12 @@ test_create_event() {
     tomorrow=$(date -v+1d +%Y-%m-%d 2>/dev/null || date -d "+1 day" +%Y-%m-%d)
     local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$($scripts_dir/mcp-write.sh create_event \
+    output=$($scripts_dir/mcp-write.sh manage_event \
+        --action "create" \
         --calendar_id "${DAVE_CALENDAR}" \
         --summary "MCP Test Event — DELETE ME" \
-        --start "${tomorrow}T15:00:00" \
-        --end "${tomorrow}T15:30:00" \
+        --start_time "${tomorrow}T15:00:00" \
+        --end_time "${tomorrow}T15:30:00" \
         --description "Automated test from mcp-test-suite.sh. Safe to delete." 2>&1)
 
     if echo "$output" | grep -qi "error\|denied\|rejected"; then
@@ -334,7 +325,7 @@ test_reply_threading() {
     # Find the most recent email from Dave
     log_info "Searching for recent email from Dave..."
     local search_output
-    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "from:${DAVE_EMAIL} newer_than:1d" --max_results 1 2>&1)
+    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "from:${DAVE_EMAIL} newer_than:1d" --page_size 1 2>&1)
 
     local msg_id thread_id
     msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
