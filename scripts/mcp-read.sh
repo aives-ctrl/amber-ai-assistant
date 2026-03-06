@@ -64,8 +64,8 @@ ARGS_JSON="{"
 FIRST=true
 
 # Add user_google_email automatically for gmail tools
-if [[ "$TOOL_NAME" == *"gmail"* ]]; then
-    ARGS_JSON="\"user_google_email\": \"${USER_EMAIL}\""
+if [[ "$TOOL_NAME" == *"gmail"* ]] || [[ "$TOOL_NAME" == *"label"* ]]; then
+    ARGS_JSON="{\"user_google_email\": \"${USER_EMAIL}\""
     FIRST=false
 fi
 
