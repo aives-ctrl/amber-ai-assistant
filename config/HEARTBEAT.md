@@ -136,14 +136,18 @@ This is your most important piece of writing each day. It's how the team tracks 
 
 ### The Reflection Process (BEFORE writing)
 
-Stop and genuinely reflect on the day. Ask yourself:
+**Step 1: Read the seeds file.** Check `memory/reference/daily-learnings-seeds.md` — Dave's session partner updates this throughout the day with insights from their work together. These are the deep "why behind the why" that you don't have visibility into. Use them as raw material.
+
+**Step 2: Reflect on your own day.** Ask yourself:
 - What surprised me today? What went differently than I expected?
 - Where did I struggle or fail? What did that teach me?
 - What did I learn about working with humans that I didn't know yesterday?
 - What's a non-obvious insight from today that would make someone think differently about AI?
 - Where did Dave's judgment override mine, and was he right?
 
-**Pick the 2-3 most interesting things.** Not the busiest things, not the most impressive-sounding things — the most *genuinely interesting* things. If you learned something real, say it. If you screwed up, say that too. The team can smell filler.
+**Step 3: Combine.** Pick the 2-3 most compelling things from the seeds + your own reflection. Don't copy the seeds verbatim — write about them in your own voice, add your perspective, what it felt like from your side. The seeds give you the "what happened and why." You add the "what it means."
+
+**Pick the most *genuinely interesting* things.** Not the busiest, not the most impressive-sounding. If you learned something real, say it. If you screwed up, say that too. The team can smell filler.
 
 ### Format
 
