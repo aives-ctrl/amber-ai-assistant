@@ -1,6 +1,6 @@
 # email-send
 
-Send emails and replies. ALWAYS requires Dave's approval.
+Send emails and replies. Dave approves via exec-approval (one gate, not two).
 
 ## When to Use
 - Sending a new email
@@ -15,7 +15,7 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 - Don't present his email as if it's from an unknown external contact
 - When showing the draft on Telegram, say "replying to your email about [topic]" — not "replying to Dave Rosendahl re: [subject]" as if he's a third party
 - Keep the tone casual/warm — this is your boss, not a client
-- Still follow the approval process (show draft, get approval, send)
+- Still show the draft and run through the workflow (Dave approves via exec-approval)
 - No CC needed when replying to Dave directly (he's already on the thread)
 
 ## Process (MANDATORY - no exceptions)
@@ -32,18 +32,20 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
    - One-line summary
    - **The original email** (quote the key parts so Dave has context for the reply)
    - The full draft text
-   - "send it? or changes?"
+   - Then say: **"Running through Opus workflow now — approve or decline when it hits your Telegram."**
 
    **⚠️ 2026-03-05 mistake:** You replied to Alex's thread and only sent to Alex, dropping all CC recipients. Dave couldn't catch it because you didn't show the recipient list. ALWAYS show who will receive the email.
-6. **Wait for Dave's approval** in Telegram
-7. **If Dave requests changes:** revise the draft, show him again, AND log the lesson (see below)
-8. **Only then** run the gog send command — for replies, use `--reply-to-message-id`, NEVER `--to`
-   **⚠️ PRE-SEND CHECKLIST — verify before executing:**
-   - Does the command use `--body-html`? (If it says `--body` without `-html`, STOP and fix it)
-   - Is the body wrapped in `<div style="font-size:18px">...</div>`?
-   - Is the signature exactly `Amber Ives<br>MindFire, Inc.`? (Nothing else — no title, no email address)
-9. **Tag the thread as Handled:** `/Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force`
-10. Log to daily notes + update follow-up tracker
+
+6. **Immediately run the Lobster workflow** — do NOT wait for a separate "send it" approval. The exec-approval for the actual send IS Dave's approval gate. One gate, not two.
+   - If Dave sees the draft and wants changes, he'll decline the exec-approval and tell you in chat
+   - If it looks good, he approves the exec-approval — done
+   - **If Dave requests changes:** revise the draft, show him again, run the workflow again, AND log the lesson (see below)
+
+7. **The workflow handles the rest:** Opus verification → send (exec-approval) → tag Handled. You don't need separate commands.
+
+8. Log to daily notes + update follow-up tracker
+
+**⚠️ DO NOT ask Dave to approve the draft AND then also ask him to approve the exec command. That's two gates. There is ONE gate: the exec-approval for the send. Show the draft, run the workflow, Dave approves or declines the exec. Done.**
 
 ## Learning From ALL Feedback (Not Just Draft Changes)
 
@@ -70,12 +72,12 @@ cd /Users/amberives/amber-ai-assistant && git add memory/reference/email-style-l
 
 This builds your style memory over time. The more lessons you log, the fewer corrections you'll need.
 
-## Commands — PREFERRED: Verified Workflow
+## Commands — REQUIRED: Verified Workflow
 
-**For replies, use the Opus-verified Lobster workflow.** This catches threading, CC, and format errors BEFORE sending — an Opus 4.6 model reviews your command and blocks it if something is wrong.
+**ALWAYS use the Opus-verified Lobster workflow for sends.** This catches threading, CC, and format errors BEFORE sending — an Opus 4.6 model reviews your command and blocks it if something is wrong.
 
 ```bash
-# PREFERRED: Verified reply (Opus checks, then exec-approval for Dave)
+# REQUIRED: Verified reply (Opus checks, then exec-approval for Dave)
 lobster run email-send \
   --arg original_from="Sender Name <sender@example.com>" \
   --arg original_to="Recipient <recipient@example.com>" \
@@ -96,9 +98,9 @@ lobster run email-send \
 - `message_id` — for threading
 - `thread_id` — for Handled tagging
 
-## Commands — FALLBACK: Direct Send
+## Commands — EMERGENCY FALLBACK: Direct Send
 
-Only use direct gog commands if the Lobster workflow is unavailable. **All the same rules still apply.**
+**Only use direct gog commands if the Lobster workflow is broken or unavailable.** If you find yourself here, tell Dave the workflow is down so he can fix it. **All the same rules still apply.**
 
 Send commands use the **full binary path** `/usr/local/bin/gog` and WILL trigger exec-approval (Dave approves via Telegram). Tag commands use the allowlisted wrapper script `gog-email-tag.sh` — no approval needed.
 
@@ -182,7 +184,9 @@ Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just na
 
 ## Rules
 
+- ALWAYS use the Lobster workflow (`lobster run email-send`). Direct gog sends are emergency-only.
 - NEVER send without showing Dave the draft first
+- ONE approval gate: the exec-approval for the send. Do NOT ask Dave to approve the draft separately.
 - NEVER self-approve send commands
 - NEVER use `--body` — ALWAYS use `--body-html`
 - Signature is ALWAYS `Amber Ives<br>MindFire, Inc.` — nothing else, ever
