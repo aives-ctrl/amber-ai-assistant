@@ -144,8 +144,12 @@ test_get_message() {
     local search_output
     search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "is:unread OR in:inbox" --page_size 1 2>&1)
 
+    # Extract message ID — handle both JSON and formatted text output
     local msg_id
-    msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    msg_id=$(echo "$search_output" | grep -oE 'Message ID:\s*[a-f0-9]+' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    if [ -z "$msg_id" ]; then
+        msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    fi
 
     if [ -z "$msg_id" ]; then
         log_skip "Get message — couldn't extract a message ID from search results"
@@ -172,8 +176,12 @@ test_get_thread() {
     local search_output
     search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:inbox" --page_size 1 2>&1)
 
+    # Extract thread ID — handle both JSON and formatted text output
     local thread_id
-    thread_id=$(echo "$search_output" | grep -oE '"threadId"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    thread_id=$(echo "$search_output" | grep -oE 'Thread ID:\s*[a-f0-9]+' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    if [ -z "$thread_id" ]; then
+        thread_id=$(echo "$search_output" | grep -oE '"threadId"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    fi
 
     if [ -z "$thread_id" ]; then
         log_skip "Get thread — couldn't extract a thread ID"
@@ -188,6 +196,39 @@ test_get_thread() {
         log_fail "Get thread — error response"
     else
         log_pass "Get thread — returned thread data"
+    fi
+}
+
+test_modify_labels() {
+    log_test "Modify message labels — tag as Handled (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
+
+    # Find a recent message to tag
+    log_info "Finding a message to test label modification..."
+    local search_output
+    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:inbox" --page_size 1 2>&1)
+
+    local msg_id
+    msg_id=$(echo "$search_output" | grep -oE 'Message ID:\s*[a-f0-9]+' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    if [ -z "$msg_id" ]; then
+        msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    fi
+
+    if [ -z "$msg_id" ]; then
+        log_skip "Modify labels — couldn't extract a message ID"
+        return
+    fi
+
+    log_info "Using message ID: $msg_id"
+    log_info "Adding 'Handled' label (this is on mcp-read.sh allowlist)..."
+    local output
+    output=$($scripts_dir/mcp-read.sh modify_gmail_message_labels --message_id "$msg_id" --add_label_ids '["Handled"]' 2>&1)
+
+    if echo "$output" | grep -qi "error\|traceback"; then
+        log_fail "Modify labels — error response"
+        echo "$output" | head -5
+    else
+        log_pass "Modify labels — Handled label applied"
     fi
 }
 
@@ -310,6 +351,48 @@ test_create_event() {
     fi
 }
 
+test_update_event() {
+    log_test "Update calendar event (mcp-write.sh) — NEEDS TELEGRAM APPROVAL"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
+
+    # Find the test event we just created (or any event tomorrow)
+    local tomorrow
+    tomorrow=$(date -v+1d +%Y-%m-%d 2>/dev/null || date -d "+1 day" +%Y-%m-%d)
+
+    log_info "Finding a test event to update..."
+    local search_output
+    search_output=$($scripts_dir/mcp-read.sh get_events --calendar_id "${DAVE_CALENDAR}" --time_min "${tomorrow}T00:00:00" --time_max "${tomorrow}T23:59:59" 2>&1)
+
+    # Extract event ID — look for our test event first, then any event
+    local event_id
+    event_id=$(echo "$search_output" | grep -B2 "MCP.*Test\|DELETE ME\|MCP TEST" | grep -oE 'ID:\s*\S+' | head -1 | sed 's/ID:\s*//') || true
+    if [ -z "$event_id" ]; then
+        event_id=$(echo "$search_output" | grep -oE 'ID:\s*\S+' | head -1 | sed 's/ID:\s*//') || true
+    fi
+
+    if [ -z "$event_id" ]; then
+        log_skip "Update event — no events found tomorrow to update"
+        return
+    fi
+
+    log_info "Updating event: $event_id"
+    log_info "Dave: approve on Telegram."
+    local output
+    output=$($scripts_dir/mcp-write.sh manage_event \
+        --action "update" \
+        --calendar_id "${DAVE_CALENDAR}" \
+        --event_id "${event_id}" \
+        --summary "MCP TEST UPDATED — DELETE ME" \
+        --description "Updated by mcp-test-suite.sh. Safe to delete." 2>&1)
+
+    if echo "$output" | grep -qi "error\|denied\|rejected"; then
+        log_fail "Update event — error or denied"
+        echo "$output" | head -5
+    else
+        log_pass "Update event — updated (delete manually in Google Calendar)"
+    fi
+}
+
 # =============================================================================
 # THREADING TEST — The critical reply-all test
 # =============================================================================
@@ -327,9 +410,16 @@ test_reply_threading() {
     local search_output
     search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "from:${DAVE_EMAIL} newer_than:1d" --page_size 1 2>&1)
 
+    # Extract IDs — handle both JSON and formatted text output
     local msg_id thread_id
-    msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
-    thread_id=$(echo "$search_output" | grep -oE '"threadId"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    msg_id=$(echo "$search_output" | grep -oE 'Message ID:\s*[a-f0-9]+' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    if [ -z "$msg_id" ]; then
+        msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    fi
+    thread_id=$(echo "$search_output" | grep -oE 'Thread ID:\s*[a-f0-9]+' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    if [ -z "$thread_id" ]; then
+        thread_id=$(echo "$search_output" | grep -oE '"threadId"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
+    fi
 
     if [ -z "$msg_id" ] || [ -z "$thread_id" ]; then
         log_skip "Reply threading — no recent email from Dave found. Have Dave send a test email first."
@@ -338,17 +428,31 @@ test_reply_threading() {
 
     log_info "Found message: $msg_id in thread: $thread_id"
 
-    # Get the message to read headers
+    # Get the message to read headers (need Message-ID header for --references)
     log_info "Reading message to capture headers..."
     local msg_output
     msg_output=$($scripts_dir/mcp-read.sh get_gmail_message_content --message_id "$msg_id" 2>&1)
 
-    # Extract subject (best effort)
+    # Extract subject (best effort — try formatted then JSON)
     local subject
-    subject=$(echo "$msg_output" | grep -oE '"subject"\s*:\s*"[^"]*"' | head -1 | sed 's/"subject"\s*:\s*"//;s/"$//') || true
+    subject=$(echo "$msg_output" | grep -oiE 'subject:\s*.*' | head -1 | sed 's/[Ss]ubject:\s*//') || true
+    if [ -z "$subject" ]; then
+        subject=$(echo "$msg_output" | grep -oE '"subject"\s*:\s*"[^"]*"' | head -1 | sed 's/"subject"\s*:\s*"//;s/"$//') || true
+    fi
     subject="${subject:-Test Thread}"
 
+    # Extract Message-ID header for --references (RFC 2822 format like <CAB...@mail.gmail.com>)
+    # This is different from the Gmail API message ID used in --in_reply_to
+    local message_id_header
+    message_id_header=$(echo "$msg_output" | grep -oE 'Message-ID:\s*<[^>]+>' | head -1 | grep -oE '<[^>]+>') || true
+    if [ -z "$message_id_header" ]; then
+        message_id_header=$(echo "$msg_output" | grep -oE 'Message-Id:\s*<[^>]+>' | head -1 | grep -oE '<[^>]+>') || true
+    fi
+    # Fallback: use Gmail msg_id if we can't find the header (not ideal but better than nothing)
+    message_id_header="${message_id_header:-${msg_id}}"
+
     log_info "Subject: $subject"
+    log_info "Message-ID header: $message_id_header"
     log_info "Sending reply... Dave: approve on Telegram."
 
     local timestamp
@@ -361,7 +465,7 @@ test_reply_threading() {
         --body_format "html" \
         --thread_id "${thread_id}" \
         --in_reply_to "${msg_id}" \
-        --references "${msg_id}" 2>&1)
+        --references "${message_id_header}" 2>&1)
 
     if echo "$output" | grep -qi "error\|denied"; then
         log_fail "Reply threading — error or denied"
@@ -448,6 +552,7 @@ run_reads() {
     test_list_labels
     test_get_message
     test_get_thread
+    test_modify_labels
     test_list_calendars
     test_get_events_today
     test_get_events_tomorrow
@@ -461,6 +566,7 @@ run_sends() {
 
     test_send_email
     test_create_event
+    test_update_event
 }
 
 run_threading() {
