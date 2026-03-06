@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "description": "Amber AI Assistant — ClawBands security policy for MCP tools",
+  "defaultPolicy": "ASK",
+  "rules": {
+    "google-workspace": {
+      "search_gmail_messages": "ALLOW",
+      "get_gmail_message_content": "ALLOW",
+      "get_gmail_messages_content_batch": "ALLOW",
+      "get_gmail_thread_content": "ALLOW",
+      "get_gmail_threads_content_batch": "ALLOW",
+      "list_gmail_labels": "ALLOW",
+      "modify_gmail_message_labels": "ALLOW",
+      "draft_gmail_message": "ALLOW",
+      "gmail_auth": "ALLOW",
+      "send_gmail_message": "ASK",
+      "manage_gmail_label": "ASK",
+      "batch_modify_gmail_message_labels": "ASK",
+      "list_calendars": "ALLOW",
+      "get_events": "ALLOW",
+      "create_event": "ASK",
+      "modify_event": "ASK",
+      "delete_event": "DENY"
+    }
+  },
+  "approvalChannel": "telegram",
+  "approvalTimeout": 3600,
+  "logging": {
+    "enabled": true,
+    "path": "~/.openclaw/clawbands/decisions.jsonl"
+  },
+  "_rationale": {
+    "ALLOW": "Read operations are safe — search, get, list, labels. Drafts don't reach external recipients. modify_gmail_message_labels is ALLOW because it only adds/removes labels (like 'Handled'), replacing the allowlisted gog-email-tag.sh wrapper.",
+    "ASK": "Any tool that sends external email, creates/modifies calendar events, or manages labels in bulk needs Dave's approval via Telegram. This matches the current exec-approval behavior where /usr/local/bin/gog gmail send triggers approval.",
+    "DENY": "Destructive operations (delete calendar events) are never allowed. Dave must do these manually in Google Calendar.",
+    "defaultPolicy": "ASK ensures any new/unknown tools require approval by default — fail safe."
+  }
+}

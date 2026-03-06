@@ -2,6 +2,31 @@
 
 ## High Priority
 
+### Phase 1: MCP Migration — Gmail & Calendar (NEXT)
+- **Goal:** Replace all gog CLI binary wrappers with google-workspace-mcp + ClawBands
+- **Prep work:** DONE on `phase1-mcp-migration` branch (migration guide, policy template, MCP skill files, server config)
+- **Key tools:**
+  - `google-workspace-mcp` (taylorwilsdon/google_workspace_mcp, 696 stars, v1.11.2) — independent MCP server
+  - `ClawBands` (SeyZ/clawbands, launched Feb 2026) — standalone ALLOW/ASK/DENY middleware
+- **Remaining (needs Amber's machine):**
+  - [ ] Install google-workspace-mcp (`uvx workspace-mcp`)
+  - [ ] Configure OAuth credentials (Google Cloud Console)
+  - [ ] Register MCP server in openclaw.json
+  - [ ] Install ClawBands (`npm install -g clawbands`)
+  - [ ] Apply clawbands-policy.json
+  - [ ] Test: read email via MCP (should auto-approve)
+  - [ ] Test: send test email via MCP (should prompt Dave via Telegram)
+  - [ ] Test: reply threading (thread_id + in_reply_to + references — NO --reply-all flag)
+  - [ ] Test: calendar read and create via MCP
+  - [ ] Switch skill files from SKILL.md to SKILL-MCP.md
+  - [ ] Remove gog wrapper scripts (keep gog-real as emergency fallback)
+- **Eliminates:** gog wrapper scripts, PATH hacking, exec-approvals.json gog entries, Lobster workflows, hard binary copies
+- **Does NOT change:** SOUL.md, AGENTS.md personality, approval pattern, verify-with-opus, memory system, Telegram channel
+- **Addresses issues:** #8 (openclaw.invoke not found), #9 (allowlist), #10 (Lobster dead code), #11 (threading), #13 (gog-real breaks after brew)
+- **Risk mitigation:** Keep gog-real, rollback to `main` / tag `baseline-email-working-2026-03-06`
+- **References:** `docs/MCP-MIGRATION-GUIDE.md`, `config/clawbands-policy.json`, `config/mcp-servers.json`
+- **Status:** Prep branch created 2026-03-06. Awaiting Dave for machine-side installation.
+
 ### Replace Custom Solutions with OpenClaw Official Tools (IMMEDIATE)
 - **Gmail PubSub Setup:** Replace custom email-processor with `openclaw webhooks gmail setup` for real-time push notifications (vs 5min polling)
 - **Cost Tracking Replacement:** Replace `scripts/daily-cost-tracker.py` with built-in `/usage cost`, `/status`, `openclaw status --usage` commands  

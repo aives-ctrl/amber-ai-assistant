@@ -1,0 +1,15 @@
+{
+  "_doc": "MCP server configuration for OpenClaw. Merge into ~/.openclaw/openclaw.json under the 'mcpServers' key.",
+  "_instructions": "Replace <PLACEHOLDER> values with actual credentials from Google Cloud Console before use. See docs/MCP-MIGRATION-GUIDE.md Part A for setup steps.",
+  "google-workspace": {
+    "command": "uvx",
+    "args": ["workspace-mcp", "--tools", "gmail", "calendar"],
+    "env": {
+      "GOOGLE_OAUTH_CLIENT_ID": "<GOOGLE_OAUTH_CLIENT_ID>",
+      "GOOGLE_OAUTH_CLIENT_SECRET": "<GOOGLE_OAUTH_CLIENT_SECRET>",
+      "USER_GOOGLE_EMAIL": "aives@mindfiremail.info"
+    },
+    "disabled": false,
+    "alwaysAllow": []
+  }
+}
