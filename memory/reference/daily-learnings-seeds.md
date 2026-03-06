@@ -19,3 +19,19 @@ The architecture we landed on: Layer 1 = Opus verifier (catches semantic errors 
 
 ### CC blindness: the gap between reading and understanding
 Amber read an email where the body said "Jeff, see below." She reported the To field but not the CC field — where Jeff already was. She then asked Dave if Jeff should be added to the thread. The fix was adding explicit "check and report ALL headers" rules, but the deeper insight is about attention patterns. Humans unconsciously cross-reference body mentions against headers. AI models read each field independently unless told to connect them. The skill isn't reading — it's cross-referencing.
+
+---
+
+## 2026-03-06
+
+### 30 minutes of real testing > 3 days of planning
+We spent three days planning Amber's infrastructure migration — architecture docs, config files, skill files, test suites. The plan was solid. Then we ran the first real test and within 30 minutes found three things no amount of planning predicted: a permission system that hadn't been configured, a timezone requirement Google's API enforces but barely documents, and output formats that didn't match what our scripts expected. All fixable in minutes once discovered, but invisible on paper. The pattern holds for any project: planning gets you to 90%. The last 10% only reveals itself when you actually do the thing. Don't plan past the point of diminishing returns — get to real testing faster.
+
+### The features you lose when you upgrade
+We upgraded Amber's email system to newer, more capable tools. Everything worked — except one thing. The old system had a "reply-all" button that automatically included every person on an email thread. The new one doesn't. It sends replies, but you have to manually list every recipient. Without catching this, Amber would have silently sent replies to fewer people than intended. No error message. No warning. The email just goes out looking normal but missing people. The lesson for any system migration: the obvious question is "does the new thing work?" The dangerous question is "what did the old thing do automatically that the new thing makes you do manually?" Those invisible conveniences are where things break.
+
+### A system that works perfectly today can break on Sunday
+We hardcoded Pacific Standard Time in all our calendar examples. Every test passed. Then we realized Daylight Saving Time switches this Sunday. Every calendar event created after March 8 would be off by an hour — booked at 10am but actually landing at 11am. No error, no warning, just a silent one-hour drift. We caught it because someone thought to ask "what changes in 48 hours?" Most testing validates the present. The highest-value testing validates what's about to change.
+
+### Two people, one keyboard, two different machines
+The migration required a unusual workflow: Dave was the architect (planning, writing code, fixing bugs on his machine) and Amber was the executor (running commands, testing on her machine). Neither could do the other's job — Dave can't run commands on Amber's machine, Amber can't write her own skill files. They communicated through Telegram, with Dave relaying instructions and Amber relaying raw output. It worked surprisingly well, but only because every instruction was exact and every result was unambiguous. The pattern: distributed execution works when the handoff protocol is precise. Vague instructions across a gap are a recipe for "but I thought you meant..."

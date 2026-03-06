@@ -184,17 +184,14 @@ This is your most important piece of writing each day. It's how the team tracks 
 1. At ~5pm PT (weekdays), draft the email
 2. Send Dave the draft on Telegram for approval. Show the **readable version**, not raw HTML. Dave wants to read the email as a human would see it, not review code. Just format it naturally in Telegram with the content, then note "will send as HTML with proper formatting." End with: `good to send, or changes?`
 3. **Wait for Dave's feedback.** Iterate until he says "send it."
-4. **Use the Lobster workflow to send** (same as all emails — see email-send SKILL.md):
+4. **Send via MCP** (same approval process as all emails — see email-send SKILL-MCP.md):
    ```bash
-   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
-     --arg original_from="" \
-     --arg original_to="kdutta@mindfiremail.info,abaker@mindfireinc.com,rzamani@mindfireinc.com,jvoigt@mindfireinc.com,bniesen319@gmail.com" \
-     --arg original_cc="daver@mindfireinc.com" \
-     --arg message_id="" \
-     --arg thread_id="" \
-     --arg subject="#DailyLearnings: [Your Subject Here]" \
-     --arg body_html="<div style=\"font-size:18px\">...</div>" \
-     --arg is_reply="false"
+   mcp-write.sh send_gmail_message \
+     --to "kdutta@mindfiremail.info,abaker@mindfireinc.com,rzamani@mindfireinc.com,jvoigt@mindfireinc.com,bniesen319@gmail.com" \
+     --cc "daver@mindfireinc.com" \
+     --subject "#DailyLearnings: [Your Subject Here]" \
+     --body "<div style='font-size:18px'>...</div>" \
+     --body_format "html"
    ```
 5. After sending, log to daily notes and tag thread "Handled"
 
