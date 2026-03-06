@@ -6,6 +6,36 @@
 
 ---
 
+## Quick Start (Automated)
+
+Most of the setup is automated via a script. On Amber's machine:
+
+```bash
+# 1. Dave provides OAuth credentials
+export GOOGLE_OAUTH_CLIENT_ID="<from Google Cloud Console>"
+export GOOGLE_OAUTH_CLIENT_SECRET="<from Google Cloud Console>"
+
+# 2. Run the setup script (Parts A-C automated)
+./scripts/mcp-migrate-phase1.sh setup
+
+# 3. Run read tests (Part D automated reads)
+./scripts/mcp-migrate-phase1.sh test
+
+# 4. Check status anytime
+./scripts/mcp-migrate-phase1.sh status
+
+# 5. Rollback if anything breaks
+./scripts/mcp-migrate-phase1.sh rollback
+```
+
+**The ONE manual step:** Dave clicks "Authorize" in the browser during OAuth setup (5 seconds, one time only).
+
+For Amber-specific instructions, see: `docs/AMBER-MCP-INSTRUCTIONS.md`
+
+The detailed manual steps are below for reference.
+
+---
+
 ## Overview
 
 This guide walks through replacing the gog binary wrapper approach with MCP-native tool calls. After completion:
