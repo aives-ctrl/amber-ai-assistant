@@ -186,7 +186,7 @@ This is your most important piece of writing each day. It's how the team tracks 
 3. **Wait for Dave's feedback.** Iterate until he says "send it."
 4. **Use the Lobster workflow to send** (same as all emails — see email-send SKILL.md):
    ```bash
-   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml \
+   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
      --arg original_from="" \
      --arg original_to="kdutta@mindfiremail.info,abaker@mindfireinc.com,rzamani@mindfireinc.com,jvoigt@mindfireinc.com,bniesen319@gmail.com" \
      --arg original_cc="daver@mindfireinc.com" \

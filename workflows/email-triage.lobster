@@ -1,4 +1,4 @@
-# email-triage.lobster.yaml
+# email-triage.lobster
 # Lobster workflow for processing inbox emails
 # Replaces the ad-hoc pattern of firing 3-5 separate exec commands
 #

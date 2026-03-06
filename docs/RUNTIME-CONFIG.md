@@ -399,7 +399,7 @@ Current skills (in git repo under `skills/`):
 **Lobster Workflows** are defined in `workflows/` and provide multi-step pipelines with single approval gates.
 
 Current workflows:
-- `email-triage.lobster.yaml` - Full inbox processing pipeline (search -> read -> categorize -> draft -> send)
+- `email-triage.lobster` - Full inbox processing pipeline (search -> read -> categorize -> draft -> send)
 
 After `git pull`, these are available at `~/.openclaw/workspace/skills/` and `~/.openclaw/workspace/workflows/`.
 
@@ -447,5 +447,5 @@ After applying these settings, verify by running:
 ### Skills Verification
 
 14. `ls ~/.openclaw/workspace/skills/` -- should show: email-read, email-send, calendar-read, calendar-create, startup
-15. `ls ~/.openclaw/workspace/workflows/` -- should show: email-triage.lobster.yaml
+15. `ls ~/.openclaw/workspace/workflows/` -- should show: email-triage.lobster
 16. After `/new`, Amber should run `startup` skill before responding (check daily notes for startup log)

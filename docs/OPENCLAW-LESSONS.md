@@ -629,10 +629,10 @@ The mistakes aren't intelligence failures — she *knows* the rules when prompte
 
 ### What We Built
 
-**Opus 4.6 verifier step in a Lobster workflow** (`workflows/email-send.lobster.yaml`):
+**Opus 4.6 verifier step in a Lobster workflow** (`workflows/email-send.lobster`):
 
 1. Amber drafts the email and gathers parameters (original headers, messageId, body)
-2. She invokes `lobster run /path/to/email-send.lobster.yaml` with those parameters
+2. She invokes `lobster run /path/to/email-send.lobster` with those parameters
 3. **Opus 4.6** reviews the parameters: Is `--reply-to-message-id` used for replies? Is `--reply-all` present? Is `--body-html` used? Does the signature match?
 4. If Opus says FAIL → workflow stops, Amber sees specific errors
 5. If Opus says PASS → gog send executes (triggering exec-approval for Dave)
@@ -643,7 +643,7 @@ The mistakes aren't intelligence failures — she *knows* the rules when prompte
 ### Configuration
 
 - `openclaw-fixed.json`: Added `llm-task` plugin config with `allowedModels` including Opus
-- `workflows/email-send.lobster.yaml`: Lobster workflow with `llm-task` verifier step
+- `workflows/email-send.lobster`: Lobster workflow with `llm-task` verifier step
 - `skills/email-send/SKILL.md`: Updated to reference workflow as preferred send method
 - `config/TOOLS.md`: Lists the new workflow
 
@@ -783,7 +783,7 @@ The old workflow used `${body_html}` directly in YAML command strings. HTML cont
 
 ```
 Dave says "send it" in Telegram (content approval)
-  → Amber runs: lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml --arg ...
+  → Amber runs: lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster --arg ...
     → lobster triggers exec-approval for itself (Dave approves once)
     → Step 1: verify-email-send.sh
       → sets OPENCLAW_URL env var
@@ -805,7 +805,7 @@ The approval flow is now: **Draft review (human judgment) → Opus verify (autom
 
 ```
 scripts/verify-email-send.sh        # Opus verify via openclaw.invoke (reads LOBSTER_ARG_* env vars)
-workflows/email-send.lobster.yaml   # Rewritten: env vars, gog-real, OPENCLAW_URL
+workflows/email-send.lobster   # Rewritten: env vars, gog-real, OPENCLAW_URL
 skills/email-send/SKILL.md          # Updated: no exec-approval for sends, workflow handles everything
 ```
 
@@ -827,11 +827,11 @@ skills/email-send/SKILL.md          # Updated: no exec-approval for sends, workf
 
 ### The Problem
 
-`lobster run email-send` failed with "Error: Unknown command: email-send". The workflow file existed at `/Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml`, but lobster couldn't find it. `lobster workflows.list` only showed built-in workflows (`github.pr.monitor`, `github.pr.monitor.notify`).
+`lobster run email-send` failed with "Error: Unknown command: email-send". The workflow file existed at `/Users/amberives/.openclaw/workspace/workflows/email-send.lobster`, but lobster couldn't find it. `lobster workflows.list` only showed built-in workflows (`github.pr.monitor`, `github.pr.monitor.notify`).
 
 ### Root Cause
 
-Lobster does NOT automatically scan the OpenClaw workspace `workflows/` directory (or any directory) for custom `.lobster.yaml` files. The name-based `lobster run <name>` syntax only works for:
+Lobster does NOT automatically scan the OpenClaw workspace `workflows/` directory (or any directory) for custom workflow files. The name-based `lobster run <name>` syntax only works for:
 - Built-in workflows bundled with the lobster npm package
 - Workflows registered in `~/.lobster/workflows/` (standard lobster directory)
 
@@ -846,12 +846,12 @@ Use the **full file path** instead of the workflow name:
 lobster run email-send --arg ...
 
 # CORRECT — full path, always works
-lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml --arg ...
+lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster --arg ...
 ```
 
 Updated all references in:
 - `skills/email-send/SKILL.md` (3 locations)
-- `workflows/email-send.lobster.yaml` (usage comment)
+- `workflows/email-send.lobster` (usage comment)
 - `docs/AMBER-SETUP-INSTRUCTIONS.md` (test command + table)
 - `config/HEARTBEAT.md` (daily learnings workflow)
 

@@ -1,4 +1,4 @@
-# email-send.lobster.yaml
+# email-send.lobster
 # Verified email send with Opus 4.6 pre-flight validation.
 #
 # WHY THIS EXISTS: Amber (running Sonnet) repeatedly makes the same
@@ -32,7 +32,7 @@
 #   - jq installed (for safe JSON construction in verify script)
 #
 # USAGE (from Amber's session):
-#   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml \
+#   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
 #     --arg original_from="Alex Fechner <AFechner@advprinting.com>" \
 #     --arg original_to="David Rosendahl <daver@mindfireinc.com>" \
 #     --arg original_cc="Bryan Beelek <bbeelek@advprinting.com>, Dan Tissi <DTissi@advprinting.com>" \

@@ -18,7 +18,7 @@ ls skills/
 ls workflows/
 ```
 
-You should see: `email-read/`, `email-send/`, `calendar-read/`, `calendar-create/`, `startup/` in skills, and `email-triage.lobster.yaml` in workflows.
+You should see: `email-read/`, `email-send/`, `calendar-read/`, `calendar-create/`, `startup/` in skills, and `email-triage.lobster` in workflows.
 
 ---
 
@@ -288,7 +288,7 @@ The wrapper lives in the git repo at `scripts/gog`. After `git pull`, it's updat
 
 ## STEP 2D: Install Lobster workflow runner and verify script
 
-**⚠️ Why this exists:** The lobster email-send workflow is the REQUIRED method for sending emails (see `skills/email-send/SKILL.md`). Lobster orchestrates: Opus verification → send via gog-real → tag Handled. **IMPORTANT:** Lobster does NOT auto-discover custom workflows by name — you MUST use the full file path (`lobster run /path/to/workflow.lobster.yaml`).
+**⚠️ Why this exists:** The lobster email-send workflow is the REQUIRED method for sending emails (see `skills/email-send/SKILL.md`). Lobster orchestrates: Opus verification → send via gog-real → tag Handled. **IMPORTANT:** Lobster does NOT auto-discover custom workflows by name — you MUST use the full file path (`lobster run /path/to/workflow.lobster`).
 
 **Architecture (2026-03-05 rewrite — see Lesson #13):** Lobster child processes run in `/bin/sh` and bypass OpenClaw's exec-approval pipeline. The workflow uses `gog-real` (hard copy in trusted scripts dir) for the send step, so no exec-approval fires for the actual send. Dave's approval is the draft review in Telegram (SKILL.md step 6). The lobster binary itself may still trigger exec-approval (Dave approves once to start the workflow), then everything inside runs automatically.
 
@@ -364,7 +364,7 @@ pkill -f openclaw-gateway && sleep 2 && openclaw gateway restart
 ### Test
 
 ```bash
-lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml \
+lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
   --arg original_from="Test <test@test.com>" \
   --arg original_to="Dave <daver@mindfireinc.com>" \
   --arg original_cc="" \
@@ -378,7 +378,7 @@ lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.ya
 **Expected behavior:**
 | Step | What happens |
 |------|-------------|
-| `lobster run .../email-send.lobster.yaml` | May trigger exec-approval (if not allowlisted) — approve once |
+| `lobster run .../email-send.lobster` | May trigger exec-approval (if not allowlisted) — approve once |
 | Opus verify (openclaw.invoke → llm-task) | Runs automatically via Gateway RPC |
 | gog-real gmail send | Runs automatically (trusted scripts dir, no approval) |
 | gog-email-tag.sh | Runs automatically (trusted scripts dir, no approval) |
@@ -537,7 +537,7 @@ This eliminates polling. Emails arrive in real time, pre-fetched. Heartbeat beco
 After completing steps 1-8, confirm:
 
 - [ ] `skills/` directory has 5 skill folders
-- [ ] `workflows/` directory has `email-triage.lobster.yaml`
+- [ ] `workflows/` directory has `email-triage.lobster`
 - [ ] `which gog` shows `/Users/amberives/.openclaw/workspace/scripts/gog` (PATH wrapper active)
 - [ ] `gog gmail labels list` does NOT trigger approval (wrapper routes to gog-email-read.sh)
 - [ ] `gog gmail threads modify` does NOT trigger approval (wrapper routes to gog-email-tag.sh)

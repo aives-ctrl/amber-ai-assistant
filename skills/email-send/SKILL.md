@@ -43,7 +43,7 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 
 7. **Once Dave says "send it"** → run the Lobster workflow:
    ```bash
-   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml \
+   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
      --arg original_from="..." \
      --arg original_to="..." \
      --arg original_cc="..." \
@@ -95,7 +95,7 @@ This builds your style memory over time. The more lessons you log, the fewer cor
 
 ```bash
 # REQUIRED: Verified reply (Opus checks → auto-sends → auto-tags)
-lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml \
+lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
   --arg original_from="Sender Name <sender@example.com>" \
   --arg original_to="Recipient <recipient@example.com>" \
   --arg original_cc="CC Person <cc@example.com>" \
@@ -203,7 +203,7 @@ Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just na
 
 ## Rules
 
-- ALWAYS use the Lobster workflow (`lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml`). Direct gog sends are emergency-only.
+- ALWAYS use the Lobster workflow (`lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster`). Direct gog sends are emergency-only.
 - NEVER send without showing Dave the draft first and getting his "send it" confirmation
 - NEVER run the workflow before Dave confirms the draft is good
 - NEVER self-approve send commands
