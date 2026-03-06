@@ -1,6 +1,6 @@
 # email-send
 
-Send emails and replies. Dave approves the draft via Telegram, then the Lobster workflow handles Opus verification + send + tagging.
+Send emails and replies. Dave approves the draft via Telegram, then you verify parameters and send via gog.
 
 ## When to Use
 - Sending a new email
@@ -15,7 +15,7 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 - Don't present his email as if it's from an unknown external contact
 - When showing the draft on Telegram, say "replying to your email about [topic]" — not "replying to Dave Rosendahl re: [subject]" as if he's a third party
 - Keep the tone casual/warm — this is your boss, not a client
-- Still show the draft and run through the workflow (Dave approves via exec-approval)
+- Still show the draft and run through the process (Dave approves via Telegram)
 - No CC needed when replying to Dave directly (he's already on the thread)
 
 ## Process (MANDATORY - no exceptions)
@@ -39,30 +39,44 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 6. **Wait for Dave's feedback.** This is where Dave reviews and iterates:
    - If Dave requests changes → revise the draft, show him again, AND log the lesson (see below)
    - Keep iterating until Dave says **"send it"** (or similar confirmation)
-   - **Do NOT run the workflow until Dave confirms the draft is good**
+   - **Do NOT send until Dave confirms the draft is good**
 
-7. **Once Dave says "send it"** → run the Lobster workflow:
+7. **Once Dave says "send it"** → run the verify script, then send:
+
+   **Step 7a: Verify your parameters** (catches common mistakes before they reach inboxes):
    ```bash
-   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
-     --arg original_from="..." \
-     --arg original_to="..." \
-     --arg original_cc="..." \
-     --arg message_id="..." \
-     --arg thread_id="..." \
-     --arg subject="RE: ..." \
-     --arg body_html="<div style=\"font-size:18px\">...</div>" \
-     --arg is_reply="true"
+   /Users/amberives/.openclaw/workspace/scripts/verify-email-params.sh \
+     --is-reply "true" \
+     --message-id "<messageId>" \
+     --subject "RE: Original Subject" \
+     --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+     --cc "daver@mindfireinc.com" \
+     --has-reply-all "true"
    ```
-   - The workflow handles: Opus verification → send → tag Handled (all automatic)
-   - There is NO separate exec-approval popup — Dave already approved the content in step 6
-   - If Opus finds errors, you'll see them in the output — fix and re-run
-   - You don't need separate gog send and tag commands
+   If it says **🚫 VERIFICATION FAILED** → fix the errors and re-run. Do NOT send.
+   If it says **✅ ALL CHECKS PASSED** → proceed to send.
 
-8. **Verify it worked.** After the workflow completes, check your sent mail to confirm the email went out. If the workflow failed, check the output for errors and tell Dave.
+   **Step 7b: Send the email:**
+   ```bash
+   /usr/local/bin/gog gmail send \
+     --reply-to-message-id <messageId> \
+     --reply-all \
+     --cc daver@mindfireinc.com \
+     --subject "RE: Original Subject" \
+     --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
+   ```
+   This triggers exec-approval — Dave approves via Telegram.
+
+   **Step 7c: Tag thread as Handled** (only after send succeeds):
+   ```bash
+   /Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
+   ```
+
+8. **Verify it worked.** Check your sent mail to confirm the email went out.
 
 9. Log to daily notes + update follow-up tracker
 
-**⚠️ Do NOT skip step 6 by running the workflow immediately — Dave needs to see the draft and confirm before you trigger the send. The workflow runs automatically after that — no second approval needed.**
+**⚠️ Do NOT skip step 6 — Dave needs to see the draft and confirm before you send.**
 
 ## Learning From ALL Feedback (Not Just Draft Changes)
 
@@ -89,50 +103,21 @@ cd /Users/amberives/amber-ai-assistant && git add memory/reference/email-style-l
 
 This builds your style memory over time. The more lessons you log, the fewer corrections you'll need.
 
-## Commands — REQUIRED: Verified Workflow
+## Commands — Send (with verification)
 
-**ALWAYS use the Opus-verified Lobster workflow for sends.** This catches threading, CC, and format errors BEFORE sending — Opus 4.6 reviews your parameters and blocks the send if something is wrong.
-
-```bash
-# REQUIRED: Verified reply (Opus checks → auto-sends → auto-tags)
-lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster \
-  --arg original_from="Sender Name <sender@example.com>" \
-  --arg original_to="Recipient <recipient@example.com>" \
-  --arg original_cc="CC Person <cc@example.com>" \
-  --arg message_id="<messageId>" \
-  --arg thread_id="<threadId>" \
-  --arg subject="RE: Original Subject" \
-  --arg body_html="<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
-  --arg is_reply="true"
-```
-
-**The workflow handles everything:** Opus verification → send → tag Handled. No exec-approval popup — Dave already approved the draft in the chat. You don't need to run separate gog send and tag commands.
-
-**If the workflow shows "OPUS VERIFICATION FAILED":** Read the errors, fix your parameters, and re-run. Do NOT use the fallback — fix the issue first.
-
-**Get the original headers from when you READ the email.** When you read an email, note:
-- `original_from` — the From header
-- `original_to` — the To header
-- `original_cc` — the CC header (NEVER skip this)
-- `message_id` — for threading
-- `thread_id` — for Handled tagging
-
-## Commands — EMERGENCY FALLBACK: Direct Send
-
-**Only use direct gog commands if the Lobster workflow is broken or unavailable.** If you find yourself here, tell Dave the workflow is down so he can fix it. **All the same rules still apply.**
-
-Send commands use the **full binary path** `/usr/local/bin/gog` and WILL trigger exec-approval (Dave approves via Telegram). Tag commands use the allowlisted wrapper script `gog-email-tag.sh` — no approval needed.
-
-**⚠️ CRITICAL: Send commands MUST use `/usr/local/bin/gog`, not bare `gog`.** Bare `gog` resolves to a safety wrapper that blocks sends. If you see "BLOCKED: This wrapper does not allow write operations," you used the wrong path.
+**ALWAYS run the verify script before sending.** It catches threading, CC, and format errors.
 
 ```bash
-# Send new email (ALWAYS --body-html, ALWAYS font-size div, ALWAYS exact signature)
-/usr/local/bin/gog gmail send \
-  --to "recipient@example.com" \
+# STEP 1: Verify parameters
+/Users/amberives/.openclaw/workspace/scripts/verify-email-params.sh \
+  --is-reply "true" \
+  --message-id "<messageId>" \
+  --subject "RE: Original Subject" \
+  --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
   --cc "daver@mindfireinc.com" \
-  --subject "Subject here" \
-  --body-html "<div style=\"font-size:18px\"><p>Email body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
+  --has-reply-all "true"
 
+# STEP 2: Send (only if verify passed)
 # Reply to existing thread (preserves threading)
 /usr/local/bin/gog gmail send \
   --reply-to-message-id <messageId> \
@@ -141,9 +126,23 @@ Send commands use the **full binary path** `/usr/local/bin/gog` and WILL trigger
   --subject "RE: Original Subject" \
   --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
 
-# Tag thread as Handled after processing (wrapper script, no approval needed)
+# Send new email (no --reply-to-message-id, no --reply-all)
+/usr/local/bin/gog gmail send \
+  --to "recipient@example.com" \
+  --cc "daver@mindfireinc.com" \
+  --subject "Subject here" \
+  --body-html "<div style=\"font-size:18px\"><p>Email body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>"
+
+# STEP 3: Tag thread as Handled (after send succeeds)
 /Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
 ```
+
+**Get the original headers from when you READ the email.** When you read an email, note:
+- `message_id` — for threading (CRITICAL for replies)
+- `thread_id` — for Handled tagging
+- CC recipients — for reply-all
+
+**⚠️ CRITICAL: Send commands MUST use `/usr/local/bin/gog`, not bare `gog`.** Bare `gog` resolves to a safety wrapper that blocks sends. If you see "BLOCKED: This wrapper does not allow write operations," you used the wrong path.
 
 ## Writing Style
 
@@ -203,9 +202,9 @@ Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just na
 
 ## Rules
 
-- ALWAYS use the Lobster workflow (`lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster`). Direct gog sends are emergency-only.
+- ALWAYS run verify-email-params.sh before sending. Fix any errors before proceeding.
+- ALWAYS use `/usr/local/bin/gog gmail send` for sends (triggers exec-approval — Dave approves via Telegram)
 - NEVER send without showing Dave the draft first and getting his "send it" confirmation
-- NEVER run the workflow before Dave confirms the draft is good
 - NEVER self-approve send commands
 - NEVER use `--body` — ALWAYS use `--body-html`
 - Signature is ALWAYS `Amber Ives<br>MindFire, Inc.` — nothing else, ever
