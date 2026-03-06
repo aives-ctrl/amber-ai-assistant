@@ -89,9 +89,10 @@ assert_no_error() {
 # =============================================================================
 
 test_search_inbox() {
-    log_test "Search inbox: unread emails (search_gmail_messages)"
+    log_test "Search inbox: unread emails (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$(mcp_call "search_gmail_messages" "{\"query\": \"is:unread -label:Handled\", \"max_results\": 3, \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "is:unread -label:Handled" --max_results 3 2>&1)
 
     if [ -z "$output" ]; then
         log_fail "Search inbox — no output"
@@ -104,9 +105,10 @@ test_search_inbox() {
 }
 
 test_search_by_sender() {
-    log_test "Search by sender (search_gmail_messages)"
+    log_test "Search by sender (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$(mcp_call "search_gmail_messages" "{\"query\": \"from:${DAVE_EMAIL}\", \"max_results\": 3, \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "from:${DAVE_EMAIL}" --max_results 3 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "Search by sender — error response"
@@ -116,9 +118,10 @@ test_search_by_sender() {
 }
 
 test_search_sent() {
-    log_test "Search sent mail (search_gmail_messages)"
+    log_test "Search sent mail (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$(mcp_call "search_gmail_messages" "{\"query\": \"in:sent\", \"max_results\": 3, \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:sent" --max_results 3 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "Search sent mail — error response"
@@ -128,9 +131,10 @@ test_search_sent() {
 }
 
 test_list_labels() {
-    log_test "List Gmail labels (list_gmail_labels)"
+    log_test "List Gmail labels (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$(mcp_call "list_gmail_labels" "{\"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    output=$($scripts_dir/mcp-read.sh list_gmail_labels 2>&1)
 
     if echo "$output" | grep -qi "Handled\|INBOX\|SENT"; then
         log_pass "List labels — found expected labels"
@@ -142,14 +146,14 @@ test_list_labels() {
 }
 
 test_get_message() {
-    log_test "Get specific message (get_gmail_message_content)"
+    log_test "Get specific message (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
 
     # First, search for a recent message to get an ID
     log_info "Finding a recent message ID..."
     local search_output
-    search_output=$(mcp_call "search_gmail_messages" "{\"query\": \"is:unread OR in:inbox\", \"max_results\": 1, \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "is:unread OR in:inbox" --max_results 1 2>&1)
 
-    # Try to extract a message ID (format varies by MCP server version)
     local msg_id
     msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
 
@@ -160,7 +164,7 @@ test_get_message() {
 
     log_info "Using message ID: $msg_id"
     local output
-    output=$(mcp_call "get_gmail_message_content" "{\"message_id\": \"${msg_id}\", \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    output=$($scripts_dir/mcp-read.sh get_gmail_message_content --message_id "$msg_id" 2>&1)
 
     if echo "$output" | grep -qi "from\|subject\|date"; then
         log_pass "Get message — returned message content"
@@ -172,11 +176,11 @@ test_get_message() {
 }
 
 test_get_thread() {
-    log_test "Get thread (get_gmail_thread_content)"
+    log_test "Get thread (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
 
-    # Search for a thread
     local search_output
-    search_output=$(mcp_call "search_gmail_messages" "{\"query\": \"in:inbox\", \"max_results\": 1, \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "in:inbox" --max_results 1 2>&1)
 
     local thread_id
     thread_id=$(echo "$search_output" | grep -oE '"threadId"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
@@ -188,7 +192,7 @@ test_get_thread() {
 
     log_info "Using thread ID: $thread_id"
     local output
-    output=$(mcp_call "get_gmail_thread_content" "{\"thread_id\": \"${thread_id}\", \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    output=$($scripts_dir/mcp-read.sh get_gmail_thread_content --thread_id "$thread_id" 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "Get thread — error response"
@@ -198,9 +202,10 @@ test_get_thread() {
 }
 
 test_list_calendars() {
-    log_test "List calendars (list_calendars)"
+    log_test "List calendars (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$(mcp_call "list_calendars" "{}" "calendar")
+    output=$($scripts_dir/mcp-read.sh list_calendars 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "List calendars — error response"
@@ -210,11 +215,12 @@ test_list_calendars() {
 }
 
 test_get_events_today() {
-    log_test "Get today's calendar events (get_events)"
+    log_test "Get today's calendar events (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local today
     today=$(date +%Y-%m-%d)
     local output
-    output=$(mcp_call "get_events" "{\"calendar_id\": \"${DAVE_CALENDAR}\", \"time_min\": \"${today}T00:00:00\", \"time_max\": \"${today}T23:59:59\"}" "calendar")
+    output=$($scripts_dir/mcp-read.sh get_events --calendar_id "${DAVE_CALENDAR}" --time_min "${today}T00:00:00" --time_max "${today}T23:59:59" 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "Get today's events — error response"
@@ -224,11 +230,12 @@ test_get_events_today() {
 }
 
 test_get_events_tomorrow() {
-    log_test "Get tomorrow's calendar events (get_events)"
+    log_test "Get tomorrow's calendar events (mcp-read.sh)"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local tomorrow
     tomorrow=$(date -v+1d +%Y-%m-%d 2>/dev/null || date -d "+1 day" +%Y-%m-%d)
     local output
-    output=$(mcp_call "get_events" "{\"calendar_id\": \"${DAVE_CALENDAR}\", \"time_min\": \"${tomorrow}T00:00:00\", \"time_max\": \"${tomorrow}T23:59:59\"}" "calendar")
+    output=$($scripts_dir/mcp-read.sh get_events --calendar_id "${DAVE_CALENDAR}" --time_min "${tomorrow}T00:00:00" --time_max "${tomorrow}T23:59:59" 2>&1)
 
     if echo "$output" | grep -qi "error\|traceback"; then
         log_fail "Get tomorrow's events — error response"
@@ -238,45 +245,28 @@ test_get_events_tomorrow() {
 }
 
 # =============================================================================
-# CLAWBANDS POLICY TESTS — Verify approval rules
+# APPROVAL POLICY TESTS — Verify exec-approvals
 # =============================================================================
 
-test_clawbands_status() {
-    log_test "ClawBands status"
-    if command -v clawbands &>/dev/null; then
-        local output
-        output=$(clawbands status 2>&1) || true
-        if echo "$output" | grep -qi "active\|running\|loaded"; then
-            log_pass "ClawBands is active"
-        else
-            log_fail "ClawBands not active: $output"
-        fi
-    else
-        log_fail "ClawBands not installed"
-    fi
-}
-
-test_clawbands_policy() {
-    log_test "ClawBands policy file exists"
-    local policy_path="${HOME}/.openclaw/clawbands/policy.json"
-    if [ -f "$policy_path" ]; then
-        # Verify key rules
+test_exec_approvals() {
+    log_test "exec-approvals: mcp-read.sh is allowlisted"
+    local approvals_file="${HOME}/.openclaw/exec-approvals.json"
+    if [ -f "$approvals_file" ]; then
         if python3 -c "
-import json, sys
-with open('${policy_path}') as f:
-    p = json.load(f)
-rules = p.get('rules', {}).get('google-workspace', {})
-assert rules.get('search_gmail_messages') == 'ALLOW', 'search should be ALLOW'
-assert rules.get('send_gmail_message') == 'ASK', 'send should be ASK'
-assert rules.get('delete_event') == 'DENY', 'delete_event should be DENY'
-print('Policy rules verified')
+import json
+with open('${approvals_file}') as f:
+    data = json.load(f)
+patterns = [e.get('pattern','') for e in data.get('agents',{}).get('main',{}).get('allowlist',[])]
+assert any('mcp-read' in p for p in patterns), 'mcp-read.sh not in allowlist'
+assert not any('mcp-write' in p for p in patterns), 'mcp-write.sh should NOT be in allowlist'
+print('Approval rules correct')
 " 2>&1; then
-            log_pass "ClawBands policy — rules correct (ALLOW/ASK/DENY)"
+            log_pass "exec-approvals — mcp-read.sh allowed, mcp-write.sh requires approval"
         else
-            log_fail "ClawBands policy — rules don't match expected values"
+            log_fail "exec-approvals — rules don't match expected values"
         fi
     else
-        log_fail "ClawBands policy file not found at $policy_path"
+        log_skip "exec-approvals.json not found (may not have run update script yet)"
     fi
 }
 
@@ -285,20 +275,19 @@ print('Policy rules verified')
 # =============================================================================
 
 test_send_email() {
-    log_test "Send test email (send_gmail_message) — NEEDS TELEGRAM APPROVAL"
+    log_test "Send test email (mcp-write.sh) — NEEDS TELEGRAM APPROVAL"
     log_info "Sending test email to ${DAVE_EMAIL}..."
     log_info "Dave: approve or deny this on Telegram."
 
     local timestamp
     timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$(mcp_call "send_gmail_message" "{
-        \"to\": \"${DAVE_EMAIL}\",
-        \"subject\": \"MCP Test Suite — ${timestamp}\",
-        \"body\": \"<div style='font-size:18px'><p>Automated test from mcp-test-suite.sh at ${timestamp}.</p><p>If you received this, email sending via MCP is working.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>\",
-        \"body_format\": \"html\",
-        \"user_google_email\": \"${USER_EMAIL}\"
-    }" "gmail")
+    output=$($scripts_dir/mcp-write.sh send_gmail_message \
+        --to "${DAVE_EMAIL}" \
+        --subject "MCP Test Suite — ${timestamp}" \
+        --body "<div style='font-size:18px'><p>Automated test from mcp-test-suite.sh at ${timestamp}.</p><p>If you received this, email sending via MCP is working.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+        --body_format "html" 2>&1)
 
     if echo "$output" | grep -qi "error\|denied\|rejected"; then
         log_fail "Send email — error or denied"
@@ -309,18 +298,18 @@ test_send_email() {
 }
 
 test_create_event() {
-    log_test "Create test calendar event (create_event) — NEEDS TELEGRAM APPROVAL"
+    log_test "Create test calendar event (mcp-write.sh) — NEEDS TELEGRAM APPROVAL"
 
     local tomorrow
     tomorrow=$(date -v+1d +%Y-%m-%d 2>/dev/null || date -d "+1 day" +%Y-%m-%d)
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     local output
-    output=$(mcp_call "create_event" "{
-        \"calendar_id\": \"${DAVE_CALENDAR}\",
-        \"summary\": \"MCP Test Event — DELETE ME\",
-        \"start\": \"${tomorrow}T15:00:00\",
-        \"end\": \"${tomorrow}T15:30:00\",
-        \"description\": \"Automated test from mcp-test-suite.sh. Safe to delete.\"
-    }" "calendar")
+    output=$($scripts_dir/mcp-write.sh create_event \
+        --calendar_id "${DAVE_CALENDAR}" \
+        --summary "MCP Test Event — DELETE ME" \
+        --start "${tomorrow}T15:00:00" \
+        --end "${tomorrow}T15:30:00" \
+        --description "Automated test from mcp-test-suite.sh. Safe to delete." 2>&1)
 
     if echo "$output" | grep -qi "error\|denied\|rejected"; then
         log_fail "Create event — error or denied"
@@ -336,6 +325,7 @@ test_create_event() {
 
 test_reply_threading() {
     log_test "Reply threading test — NEEDS TELEGRAM APPROVAL"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
     echo ""
     log_info "This test verifies that replies land IN the original thread."
     log_info "Prerequisites: Dave should have sent a test email to ${USER_EMAIL}"
@@ -344,7 +334,7 @@ test_reply_threading() {
     # Find the most recent email from Dave
     log_info "Searching for recent email from Dave..."
     local search_output
-    search_output=$(mcp_call "search_gmail_messages" "{\"query\": \"from:${DAVE_EMAIL} newer_than:1d\", \"max_results\": 1, \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    search_output=$($scripts_dir/mcp-read.sh search_gmail_messages --query "from:${DAVE_EMAIL} newer_than:1d" --max_results 1 2>&1)
 
     local msg_id thread_id
     msg_id=$(echo "$search_output" | grep -oE '"id"\s*:\s*"[a-f0-9]+"' | head -1 | grep -oE '[a-f0-9]{10,}') || true
@@ -360,7 +350,7 @@ test_reply_threading() {
     # Get the message to read headers
     log_info "Reading message to capture headers..."
     local msg_output
-    msg_output=$(mcp_call "get_gmail_message_content" "{\"message_id\": \"${msg_id}\", \"user_google_email\": \"${USER_EMAIL}\"}" "gmail")
+    msg_output=$($scripts_dir/mcp-read.sh get_gmail_message_content --message_id "$msg_id" 2>&1)
 
     # Extract subject (best effort)
     local subject
@@ -373,16 +363,14 @@ test_reply_threading() {
     local timestamp
     timestamp=$(date "+%H:%M:%S")
     local output
-    output=$(mcp_call "send_gmail_message" "{
-        \"to\": \"${DAVE_EMAIL}\",
-        \"subject\": \"RE: ${subject}\",
-        \"body\": \"<div style='font-size:18px'><p>Threading test reply at ${timestamp}.</p><p>If this appears IN the original thread (not as a separate email), threading works.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>\",
-        \"body_format\": \"html\",
-        \"thread_id\": \"${thread_id}\",
-        \"in_reply_to\": \"${msg_id}\",
-        \"references\": \"${msg_id}\",
-        \"user_google_email\": \"${USER_EMAIL}\"
-    }" "gmail")
+    output=$($scripts_dir/mcp-write.sh send_gmail_message \
+        --to "${DAVE_EMAIL}" \
+        --subject "RE: ${subject}" \
+        --body "<div style='font-size:18px'><p>Threading test reply at ${timestamp}.</p><p>If this appears IN the original thread (not as a separate email), threading works.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
+        --body_format "html" \
+        --thread_id "${thread_id}" \
+        --in_reply_to "${msg_id}" \
+        --references "${msg_id}" 2>&1)
 
     if echo "$output" | grep -qi "error\|denied"; then
         log_fail "Reply threading — error or denied"
@@ -412,24 +400,26 @@ test_env_vars() {
 }
 
 test_mcp_server_config() {
-    log_test "MCP server in openclaw.json"
-    local openclaw_json="${HOME}/.openclaw/openclaw.json"
-    if [ -f "$openclaw_json" ]; then
-        if python3 -c "
-import json
-with open('${openclaw_json}') as f:
-    c = json.load(f)
-mcp = c.get('mcpServers', {}).get('google-workspace', {})
-assert mcp.get('command') == 'uvx', 'command should be uvx'
-assert not mcp.get('disabled', False), 'should not be disabled'
-print('MCP server config OK')
-" 2>&1; then
-            log_pass "MCP server registered and enabled"
-        else
-            log_fail "MCP server config issue"
-        fi
+    log_test "MCP wrapper scripts"
+    local scripts_dir="${HOME}/.openclaw/workspace/scripts"
+
+    if [ -x "${scripts_dir}/mcp-read.sh" ]; then
+        log_pass "mcp-read.sh exists and is executable"
     else
-        log_fail "openclaw.json not found"
+        log_fail "mcp-read.sh missing or not executable"
+    fi
+
+    if [ -x "${scripts_dir}/mcp-write.sh" ]; then
+        log_pass "mcp-write.sh exists and is executable"
+    else
+        log_fail "mcp-write.sh missing or not executable"
+    fi
+
+    # Verify uvx workspace-mcp is available
+    if command -v uvx &>/dev/null; then
+        log_pass "uvx available"
+    else
+        log_fail "uvx not found"
     fi
 }
 
@@ -459,8 +449,7 @@ run_reads() {
 
     test_env_vars
     test_mcp_server_config
-    test_clawbands_status
-    test_clawbands_policy
+    test_exec_approvals
     test_skill_files
     test_search_inbox
     test_search_by_sender
