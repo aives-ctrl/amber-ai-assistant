@@ -172,6 +172,14 @@ for i in range(0, len(params), 2):
         except ValueError:
             pass
     d[key] = val
+
+# --- AUTO-DETECT HTML: if body looks like HTML but body_format is missing, add it ---
+# This catches quoting errors where --body_format 'html' gets swallowed by shell parsing.
+# Same philosophy: make the wrong thing impossible.
+if 'body' in d and isinstance(d['body'], str) and d['body'].strip().startswith('<') and 'body_format' not in d:
+    d['body_format'] = 'html'
+    print('WARNING: body looks like HTML but body_format was missing. Auto-added body_format=html.', file=sys.stderr)
+
 print(json.dumps(d))
 " "${PARAMS[@]}")
 

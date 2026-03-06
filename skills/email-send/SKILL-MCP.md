@@ -47,7 +47,7 @@ When Dave emails you, recognize that it's him:
      --var subject="RE: Original Subject" \
      --var has_reply_all="true" \
      --var cc_line="daver@mindfireinc.com" \
-     --var body_html_preview="<div style=\"font-size:18px\"><p>First 300 chars of body...</p>"
+     --var body_html_preview="<div style='font-size:18px'><p>First 300 chars of body...</p>"
    ```
    If Opus returns `"approved": false` → **fix the errors and re-verify.**
    If `verify-with-opus.sh` fails (gateway down), use the bash fallback:
@@ -128,7 +128,8 @@ After logging, commit and push.
 ## HTML Rules (NO EXCEPTIONS)
 
 - ALWAYS use `--body_format "html"` — never send plain text
-- ALWAYS wrap in `<div style="font-size:18px">...</div>`
+- ALWAYS wrap in `<div style='font-size:18px'>...</div>`
+- **CRITICAL: Use SINGLE QUOTES for HTML attributes** (`style='font-size:18px'`), NOT double quotes. The outer `--body "..."` uses double quotes, so double quotes inside the HTML will break shell parsing and silently drop `--body_format`, causing literal `<br>` tags in the email.
 - Use `<p>` for paragraphs, `<strong>` for bold, `<br>` for line breaks
 - Vary sign-offs: Best, Thanks, Cheers, Talk soon (don't always use "Best")
 

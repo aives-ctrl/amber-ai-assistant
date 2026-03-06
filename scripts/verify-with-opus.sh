@@ -30,7 +30,7 @@
 #     --var subject="RE: Friday recap" \
 #     --var has_reply_all="true" \
 #     --var cc_line="daver@mindfireinc.com" \
-#     --var body_html_preview="<div style=\"font-size:18px\"><p>Thanks Alex..."
+#     --var body_html_preview="<div style='font-size:18px'><p>Thanks Alex..."
 #
 #   # Future: calendar verification
 #   verify-with-opus.sh calendar-create \

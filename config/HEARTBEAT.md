@@ -161,7 +161,7 @@ This is your most important piece of writing each day. It's how the team tracks 
 
 **HTML formatting (STRICT — don't skip this):**
 - Use `--body` with `--body_format "html"` (MCP syntax, not the old `--body-html`)
-- Wrap EVERYTHING in `<div style="font-size:18px">...</div>`
+- Wrap EVERYTHING in `<div style='font-size:18px'>...</div>` (SINGLE quotes for style — double quotes break shell parsing)
 - **Each section gets its own `<p>` tag.** A wall of text with no paragraph breaks is unreadable. If you have 3 sections, you should have at least 6-8 `<p>` tags.
 - Bold section headers use `<strong>ALL CAPS HEADER</strong>` inside their own `<p>`
 - Short paragraphs. 2-4 sentences max per `<p>`. Then break.
