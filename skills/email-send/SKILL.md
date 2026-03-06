@@ -1,6 +1,6 @@
 # email-send
 
-Send emails and replies. Dave approves the draft via Telegram, then you verify parameters and send via gog.
+Send emails and replies. You draft → verify with Opus → show Dave the clean draft → Dave approves → send.
 
 ## When to Use
 - Sending a new email
@@ -24,7 +24,30 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 2. **Check if already replied** (for replies): Search sent mail to see if you already responded to this thread. If you did, skip it — tag as Handled and move on. See email-read SKILL.md "Check If Already Replied" section.
 3. **Confirm you have the messageId** (for replies). You captured this when you read the email (see email-read SKILL.md). If you lost it, re-read the email NOW before drafting. Do NOT proceed without it.
 4. **Draft the email** with lessons in mind
-5. **Show Dave the draft on Telegram** (readable text, NOT raw HTML). Include:
+
+5. **Verify your parameters BEFORE showing Dave** — catch your own mistakes first:
+   ```bash
+   /Users/amberives/.openclaw/workspace/scripts/verify-with-opus.sh email-send \
+     --var original_from="Sender Name <sender@example.com>" \
+     --var original_to="Recipient <recipient@example.com>" \
+     --var original_cc="CC Person <cc@example.com>" \
+     --var is_reply="true" \
+     --var message_id="<messageId>" \
+     --var subject="RE: Original Subject" \
+     --var has_reply_all="true" \
+     --var cc_line="daver@mindfireinc.com" \
+     --var body_html_preview="<div style=\"font-size:18px\"><p>First 300 chars of body...</p>"
+   ```
+   If Opus returns `"approved": false` → **fix the errors and re-verify. Do NOT show Dave a broken draft.**
+   If `verify-with-opus.sh` fails (gateway down), use the bash fallback:
+   ```bash
+   /Users/amberives/.openclaw/workspace/scripts/verify-email-params.sh \
+     --is-reply "true" --message-id "<messageId>" --subject "RE: ..." \
+     --body-html "<div style=\"font-size:18px\">...</div>" \
+     --cc "daver@mindfireinc.com" --has-reply-all "true"
+   ```
+
+6. **Show Dave the verified draft on Telegram** (readable text, NOT raw HTML). Include:
    - **Full recipient list** — EVERY person getting this email:
      - **To:** [names + emails]
      - **CC:** [names + emails]
@@ -36,27 +59,14 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
 
    **⚠️ 2026-03-05 mistake:** You replied to Alex's thread and only sent to Alex, dropping all CC recipients. Dave couldn't catch it because you didn't show the recipient list. ALWAYS show who will receive the email.
 
-6. **Wait for Dave's feedback.** This is where Dave reviews and iterates:
-   - If Dave requests changes → revise the draft, show him again, AND log the lesson (see below)
+7. **Wait for Dave's feedback.** This is where Dave reviews content and tone:
+   - If Dave requests changes → revise the draft, re-verify, show him again, AND log the lesson (see below)
    - Keep iterating until Dave says **"send it"** (or similar confirmation)
    - **Do NOT send until Dave confirms the draft is good**
 
-7. **Once Dave says "send it"** → run the verify script, then send:
+8. **Once Dave says "send it"** → send and tag:
 
-   **Step 7a: Verify your parameters** (catches common mistakes before they reach inboxes):
-   ```bash
-   /Users/amberives/.openclaw/workspace/scripts/verify-email-params.sh \
-     --is-reply "true" \
-     --message-id "<messageId>" \
-     --subject "RE: Original Subject" \
-     --body-html "<div style=\"font-size:18px\"><p>Reply body here.</p><p>Best,</p><p>Amber Ives<br>MindFire, Inc.</p></div>" \
-     --cc "daver@mindfireinc.com" \
-     --has-reply-all "true"
-   ```
-   If it says **🚫 VERIFICATION FAILED** → fix the errors and re-run. Do NOT send.
-   If it says **✅ ALL CHECKS PASSED** → proceed to send.
-
-   **Step 7b: Send the email:**
+   **Step 8a: Send the email:**
    ```bash
    /usr/local/bin/gog gmail send \
      --reply-to-message-id <messageId> \
@@ -67,16 +77,16 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
    ```
    This triggers exec-approval — Dave approves via Telegram.
 
-   **Step 7c: Tag thread as Handled** (only after send succeeds):
+   **Step 8b: Tag thread as Handled** (only after send succeeds):
    ```bash
    /Users/amberives/.openclaw/workspace/scripts/gog-email-tag.sh gmail thread modify <threadId> --add "Handled" --remove "UNREAD" --force
    ```
 
-8. **Verify it worked.** Check your sent mail to confirm the email went out.
+9. **Verify it worked.** Check your sent mail to confirm the email went out.
 
-9. Log to daily notes + update follow-up tracker
+10. Log to daily notes + update follow-up tracker
 
-**⚠️ Do NOT skip step 6 — Dave needs to see the draft and confirm before you send.**
+**⚠️ Do NOT skip step 5 (verify) or step 7 (Dave's approval). Verify catches technical mistakes. Dave catches content mistakes. Both gates are required.**
 
 ## Learning From ALL Feedback (Not Just Draft Changes)
 
