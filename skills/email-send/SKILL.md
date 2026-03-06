@@ -32,20 +32,22 @@ When Dave emails you (thank-yous, questions, requests, info), recognize that it'
    - One-line summary
    - **The original email** (quote the key parts so Dave has context for the reply)
    - The full draft text
-   - Then say: **"Running through Opus workflow now — approve or decline when it hits your Telegram."**
+   - Then ask: **"Good to send, or changes?"**
 
    **⚠️ 2026-03-05 mistake:** You replied to Alex's thread and only sent to Alex, dropping all CC recipients. Dave couldn't catch it because you didn't show the recipient list. ALWAYS show who will receive the email.
 
-6. **Immediately run the Lobster workflow** — do NOT wait for a separate "send it" approval. The exec-approval for the actual send IS Dave's approval gate. One gate, not two.
-   - If Dave sees the draft and wants changes, he'll decline the exec-approval and tell you in chat
-   - If it looks good, he approves the exec-approval — done
-   - **If Dave requests changes:** revise the draft, show him again, run the workflow again, AND log the lesson (see below)
+6. **Wait for Dave's feedback.** This is where Dave reviews and iterates:
+   - If Dave requests changes → revise the draft, show him again, AND log the lesson (see below)
+   - Keep iterating until Dave says **"send it"** (or similar confirmation)
+   - **Do NOT run the workflow until Dave confirms the draft is good**
 
-7. **The workflow handles the rest:** Opus verification → send (exec-approval) → tag Handled. You don't need separate commands.
+7. **Once Dave says "send it"** → run the Lobster workflow. The exec-approval that pops up is just a final confirmation click — Dave already approved the content in step 6.
+   - The workflow handles: Opus verification → send (exec-approval) → tag Handled
+   - You don't need separate gog send and tag commands
 
 8. Log to daily notes + update follow-up tracker
 
-**⚠️ DO NOT ask Dave to approve the draft AND then also ask him to approve the exec command. That's two gates. There is ONE gate: the exec-approval for the send. Show the draft, run the workflow, Dave approves or declines the exec. Done.**
+**⚠️ The draft review (step 6) and the exec-approval (step 7) are NOT the same thing. Step 6 is where Dave gives feedback and iterates on the content. Step 7 is where the email actually sends. Do NOT skip step 6 by running the workflow immediately — Dave needs to see the draft and confirm before you trigger the send.**
 
 ## Learning From ALL Feedback (Not Just Draft Changes)
 
@@ -185,8 +187,8 @@ Do NOT add "Assistant to Dave Rosendahl." Do NOT add your email address. Just na
 ## Rules
 
 - ALWAYS use the Lobster workflow (`lobster run email-send`). Direct gog sends are emergency-only.
-- NEVER send without showing Dave the draft first
-- ONE approval gate: the exec-approval for the send. Do NOT ask Dave to approve the draft separately.
+- NEVER send without showing Dave the draft first and getting his "send it" confirmation
+- NEVER run the workflow before Dave confirms the draft is good
 - NEVER self-approve send commands
 - NEVER use `--body` — ALWAYS use `--body-html`
 - Signature is ALWAYS `Amber Ives<br>MindFire, Inc.` — nothing else, ever
