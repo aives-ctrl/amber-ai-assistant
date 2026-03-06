@@ -632,7 +632,7 @@ The mistakes aren't intelligence failures — she *knows* the rules when prompte
 **Opus 4.6 verifier step in a Lobster workflow** (`workflows/email-send.lobster.yaml`):
 
 1. Amber drafts the email and gathers parameters (original headers, messageId, body)
-2. She invokes `lobster run email-send` with those parameters
+2. She invokes `lobster run /path/to/email-send.lobster.yaml` with those parameters
 3. **Opus 4.6** reviews the parameters: Is `--reply-to-message-id` used for replies? Is `--reply-all` present? Is `--body-html` used? Does the signature match?
 4. If Opus says FAIL → workflow stops, Amber sees specific errors
 5. If Opus says PASS → gog send executes (triggering exec-approval for Dave)
@@ -783,7 +783,7 @@ The old workflow used `${body_html}` directly in YAML command strings. HTML cont
 
 ```
 Dave says "send it" in Telegram (content approval)
-  → Amber runs: lobster run email-send --arg ...
+  → Amber runs: lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml --arg ...
     → lobster triggers exec-approval for itself (Dave approves once)
     → Step 1: verify-email-send.sh
       → sets OPENCLAW_URL env var
@@ -816,6 +816,50 @@ skills/email-send/SKILL.md          # Updated: no exec-approval for sends, workf
 3. **Never use raw `${arg}` substitution for user content in YAML commands.** Use `$LOBSTER_ARG_<NAME>` env vars with proper shell quoting instead.
 4. **Silent failures are the norm in lobster.** If a step's command fails, the step output is empty/error, and conditional steps that check the output just skip. Add explicit error handling or use `set -euo pipefail` in scripts.
 5. **Read the actual docs before building.** We built the original workflow from first principles and got the exec-approval architecture wrong. The lobster README and community examples clearly show the `approval: required` pattern as the correct approach.
+
+---
+
+## 14. Lobster Does Not Auto-Discover Custom Workflows — Use Full File Path
+
+**Date:** 2026-03-05
+**Severity:** Critical — workflow cannot be found, command fails immediately
+**Time to resolve:** ~1 hour
+
+### The Problem
+
+`lobster run email-send` failed with "Error: Unknown command: email-send". The workflow file existed at `/Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml`, but lobster couldn't find it. `lobster workflows.list` only showed built-in workflows (`github.pr.monitor`, `github.pr.monitor.notify`).
+
+### Root Cause
+
+Lobster does NOT automatically scan the OpenClaw workspace `workflows/` directory (or any directory) for custom `.lobster.yaml` files. The name-based `lobster run <name>` syntax only works for:
+- Built-in workflows bundled with the lobster npm package
+- Workflows registered in `~/.lobster/workflows/` (standard lobster directory)
+
+Custom workflows in the OpenClaw workspace directory are invisible to lobster's name resolver.
+
+### The Fix
+
+Use the **full file path** instead of the workflow name:
+
+```bash
+# WRONG — lobster can't find this
+lobster run email-send --arg ...
+
+# CORRECT — full path, always works
+lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml --arg ...
+```
+
+Updated all references in:
+- `skills/email-send/SKILL.md` (3 locations)
+- `workflows/email-send.lobster.yaml` (usage comment)
+- `docs/AMBER-SETUP-INSTRUCTIONS.md` (test command + table)
+- `config/HEARTBEAT.md` (daily learnings workflow)
+
+### Takeaway
+
+1. **Always use full file path for custom lobster workflows.** `lobster run <name>` is only for built-in workflows.
+2. **Test the exact command your agent will run.** If we had tested `lobster run email-send` ourselves before giving it to Amber, we'd have caught this immediately.
+3. **`lobster workflows.list` only shows registered/built-in workflows.** Don't use it to verify custom workflow availability — use `ls` on the workflow directory instead.
 
 ---
 

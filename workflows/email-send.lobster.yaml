@@ -32,7 +32,7 @@
 #   - jq installed (for safe JSON construction in verify script)
 #
 # USAGE (from Amber's session):
-#   lobster run email-send \
+#   lobster run /Users/amberives/.openclaw/workspace/workflows/email-send.lobster.yaml \
 #     --arg original_from="Alex Fechner <AFechner@advprinting.com>" \
 #     --arg original_to="David Rosendahl <daver@mindfireinc.com>" \
 #     --arg original_cc="Bryan Beelek <bbeelek@advprinting.com>, Dan Tissi <DTissi@advprinting.com>" \
