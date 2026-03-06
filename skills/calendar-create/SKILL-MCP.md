@@ -54,6 +54,8 @@ mcp-write.sh manage_event \
 
 Note: `user_google_email` is automatically set by the script — you never need to pass it. Dave is in Pacific time — use `-08:00` (PST) or `-07:00` (PDT).
 
+**DST rule:** Pacific switches to Daylight Saving Time (PDT, `-07:00`) on the second Sunday of March, and back to Standard Time (PST, `-08:00`) on the first Sunday of November. **Check `session_status` for the current date**, then use the correct offset. If it's March 8–November 1: use `-07:00`. If it's November 2–March 7: use `-08:00`.
+
 ## Rules
 
 - NEVER create events without Dave's approval

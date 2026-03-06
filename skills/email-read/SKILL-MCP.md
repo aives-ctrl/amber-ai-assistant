@@ -84,6 +84,7 @@ When you read an email you might need to reply to, **note ALL of these immediate
 
 - `mcp-read.sh` is auto-approved — no Telegram prompt needed
 - This is YOUR inbox (aives@mindfiremail.info), not Dave's
-- Exclude Dave's sent emails: add `-from:daver@mindfireinc.com` when searching for actionable items
+- Exclude Dave's sent emails: add `-from:daver@mindfireinc.com -from:daver@mindfiremail.info` when searching for actionable items
 - Run commands ONE AT A TIME, sequentially
 - **ALWAYS capture messageId, threadId, AND full recipient lists** when reading emails you might reply to
+- **Your public email is `aives@mindfireinc.com`** (forwards to your inbox). When building reply-all recipient lists, if you see `aives@mindfireinc.com` OR `aives@mindfiremail.info` in To/CC — that's YOU. Exclude yourself from the recipients.
